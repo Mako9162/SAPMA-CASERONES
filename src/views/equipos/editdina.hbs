@@ -1,0 +1,719 @@
+<body class="with-side-menu">
+	{{> navbar }}
+	<div class="mobile-menu-left-overlay-"></div>
+	{{> nav }}
+	<div class="page-content">
+		<div class="container-fluid">
+			<header class="section-header">
+				<div class="tbl">
+					<div class="tbl-row">
+						<div class="tbl-cell">
+							<h3>Dinámico / {{din.ID}}</h3>
+							<input type="text" hidden="true" value="{{din.ID}}" id="id">
+							<ol class="breadcrumb breadcrumb-simple">
+								<li><a href="/home">Inicio</a></li>
+								<li class="active">Edición de dinámico</li>
+							</ol>
+						</div>
+						<div class="form-group float-right">
+                            <button type="button" class="btn btn-danger" onclick="location.reload()" >Cancelar cambios</button>
+                        </div>
+					</div>
+					<style>
+					.icon-primary {
+						color: #00bfffbc;
+					}
+					.fa-plus-circle {
+						cursor: pointer;
+					}
+					label.required:before {
+						content: "* ";
+						color: red;
+					}
+					h5.required:before {
+						content: "* ";
+						color: red;
+					}
+					</style>
+				</div>
+			</header>
+			<div class="box-typical box-typical-padding">
+				<form>
+					<h5 class="m-t-lg with-border">INFORMACIÓN DE EQUIPO DINAMICO</strong></h5>
+					<div class="row">
+						<div class="col-md-3 col-sm-6">
+							<fieldset class="form-group">
+								<label class="form-label " for="serie">Serie:</label>
+								<input type="text" class="form-control" hidden="true" Value="{{din.SERIE}}" id="old_serie">
+								<input type="text" class="form-control" Value="{{din.SERIE}}" id="serie" oninput="this.value = this.value.trim()">
+							</fieldset>
+						</div>
+						<div class="col-md-3 col-sm-6">
+							<fieldset class="form-group">
+								<label class="form-label " for="cer">Certificación:</label>
+								<input type="text" class="form-control" hidden="true" Value="{{din.CER}}" id="old_cer" >
+								<input type="text" class="form-control" Value="{{din.CER}}" id="cer" oninput="this.value = this.value.trim()">
+							</fieldset>
+						</div>
+						<div class="col-md-3 col-sm-6">
+							<fieldset class="form-group">
+								<label class="form-label " for="critico">Critico:</label>
+								<input type="text" hidden="true" id="old_critico" value="{{din.CRITICO}}">
+								<select name="critico" id="critico" class="select2">
+									<option value="0" {{#if (eq din.CRITICO 0)}}selected{{/if}}>No</option>
+									<option value="1" {{#if (eq din.CRITICO 1)}}selected{{/if}}>Si</option>
+								</select>
+							</fieldset>
+						</div>
+						<div class="col-md-3 col-sm-6">
+							<fieldset class="form-group">
+								<label class="form-label float-left" for="agente">Agente:</label>
+								<span class="fa fa-plus-circle float-right icon-primary" id="agenteagente"></span>
+								<input type="text" hidden="true" id="old_agente" value="{{din.AGENTE}}">
+								<select name="agente"  id="agente" class="select2" >
+                                      {{#each agentes }}
+                                          <option value= "{{Id}}"{{#if (eq Descripcion ../din.AGENTE)}}selected{{/if}}>{{Descripcion}}</option>
+                                      {{/each}}
+                                </select>
+							</fieldset>
+						</div>
+						<div class="col-md-3 col-sm-6">
+							<fieldset class="form-group">
+								<label class="form-label float-left" for="mm">Marca - Modelo:</label>
+								<span class="fa fa-plus-circle float-right icon-primary" id="marcamodelo"></span>
+								<input type="text" hidden="true" id="old_mm" value="{{mm}}">
+								<select name="mm"  id="mm" class="select2" >
+                                      {{#each marca_modelo }}
+                                          <option value= "{{Id}}"{{#if (eq Descripcion ../mm)}}selected{{/if}}>{{Descripcion}}</option>
+                                      {{/each}}
+                                </select>
+							</fieldset>
+						</div>
+						<div class="col-md-3 col-sm-6">
+							<fieldset class="form-group">
+								<label class="form-label float-left" for="tipoe">Tipo de equipo:</label>
+								<span class="fa fa-plus-circle float-right icon-primary" id="tipoequipo"></span>
+								<input type="text" hidden="true" id="old_tipoe" value="{{din.TIPO_OLD}}">
+								<input type="text" hidden="true" id="old_tipoe_text" value="{{din.TIPO}}">
+								<select name="tipoe"  id="tipoe" class="select2" >
+                                      {{#each tipo_equipo }}
+                                          <option value= "{{Id}}"{{#if (eq Descripcion ../din.TIPO)}}selected{{/if}}>{{Descripcion}}</option>
+                                      {{/each}}
+                                </select>
+							</fieldset>
+						</div>
+						<div class="col-md-3 col-sm-6">
+							<fieldset class="form-group">
+								<label class="form-label " for="peso">Peso:</label>
+								<input type="text" hidden="true" id="old_peso" value="{{din.PESO}}">
+								<input type="text" class="form-control" Value="{{peso}}" id="peso" onkeypress="return event.keyCode >= 48 && event.keyCode <= 57 || event.keyCode == 46;">
+								<script>
+									document.addEventListener('DOMContentLoaded', function () {
+										var input = document.querySelector('#peso');
+										var valor = input.value;
+										var nuevoValor = valor.replace(/[^0-9.]/g, '');
+										input.value = nuevoValor;
+									});
+								</script>
+							</fieldset>
+						</div>
+						<div class="col-md-3 col-sm-6">
+							<fieldset class="form-group">
+								<label class="form-label" for="medida">Medida:</label>
+								<select class="select2" id="medida">
+									<option value=""></option>
+									<option value="Kg" {{#if (eq medida "Kg")}}selected{{/if}}>Kg</option>
+									<option value="g" {{#if (eq medida "g")}}selected{{/if}}>g</option>
+									<option value="Oz" {{#if (eq medida "Oz")}}selected{{/if}}>Oz</option>
+									<option value="Psi" {{#if (eq medida "Psi")}}selected{{/if}}>Psi</option>
+									<option value="L" {{#if (eq medida "L")}}selected{{/if}}>L</option>
+									<option value="ml" {{#if (eq medida "ml")}}selected{{/if}}>ml</option>
+									<option value="Lbs" {{#if (eq medida "Lbs")}}selected{{/if}}>Lbs</option>
+								</select>
+							</fieldset>
+						</div>
+						<div class="col-md-12 col-sm-6">
+							<fieldset class="form-group">
+								<label class="form-label " for="obs">Observación:</label>
+								<textarea class="form-control" Value="" id="obs" onblur="formatInput(this)" readonly>{{din.OBS}}</textarea>
+							</fieldset>
+						</div>
+						<div class="col-md-12 col-sm-6">
+							<fieldset class="form-group">
+								<label for="observaciones" class="control-label">Nueva Observación:</label>
+								<textarea class="form-control" id="observaciones" name="observaciones" rows="4"></textarea>
+							</fieldset>
+						</div>
+						<div class="modal fade bd-example-modal-lg" id="modal_agente" tabindex="-1" role="dialog" aria-labelledby="myLargeModalLabel" aria-hidden="true">
+							<div class="modal-dialog">
+								<div class="modal-content">
+									<div class="modal-header">
+										<button type="button" class="modal-close" data-dismiss="modal" aria-label="Close">
+											<i class="font-icon-close-2"></i>
+										</button>
+										<h4 class="modal-title" id="titu_agente">Agregar agente</h4>
+									</div>
+									<form action="" id="form_agente">
+										<div class="modal-body">
+											<cdiv class="form-group">
+												<div class="card-block">
+													<div class="row">
+														<cdiv class="form-group">
+															<label for="atp">Descripción</label>
+															<input type="text" class="form-control" id="aagente" name="aagente" onblur="formatInput(this)"> 
+														</cdiv>
+														<br>
+														<div>
+															<button type="button"  name="action" id="guardar_agente" class="btn btn-rounded btn-primary float-right">Guardar</button>
+														</div>
+													</div>
+												</div>
+											</cdiv>
+										</div>
+									</form>
+								</div>
+							</div>
+						</div>
+						<div class="modal fade bd-example-modal-lg" id="modal_tipoequipo" tabindex="-1" role="dialog" aria-labelledby="myLargeModalLabel" aria-hidden="true">
+							<div class="modal-dialog">
+								<div class="modal-content">
+									<div class="modal-header">
+										<button type="button" class="modal-close" data-dismiss="modal" aria-label="Close">
+											<i class="font-icon-close-2"></i>
+										</button>
+										<h4 class="modal-title" id="titu_tipoequipo">Agregar tipo de equipo</h4>
+									</div>
+									<form action="" id="form_tipoequipo">
+										<div class="modal-body">
+											<cdiv class="form-group">
+												<div class="card-block">
+													<div class="row">
+														<cdiv class="form-group">
+															<label for="atp">Descripción</label>
+															<input type="text" class="form-control" id="atp" name="atp" onblur="formatInput(this)"> 
+														</cdiv>
+														<br>
+														<div>
+															<button type="button"  name="action" id="guardar_tipoequipo" class="btn btn-rounded btn-primary float-right">Guardar</button>
+														</div>
+													</div>
+												</div>
+											</cdiv>
+										</div>
+									</form>
+								</div>
+							</div>
+						</div>
+						<div class="modal fade bd-example-modal-lg" id="modal_marcamodelo" tabindex="-1" role="dialog" aria-labelledby="myLargeModalLabel" aria-hidden="true">
+							<div class="modal-dialog">
+								<div class="modal-content">
+									<div class="modal-header">
+										<button type="button" class="modal-close" data-dismiss="modal" aria-label="Close">
+											<i class="font-icon-close-2"></i>
+										</button>
+										<h4 class="modal-title" id="titu_marcamodelo">Agregar marca y modelo</h4>
+									</div>
+									<form action="" id="form_marcamodelo">
+										<div class="modal-body">
+											<cdiv class="form-group">
+												<div class="card-block">
+													<div class="row">
+														<div class="form-group">
+															<label for="descripcion">Marca</label>
+															<input type="text" class="form-control" id="marca" name="marca" required onblur="formatInput(this)">
+														</div>
+														<div class="form-group">
+															<label for="descripcion">Modelo</label>
+															<input type="text" class="form-control" id="modelo" name="modelo" required onblur="formatInput(this)">
+														</div>
+														<br>
+														<div>
+															<button type="button"  name="action" id="guardar_marcamodelo" class="btn btn-rounded btn-primary float-right">Guardar</button>
+														</div>
+													</div>
+												</div>
+											</cdiv>
+										</div>
+									</form>
+								</div>
+							</div>
+						</div>
+						<div id="confirmModal" class="modal fade" role="dialog">
+							<div class="modal-dialog">
+								<div class="modal-content">
+								<div class="modal-header">
+									<button type="button" class="close" data-dismiss="modal">×</button>
+									<h4 class="modal-title">CONFIRMAR CAMBIOS DE EQUIPO / {{din.ID}}</h4>
+								</div>
+								<div class="modal-body">
+									<style>
+									#actuales {
+										background-color: rgb(255, 199, 206);
+										color: rgb(126, 99, 102);
+									}
+									#cambios {
+										background-color: rgb(198, 239, 206);
+										color: rgb(112, 137, 118);
+									}
+									</style>
+									<table class="table table-bordered table-hover">
+										<thead>
+											<tr>
+											<th id="actuales">
+												<center><span class="glyphicon glyphicon-arrow-left text-danger"></span> DATOS ACTUALES</center>
+											</th>
+											<th id="cambios">
+												<center>CAMBIOS A REALIZAR <span class="glyphicon glyphicon-arrow-right text-success"></span></center>
+											</th>
+											</tr>
+										</thead>
+										<tbody>
+											<tr>
+											<!-- Contenido de la tabla -->
+											</tr>
+										</tbody>
+									</table>
+									<br>
+								</div>
+								<div class="modal-footer">
+									<button type="button" class="btn btn-default" data-dismiss="modal">Cerrar</button>
+									<button type="button" class="btn btn-primary" id="actualizar">Guardar</button>
+								</div>
+								</div>
+							</div>
+						</div>
+					</div>
+					<br>
+					<button type="button" id="guardar" class="btn btn-outline-primary">Actualizar</button>
+				</form>
+			</div>
+		</div>	
+	</div>
+	<script src="/js/lib/jquery/jquery.min.js"></script>
+	<script src="/js/lib/tether/tether.min.js"></script>
+	<script src="/js/lib/bootstrap/bootstrap.min.js"></script>
+	<script src="/js/plugins.js"></script>
+	<script src="/js/app.js"></script>
+	<script src="/js/lib/datatables-net/datatables.min.js"></script>
+	<script src="/js/lib/bootstrap-sweetalert/sweetalert.min.js"></script>
+	<script src="/js/lib/summernote/summernote.min.js"></script>
+	<script src="/js/lib/fancybox/jquery.fancybox.pack.js"></script>
+	<script src="/js/summernote-ES.js"></script>
+	<script src="/js/lib/select2/select2.full.min.js"></script>
+	<script>
+		$(document).ready(function () {
+			var or_serie = $('#serie').val();
+			var or_cer = $('#cer').val();
+			if (peso.value !== '' && medida.value === '') {
+				swal('Sapma!','Por favor, selecciona una medida.','warning');
+				medida.focus();
+			}
+
+			$('#serie').on('blur', function() {
+				if ($(this).val() !== or_serie) {
+					swal({
+						title: "SAPMA",
+						text: "Ha modificado un campo crítico",
+						type: "warning"
+					});
+				}
+			});
+
+			$('#serie').on('change', function() {
+				var serie = $(this).val();
+				$.ajax({
+					url: '/check-serie-din',
+					type: 'POST',
+					data: { serie: serie },
+					success: function(data) {
+					if (data.exists) {
+						swal("¡SAPMA!", "Esta serie ya existe. Por favor ingrese una distinta.", "error");
+        				$('#serie').val('');
+					}
+					}
+				});
+			});
+
+			$('#cer').on('blur', function() {
+				if ($(this).val() !== or_cer) {
+					swal({
+						title: "SAPMA",
+						text: "Ha modificado un campo crítico",
+						type: "warning"
+					});
+				}
+			});
+
+			$('#cer').on('change', function() {
+				var cer = $(this).val();
+				$.ajax({
+					url: '/check-cer-din',
+					type: 'POST',
+					data: { cer: cer },
+					success: function(data) {
+					if (data.exists) {
+						swal("¡SAPMA!", "Esta certificación ya existe. Por favor ingrese una distinta.", "error");
+        				$('#cer').val('');
+					}
+					}
+				});
+			});
+
+			$('#tipoequipo').on('click', function() {
+				$('#modal_tipoequipo').modal('show');
+			});
+
+			$('#marcamodelo').on('click', function() {
+				$('#modal_marcamodelo').modal('show');
+			});
+
+			$('#agenteagente').on('click', function() {
+				$('#modal_agente').modal('show');
+			});
+
+			$('#guardar_marcamodelo').on('click', function(){
+				var marca = $('#marca').val();
+				var modelo = $('#modelo').val();
+				if(!marca || !modelo){
+					swal("¡SAPMA!", "Debe ingresar marca y modelo.", "error");
+				}else{
+					$.ajax({
+						url: '/verificar_mm',
+						method: 'POST',
+						data: { marca: marca, modelo: modelo },
+						success: function(data) {
+						if (data.error) {
+							swal({
+							title: "¡SAPMA!",
+							text: data.error,
+							type: "error",
+							confirmButtonClass: "btn-danger",
+							confirmButtonText: "Ok",
+							closeOnConfirm: true
+							});
+						} else {
+							swal({
+							title: "¡SAPMA!",
+							text: "¿Desea agregar marca y modelo de equipo?",
+							type: "warning",
+							showCancelButton: true,
+							confirmButtonClass: "btn-primary",
+							confirmButtonText: "Si",
+							cancelButtonText: "No",
+							closeOnConfirm: true
+							}, function(isConfirm) {
+							if (isConfirm) {
+								$.ajax({
+								url: '/agregar_mm',
+								method: 'POST',
+								data: { marca: marca, modelo: modelo },
+								success: function(data) {
+									swal({
+									title: "¡SAPMA!",
+									text: "Registro agregado con exito",
+									type: "success",
+									confirmButtonClass: "btn-primary",
+									closeOnConfirm: true
+									});
+								$('#mm').append($('<option>', {
+									value: data.id,
+									text: data.descripcion
+								}));
+								$('#modal_marcamodelo').modal('hide');
+								$('#marca').val('');
+								$('#modelo').val('');
+								}
+								});
+							}
+							});
+						}
+						}
+					});
+				}
+			});
+
+			$('#guardar_tipoequipo').on('click', function() {
+			var descripcion = $('#atp').val();
+			if (!descripcion){
+				swal("¡SAPMA!", "Debe ingresar una descripción.", "error");
+			}else{
+				$.ajax({
+				url: '/verificar_tipo',
+				method: 'POST',
+				data: { descripcion: descripcion },
+				success: function(data) {
+				if (data.error) {
+					swal({
+					title: "¡SAPMA!",
+					text: data.error,
+					type: "error",
+					confirmButtonClass: "btn-danger",
+					confirmButtonText: "Ok",
+					closeOnConfirm: true
+					});
+				} else {
+					swal({
+					title: "¡SAPMA!",
+					text: "¿Desea agregar tipo de equipo?",
+					type: "warning",
+					showCancelButton: true,
+					confirmButtonClass: "btn-primary",
+					confirmButtonText: "Si",
+					cancelButtonText: "No",
+					closeOnConfirm: true
+					}, function(isConfirm) {
+					if (isConfirm) {
+						$.ajax({
+						url: '/agregar_tipo',
+						method: 'POST',
+						data: { descripcion: descripcion },
+						success: function(data) {
+							swal({
+							title: "¡SAPMA!",
+							text: "Tipo de equipo agregado con exito",
+							type: "success",
+							confirmButtonClass: "btn-primary",
+							closeOnConfirm: true
+							});
+							$('#tipoe').append($('<option>', {
+								value: data.id,
+								text: data.descripcion
+							}));
+							$('#modal_tipoequipo').modal('hide');
+							$('#atp').val('');
+						}
+						});
+					}
+					});
+				}
+				}
+			});
+			}
+			});
+
+			$('#guardar_agente').on('click', function() {
+			var descripcion = $('#aagente').val();
+			if (!descripcion){
+				swal("¡SAPMA!", "Debe ingresar una descripción.", "error");
+			}else{
+				$.ajax({
+				url: '/verificar_agente',
+				method: 'POST',
+				data: { descripcion: descripcion },
+				success: function(data) {
+				if (data.error) {
+					swal({
+					title: "¡SAPMA!",
+					text: data.error,
+					type: "error",
+					confirmButtonClass: "btn-danger",
+					confirmButtonText: "Ok",
+					closeOnConfirm: true
+					});
+				} else {
+					swal({
+					title: "¡SAPMA!",
+					text: "¿Desea agregar agente?",
+					type: "warning",
+					showCancelButton: true,
+					confirmButtonClass: "btn-primary",
+					confirmButtonText: "Si",
+					cancelButtonText: "No",
+					closeOnConfirm: true
+					}, function(isConfirm) {
+					if (isConfirm) {
+						$.ajax({
+							url: '/agregar_agente',
+							method: 'POST',
+							data: { descripcion: descripcion },
+							success: function(data) {
+								swal({
+									title: "¡SAPMA!",
+									text: "Agente agregado con exito",
+									type: "success",
+									confirmButtonClass: "btn-primary",
+									closeOnConfirm: true
+								});
+								// Agregar el nuevo agente a la lista desplegable
+								$('#agente').append($('<option>', {
+									value: data.id,
+									text: data.descripcion
+								}));
+								$('#modal_agente').modal('hide');
+								$('#aagente').val('');
+							}
+						});
+					}
+					});
+				}
+				}
+			});
+			}
+			});
+		
+			$('#guardar').on('click', function() {
+				var old_serie = $('#old_serie').val();
+				var old_cer = $('#old_cer').val();
+				var old_critico = $('#old_critico').val();
+				var old_critico_text = $('#old_critico_text option:selected').text();
+				var old_agente = $('#old_agente').val();
+				var old_mm = $('#old_mm').val();
+				var old_tipoe = $('#old_tipoe').val();
+				var old_tipoe_text = $('#old_tipoe_text').val();
+				var old_peso = $('#old_peso').val();
+
+				var id = $('#id').val(); 
+				var serie = $('#serie').val();
+				var cer = $('#cer').val();
+				var critico = $('#critico').val();
+				var critico_text = $('#critico option:selected').text();
+				var agente = $('#agente option:selected').text();
+				var mm = $('#mm option:selected').text();
+				var tipoe_text = $('#tipoe option:selected').text();
+				var tipoe = $('#tipoe').val();
+				var peso = $('#peso').val();
+				var medida = $('#medida').val();
+				var pesoconmedida = peso + " " + medida;
+				var obs = $('#observaciones').val();
+
+				$('#confirmModal tbody').empty();
+
+				if (old_serie !== serie) {
+					$('#confirmModal tbody').append('<tr><td>Serie: ' + old_serie + '</td><td>Serie: ' + serie + '</td></tr>');
+				}
+				if (old_cer !== cer) {
+					$('#confirmModal tbody').append('<tr><td>Certificación: ' + old_cer + '</td><td>Certificación: ' + cer + '</td></tr>');
+				}
+				if (old_critico !== critico) {
+					var old_critico_text = old_critico == 1 ? 'Sí' : 'No';
+					var critico_text = critico == 1 ? 'Sí' : 'No';
+					$('#confirmModal tbody').append('<tr><td>Critico: ' + old_critico_text + '</td><td>Critico: ' + critico_text + '</td></tr>');
+				}
+				if (old_agente !== agente) {
+					$('#confirmModal tbody').append('<tr><td>Agente: ' + old_agente + '</td><td>Agente: ' + agente + '</td></tr>');
+				}
+				if (old_mm !== mm) {
+					$('#confirmModal tbody').append('<tr><td>Marca - Modelo: ' + old_mm + '</td><td>Marca - Modelo: ' + mm + '</td></tr>');
+				}
+				if (old_tipoe_text!== tipoe_text) {
+					$('#confirmModal tbody').append('<tr><td>Tipo de equipo: ' + old_tipoe_text+ '</td><td>Tipo de equipo: ' + tipoe_text+ '</td></tr>');
+				}
+				if (old_tipoe_text!== tipoe_text) {
+					$('#confirmModal tbody').append('<tr><td>Tipo de equipo: ' + old_tipoe_text+ '</td><td>Tipo de equipo: ' + tipoe_text+ '</td></tr>');
+				}
+				if (old_peso!== pesoconmedida) {
+					$('#confirmModal tbody').append('<tr><td>Valor medida: ' + old_peso+ '</td><td>Valor medida: ' + pesoconmedida+ '</td></tr>');
+				}
+				if (obs) {
+					$('#confirmModal .modal-body').append('<label>Observación:</label><textarea class="form-control" rows="4" readonly>' + obs + '</textarea>');
+				}
+
+				var tabla = $('#confirmModal tbody');
+
+				if (tabla.is(':empty') && !obs) {
+					swal("SAPMA", "No hay cambios a realizar", "warning");
+					$('#confirmModal').modal('hide');
+				} else {
+					$('#confirmModal').modal('show');
+				}
+
+				$('#confirmModal').on('hidden.bs.modal', function () {
+					$('#confirmModal tbody').empty();
+					$('#confirmModal textarea').remove();
+					$('#confirmModal label').remove();
+				});
+
+
+				var data = {
+					id: id, 
+					serie: serie, 
+					cer: cer,
+					critico: critico,
+					critico_text: critico_text,
+					agente: agente,
+					mm: mm,
+					tipoe_text: tipoe_text,
+					tipoe: tipoe,
+					peso: peso,
+					medida: medida,
+					pesoconmedida: pesoconmedida
+				};
+
+				$('#actualizar').on('click', function() {
+
+					var datosTabla = [];
+
+					$('#confirmModal tbody tr').each(function() {
+						var datosActuales = $(this).find('td:eq(0)').text();
+						var cambiosRealizar = $(this).find('td:eq(1)').text();
+
+						var fila = {
+							datosActuales: datosActuales,
+							cambiosRealizar: cambiosRealizar
+						};
+
+						datosTabla.push(fila);
+					});
+
+					var datos = {
+						data: data, // Agrega aquí el otro objeto que deseas enviar
+						datosTabla: datosTabla,
+						observaciones: obs
+					};
+
+					swal({
+						title: "¡SAPMA!",
+						text: "¿Desea actualizar este equipo?",
+						type: "warning",
+						showCancelButton: true,
+						confirmButtonClass: "btn-primary",
+						confirmButtonText: "Si",
+						cancelButtonText: "No",
+						closeOnConfirm: true
+					}, function (isConfirm){
+						if(isConfirm){
+							$.ajax({
+								url: '/actualizar_dinamico',
+								type: 'POST',
+								data: datos,
+								beforeSend: function(){
+									swal({
+										title: "Guardando",
+										text: "Espere un momento por favor...",
+										imageUrl:"/img/Spinner-1s-200px2.gif",
+										showConfirmButton: false,
+										allowOutsideClick: false
+									});
+								}
+							}).done(function(data){
+								if (data.error) {
+									// Mostrar mensaje de error
+									swal({
+										title: "¡Error!",
+										text: data.error,
+										type: "error",
+										confirmButtonText: "Aceptar",
+										allowOutsideClick: false
+									});
+								} else {
+									// Mostrar mensaje de éxito
+									swal({
+										title: "¡SAPMA!",
+										text: "Equipo actualizado correctamente",
+										type: "success",
+										confirmButtonText: "Aceptar",
+										allowOutsideClick: false
+									});
+									setTimeout(function () {
+										location.reload();
+									}, 1000);
+								}
+							});
+						}
+						$('#confirmModal').modal('hide');
+					});
+				});				
+			});
+		});	
+	</script>
+</body>    

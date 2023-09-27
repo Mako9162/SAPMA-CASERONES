@@ -1,0 +1,112 @@
+<body class="with-side-menu">
+	{{> navbar }}
+	<div class="mobile-menu-left-overlay-"></div>
+	{{> nav }}
+	<div class="page-content">
+		<div class="container-fluid">
+			<header class="section-header">
+				<div class="tbl">
+					<div class="tbl-row">
+						<div class="tbl-cell">
+							<h3>Protocolos para validar</h3>
+							<ol class="breadcrumb breadcrumb-simple">
+								<li><a href="/home">Inicio</a></li>
+								<li class="active">Protocolos para validar</li>
+							</ol>
+						</div>
+						<div class="form-group float-right">
+                            <button type="button" class="btn btn-rounded btn-warning" id="pdfs" name="pdfs" hidden="true" ><i class="fa fa-file-pdf-o"></i></button>
+							<button type="button" class="btn btn-rounded btn-warning" id="pdfs1" name="pdfs1" hidden="true" ><i class="fa fa-file-pdf-o"></i></button>
+						</div>
+					</div>
+				</div>
+						<style>
+						.dataTables_filter {
+							float: left;
+						}
+						.dt-buttons {
+							float: right;
+						}
+					</style>
+			</header>
+			<div class="box-typical box-typical-padding">
+				<div class="row">
+					<form action="/protocoloss" method="post" return="false">
+						<div class="col-md-3">
+							<label class="form-label" for="date1">Fecha Inicial</label>
+							<input class="form-control" type="date" name="date1" id="date1">
+						</div>
+						<div class="col-md-3">
+							<label class="form-label" for="date2">Fecha Final</label>
+							<input class="form-control" type="date" name="date2" id="date2">
+						</div>
+						<div class="col-md-3">
+							<label class="form-label" id="buscar">Buscar una Tarea</label>
+							<input class="form-control" id="tarea" name="tarea" placeholder="Ingrese un ID de Tarea">
+						</div>
+						<div class="col-md-3">
+							<label class="form-label" id="buscar" style="color: aliceblue;">.</label>
+							<button type="submit" name="buscar" id="buscar" class="btn btn-rounded btn-primary " return="false">Filtrar</button>
+						</div>
+						<div class="col-md-12 col-xs-12" >
+							<h5 class="m-t-lg with-border"><strong></strong></h5>
+						</div>
+				</div>
+					{{#if title }}
+						<div class="alert alert-danger" role="alert">
+							{{ title }}
+						</div>
+					{{/if}}
+					<br>
+					<table id="tabla_prot" class="table table-bordered table-striped table-vcenter js-dataTable-full">
+						<thead>
+							<tr>
+								<th title="Seleccionar todo"></th>
+								<th>Tarea</th>
+								<th>Fecha</th>
+								<th>Tag</th>
+								<th>Gerencia</th>
+								<th>Area</th>
+								<th>Sector</th>
+								{{!-- <th>Repuestos</th> --}}
+								<th>Tipo de servicio</th>
+								<th>Estado de tarea</th>
+								<th>Ver</th>
+							</tr>
+						<tbody>
+							{{#each prot}}
+							<tr>
+								<td>{{IDT}}</td>
+								<td>{{IDT}}</td>
+								<td>{{FECHA}}</td>
+								<td>{{CODIGO}}</td>
+								<td>{{GERENCIA}}</td>
+								<td>{{AREA}}</td>
+								<td>{{SECTOR}}</td>
+								{{!-- <td>{{REPUESTO}}</td> --}}
+								<td>{{SERVICIO}}</td>
+								<td>{{ESTADO}}</td>
+								<td><center><a href="/protocolo/{{ IDT }}" class="btn btn-inline btn-primary btn-sm ladda-button" target="_blank"><i class="fa fa-file-archive-o"></i></a></center></td>	
+							</tr>
+							{{/each}}
+						</tbody>
+					</table>
+					</form>
+					<button class="btn btn-rounded btn-success" id="env_val" name="env_val" disabled="disabled">Enviar para Validar</button>	
+			</div>
+		</div>	
+	</div>
+	<script src="/js/lib/jquery/jquery.min.js"></script>
+	<script src="/js/lib/tether/tether.min.js"></script>
+	<script src="/js/lib/bootstrap/bootstrap.min.js"></script>
+	<script src="/js/plugins.js"></script>
+	<script src="/js/app.js"></script>
+	<script src="/js/lib/datatables-net/datatables.min.js"></script>
+	<script src="/js/lib/bootstrap-sweetalert/sweetalert.min.js"></script>
+	<script src="/js/lib/summernote/summernote.min.js"></script>
+	<script src="/js/lib/fancybox/jquery.fancybox.pack.js"></script>
+	<script src="/js/summernote-ES.js"></script>
+	<script src="/js/lib/select2/select2.full.min.js"></script>
+	<script type="text/javascript" src="https://gyrocode.github.io/jquery-datatables-checkboxes/1.2.12/js/dataTables.checkboxes.min.js"></script>
+	<script src="/protocolos.js"></script>
+</body>

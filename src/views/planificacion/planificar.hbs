@@ -1,0 +1,89 @@
+<body class="with-side-menu">
+	{{> navbar }}
+	<div class="mobile-menu-left-overlay-"></div>
+	{{> nav }}
+	<div class="page-content">
+		<div class="container-fluid">
+			<header class="section-header">
+				<div class="tbl">
+					<div class="tbl-row">
+						<div class="tbl-cell">
+							<h3>Planificar</h3>
+							<ol class="breadcrumb breadcrumb-simple">
+								<li><a href="/home">Inicio</a></li>
+								<li class="active">Planificar</li>
+							</ol>
+						</div>
+						<div class="form-group float-right">
+                            <button type="button" class="btn btn-rounded btn-success" id="asignar" name="asignar">Asignar</button>
+						</div>
+                    </div>    
+				</div>
+			</header>
+            <div class="box-typical box-typical-padding">
+                <div class="row">
+                    <div class="col-md-3 col-sm-6">
+						<label class="form-label" >Gerencia:</label>
+						<select class="select2" name="gerencia" id="gerencia">
+							<option value="">Seleccione una gerencia</option>
+							{{#each gerencias}}
+							<option value="{{vcgas_idGerencia}}">{{vcgas_gerenciaN}}</option>
+							{{/each}}
+						</select>
+					</div>
+                    <div class="col-md-3 col-sm-6">
+						<label class="form-label" >Area:</label>
+						<select class="select2" name="area" id="area" disabled="true">
+							<option value="">Seleccione un área</option>
+						</select>
+					</div>
+					<div class="col-md-3 col-sm-6">
+						<label class="form-label" >Sector:</label>
+							<select class="select2" name="sector" id="sector" disabled="true">
+							<option value="">Seleccione un sector</option>
+						</select>
+					</div>
+					<div class="col-md-3 col-sm-6">
+						<label class="form-label" >Equipo:</label>
+							<select class="select2" name="equipo" id="equipo" disabled="true">
+							<option value="">Seleccione un equipo</option>
+						</select>
+					</div>
+					<div class="col-md-12 col-sm-6">
+						<label class="form-label" id="" style="color: aliceblue;">.</label>
+						<button type="button" class="btn btn-rounded btn-primary float-right" id="buscar">Filtrar</button>
+					</div>
+				</div>	
+				<br>
+
+				<table id="tabla_plan" class="table table-bordered table-striped">
+					<thead>
+						<tr>
+							<th>Id</th>
+							<th>Tag</th>
+							<th>Tipo de equipo</th>
+							<th>Gerencia</th>
+							<th>Area</th>
+							<th>Sector</th>
+						</tr>
+					</thead>
+					<tbody>
+					</tbody>
+				</table>
+				{{> modal1}}
+            </div>
+		</div>	
+	</div>
+	<script src="/js/lib/jquery/jquery.min.js"></script>
+	<script src="/js/lib/tether/tether.min.js"></script>
+	<script src="/js/lib/bootstrap/bootstrap.min.js"></script>
+	<script src="/js/plugins.js"></script>
+	<script src="/js/app.js"></script>
+	<script src="/js/lib/datatables-net/datatables.min.js"></script>
+	<script src="/js/lib/bootstrap-sweetalert/sweetalert.min.js"></script>
+	<script src="/js/lib/summernote/summernote.min.js"></script>
+	<script src="/js/lib/fancybox/jquery.fancybox.pack.js"></script>
+	<script src="/js/summernote-ES.js"></script>
+	<script src="/js/lib/select2/select2.full.min.js"></script>
+	<script src="/plan.js"></script>
+</body>	

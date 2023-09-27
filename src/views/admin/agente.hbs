@@ -1,0 +1,272 @@
+<body class="with-side-menu">
+	{{> navbar }}
+	<div class="mobile-menu-left-overlay-"></div>
+	{{> nav }}
+	<div class="page-content">
+		<div class="container-fluid">
+			<header class="section-header">
+				<div class="tbl">
+					<div class="tbl-row">
+						<div class="tbl-cell">
+							<h3>Agente</h3>
+							<ol class="breadcrumb breadcrumb-simple">
+								<li><a href="/home">Inicio</a></li>
+								<li class="active">Agente</li>
+							</ol>
+						</div>
+					</div>
+				</div>
+			</header>
+			<div class="row">
+				<div class="col-md-4">
+					<div class="box-typical box-typical-padding">
+						<h2>Agregar agente</h2>
+						<form id="agregar-agente-form" action="" method="post">
+							<br>
+							<input type="text" name="idid" id="idid" hidden="true">
+							<div class="form-group">
+								<label for="descripcion">Descripción</label>
+								<input type="text" class="form-control" id="descripcion" name="descripcion" oninput="this.value = this.value.toUpperCase().trim()">
+							</div>
+							<button type="submit" class="btn btn-primary" id="boton-master" name="boton-master">Agregar</button>
+						</form>
+					</div>
+				</div>
+				<div class="col-md-8">
+					<div class="box-typical box-typical-padding">
+						<table id="tabla_prot" class="table table-bordered table-striped table-vcenter js-dataTable-full">
+							<thead>
+								<tr>
+									<th>Id</th>
+									<th>Descripción</th>
+								</tr>
+							</thead>
+							<tbody>
+								{{#each tipo}}
+								<tr>
+									<td>{{ID}}</td>
+									<td>{{TIPO}}</td>
+								</tr>    
+								{{/each}}
+							</tbody>
+						</table>
+					</div>
+				</div>
+			</div>
+	<script src="/js/lib/jquery/jquery.min.js"></script>
+	<script src="/js/lib/tether/tether.min.js"></script>
+	<script src="/js/lib/bootstrap/bootstrap.min.js"></script>
+	<script src="/js/plugins.js"></script>
+	<script src="/js/app.js"></script>
+	<script src="/js/lib/datatables-net/datatables.min.js"></script>
+	<script src="/js/lib/bootstrap-sweetalert/sweetalert.min.js"></script>
+	<script src="/js/lib/summernote/summernote.min.js"></script>
+	<script src="/js/lib/fancybox/jquery.fancybox.pack.js"></script>
+	<script src="/js/summernote-ES.js"></script>
+	<script src="/js/lib/select2/select2.full.min.js"></script>
+	<script>
+		var table;
+		$(document).ready(function () {
+			table = $('#tabla_prot').DataTable({
+				"dom": 'f<"toolbar">rtip',
+				'select': {
+					'style': 'single'
+				},
+				"bInfo": true,
+				"iDisplayLength": 10,
+				"language": {
+					"sProcessing": "Procesando...",
+					"sLengthMenu": "Mostrar _MENU_ registros",
+					"sZeroRecords": "No se encontraron resultados",
+					"sEmptyTable": "Ningún dato disponible en esta tabla",
+					"sInfo": "Mostrando un total de _TOTAL_ registros",
+					"sInfoEmpty": "Mostrando un total de 0 registros",
+					"sInfoFiltered": "(filtrado de un total de _MAX_ registros)",
+					"sInfoPostFix": "",
+					"sSearch": "Buscar:",
+					"sUrl": "",
+					"sInfoThousands": ".",
+					"sLoadingRecords": "Cargando...",
+					"oPaginate": {
+						"sFirst": "Primero",
+						"sLast": "Último",
+						"sNext": "Siguiente",
+						"sPrevious": "Anterior"
+					},
+					"oAria": {
+						"sSortAscending": ": Activar para ordenar la columna de manera ascendente",
+						"sSortDescending": ": Activar para ordenar la columna de manera descendente"
+					},
+					"select" : {
+						"rows" : {
+							"_" : "Has seleccionado %d filas",
+							"0" : "Click en una fila para seleccionar",
+							"1" : "Has seleccionado 1 fila"
+						}
+					}
+				}
+			});
+			$("div.toolbar").html('<button id="boton-editar" class="btn btn-inline btn-warning btn-sm ladda-button"><i class="fa fa-edit"></i></button>');
+			var editMode = false;
+			$('#boton-eliminar').on('click', function() {
+				var selectedRows = table.rows({selected: true});
+				if (selectedRows.count() === 0) {
+					swal("¡SAPMA!", "Debes seleccionar una fila antes de eliminar.", "error");
+				} else {
+					var idt = [];
+					var rows_selected = table.rows({selected: true}).data();
+					$.each(rows_selected, function (index, value) {
+						idt.push(value[0]);
+					});
+					swal({
+					title: "¡SAPMA!",
+					text: "¿Desea eliminar este agente?",
+					type: "warning",
+					showCancelButton: true,
+					confirmButtonClass: "btn-primary",
+					confirmButtonText: "Si",
+					cancelButtonText: "No",
+					closeOnConfirm: false      
+						},function(isConfirm) {
+							if (isConfirm) {
+								$.ajax({
+									url: "/eliminar-agente",
+									type: "POST", 	 	
+									data: {
+										idt					
+									}
+								}); 
+								swal("¡SAPMA!", "Agente eliminados", "success");
+								setTimeout(function () {
+									location.reload();
+								}, 1000);
+							} else {
+								swal("¡SAPMA!", "Agente NO eliminados", "error");
+							}
+					});		
+				}
+			});
+			$('#boton-editar').on('click', function() {
+				var selectedRows = table.rows({selected: true});
+				if (selectedRows.count() != 1) {
+					swal("¡SAPMA!", "Debes seleccionar al menos una fila para editar.", "error");
+				} else {
+					var data = table.row({selected: true}).data();
+					$('#idid').val(data[0]);
+					$('#descripcion').val(data[1]);
+					$('#agregar-agente-form button[type="submit"]').text('Actualizar');
+					editMode = true;
+				}
+			});
+			$('#agregar-agente-form').on('submit', function(event) {
+				event.preventDefault();
+				if (editMode){
+					var form = $(this);
+					swal({
+						title: "¡SAPMA!",
+						text: "¿Desea actualizar agente?",
+						type: "warning",
+						showCancelButton: true,
+						confirmButtonClass: "btn-primary",
+						confirmButtonText: "Si",
+						cancelButtonText: "No",
+						closeOnConfirm: true
+					}, function(isConfirm) {
+						if (isConfirm) {
+							$.ajax({
+							url: '/actualizar-agente',
+							method: 'POST',
+							data: form.serialize(),
+							success: function(data) {
+								var selectedRow = table.row({selected: true});
+								selectedRow.data([
+									data.id,
+									data.descripcion
+								]).draw();
+								$('#agregar-agente-form').trigger('reset');
+								editMode = false;
+								$('#agregar-agente-form button[type="submit"]').text('Agregar');
+							}
+						});
+						}else{
+							$('#agregar-agente-form').trigger('reset');
+						}
+					});
+				}else{
+					const form = $('#agregar-agente-form');
+					const descripcion = $('#descripcion').val();
+					$.ajax({
+						url: '/verificar_agente',
+						method: 'POST',
+						data: { descripcion: descripcion },
+						success: function(data) {
+							if (data.error) {
+								swal({
+								title: "¡SAPMA!",
+								text: data.error,
+								type: "error",
+								confirmButtonClass: "btn-danger",
+								confirmButtonText: "Ok",
+								closeOnConfirm: true
+								});
+							} else {
+								swal({
+									title: "¡SAPMA!",
+									text: "¿Desea agregar agente?",
+									type: "warning",
+									showCancelButton: true,
+									confirmButtonClass: "btn-primary",
+									confirmButtonText: "Si",
+									cancelButtonText: "No",
+									closeOnConfirm: true
+								}, function(isConfirm) {
+									if (isConfirm) {
+										$.ajax({
+										url: '/agregar_agente',
+										method: 'POST',
+										data: form.serialize(),
+										success: function(data) {
+											if (data.error) {
+												swal({
+													title: "¡SAPMA!",
+													text: data.error,
+													type: "error",
+													confirmButtonClass: "btn-danger",
+													confirmButtonText: "Ok",
+													closeOnConfirm: true
+												});
+												$('#agregar-agente-form').trigger('reset');
+											} else {
+												const table = $('#tabla_prot').DataTable();
+												table.row.add([
+													data.id,
+													data.descripcion
+												]).draw();
+												form.trigger('reset');
+											}
+										},
+										error: function(jqXHR, textStatus, errorThrown) {
+											swal({
+												title: "¡SAPMA!",
+												text: "Ha ocurrido un error al agregar el agente. Por favor, inténtelo de nuevo más tarde.",
+												type: "error",
+												confirmButtonClass: "btn-danger",
+												confirmButtonText: "Ok",
+												closeOnConfirm: true
+											});
+										}
+									});
+									}else{
+										$('#agregar-agente-form').trigger('reset');
+									}
+								});
+							}
+						}
+					});	
+				}
+			});
+		});	
+	</script>
+</body>
+
+					

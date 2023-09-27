@@ -1,0 +1,696 @@
+<body class="with-side-menu">
+	{{> navbar }}
+	<div class="mobile-menu-left-overlay-"></div>
+	{{> nav }}
+	<div class="page-content">
+    <style>
+      .tab-content {
+        margin-top: 20px;
+      }
+    </style>
+		<div class="container-fluid">
+			<header class="section-header">
+				<div class="tbl">
+					<div class="tbl-row">
+						<div class="tbl-cell">
+							<h3>Protocolos</h3>
+							<ol class="breadcrumb breadcrumb-simple">
+								<li><a href="/home">Inicio</a></li>
+								<li class="active">Protocolos</li>
+							</ol>
+						</div>
+            <div class="form-group float-right">
+                <button type="button" id="cambios" class="btn btn-success float-right">Actualizar</button>
+                <button type="button" id="cancelar" class="btn btn-inline btn-danger-outline float-right">Cancelar</button>&nbsp;&nbsp;&nbsp;&nbsp;
+            </div>
+					</div>
+            <style>
+                /* Estilos para el botón "close" personalizado en las pestañas */
+                .nav-tabs .custom-close {
+                    font-size: 15px;
+                    color: red;
+                    line-height: 1;
+                    padding: 0;
+                    margin-left: 7px;
+                    margin-right: 5px;
+                    position: absolute;
+                    top: 7px;
+                    right: 0;
+                    background: transparent;
+                    border: none;
+                }
+
+                /* Estilo adicional para eliminar el margen a la izquierda del primer botón "close" personalizado en la primera pestaña */
+                .nav-tabs .nav-item:first-child .custom-close {
+                    margin-left: 0;
+                }
+
+                /* Resto de estilos que tenías previamente */
+                .icon-primary {
+                    color: #00bfffbc;
+                }
+
+                .vertical-center {
+                    display: flex;
+                    align-items: center;
+                }
+
+                .nav-tabs .nav-item .nav-link {
+                    display: flex;
+                    align-items: center;
+                }
+
+                .nav-tabs .nav-item .nav-link .tab-title {
+                    margin-right: 5px;
+                }
+
+                .nav-tabs .nav-item {
+                    position: relative;
+                }
+            </style>
+				</div>
+			</header>
+            <div class="box-typical box-typical-padding">
+                <div class="row">
+                    <div class="col-md-5 col-sm-5">
+                        <fieldset class="form-group">
+                            <label class="form-label" for="tipoe">Seleccione un tipo de protocolo:</label>
+                            <select name="tipoe" id="tipoe" class="select2">
+                            <option value=""></option>
+                            {{#each tipo_protocolo}}
+                            <option value="{{Id}}">{{Descripcion}} {{Abreviacion}}</option>
+                            {{/each}}
+                            </select>
+                        </fieldset>
+                    </div>
+                    <div class="col-md-5 col-sm-6"> 
+                        <fieldset class="form-group">
+                            <label class="form-label" for="protocolo">Seleccione un protocolo:</label>
+                            <select name="protocolo" id="protocolo" class="select2">
+                            <option value=""></option>
+                            </select>
+                            <br>
+                            <span id="nuevo-nombre-titulo" style="display: none;">NUEVO NOMBRE: </span>
+                            <span id="nuevo-nombre-leyenda" style="display: none;"></span>
+                        </fieldset>
+                    </div>
+                    <div class="col-md-2 col-sm-6"> 
+                        <fieldset class="form-group">
+                            <label class="form-label" id="" style="color: aliceblue;">.</label>
+                            <button type="button" class="btn btn-warning btn-sm" id="editar_protocolo"><i class="fa fa-edit"></i></button>
+                            <button type="button" class="btn btn-danger btn-sm" id="eliminar_protocolo"><i class="fa fa-trash"></i></button>
+                            </select>
+                        </fieldset>
+                    </div>
+                    <br>
+                    <br>
+                    <div class="col-md-12 col-sm-6">
+                        <h4>Agregar capitulos&nbsp;&nbsp;&nbsp;&nbsp;<span class="fa fa-plus-circle icon-primary" id="agregar-capitulo"></span></h4>
+                        <ul class="nav nav-tabs" id="tabs">
+                          <!-- Las pestañas se agregarán aquí -->
+                        </ul>
+                        <div class="tab-content" id="tab-content">
+                          <!-- El contenido de las pestañas se agregará aquí -->
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="modal fade" id="modalAgregarCapitulo" tabindex="-1" role="dialog" aria-labelledby="modalAgregarCapituloLabel">
+            <div class="modal-dialog" role="document">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h4 class="modal-title" id="modalAgregarCapituloLabel">Agregar Capítulo</h4>
+                    </div>
+                    <div class="modal-body">
+                        <div class="form-group">
+                            <label for="nombreCapitulo">Nombre del Capítulo:</label>
+                            <input type="text" class="form-control" id="nombreCapitulo">
+                        </div>  
+                        <h4 class="m-t-lg with-border">Agregar Captura&nbsp;&nbsp;&nbsp;&nbsp;<span class="fa fa-plus-circle icon-primary" id="agrega_input"></span></h4>      
+                        <div id="campos-dinamicos"> <!-- Contenedor para los campos dinámicos -->
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-default" data-dismiss="modal">Cerrar</button>
+                        <button type="button" class="btn btn-primary" id="guardarCapitulo">Guardar</button>
+                    </div>
+                </div>
+            </div>
+            </div>
+            <div class="modal fade" id="editnombre" tabindex="-1" role="dialog" aria-labelledby="modaleditnombreLabel">
+            <div class="modal-dialog" role="document">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h4 class="modal-title" id="modaleditnombreloLabel">Cambiar nombre de protocolo</h4>
+                    </div>
+                    <div class="modal-body">
+                        <div class="form-group">
+                            <label for="nombreactual">Actual:</label>
+                            <input type="text" class="form-control" id="nombreactual">
+                        </div>
+                        <div class="form-group">
+                            <label for="nombrenuevo">Nuevo:</label>
+                            <input type="text" class="form-control" id="nombrenuevo">
+                        </div>  
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-default" data-dismiss="modal">Cerrar</button>
+                        <button type="button" class="btn btn-primary" id="guardarnombre">Guardar</button>
+                    </div>
+                </div>
+            </div>
+            </div>
+        </div>
+		</div>	
+	</div>
+	<script src="/js/lib/jquery/jquery.min.js"></script>
+	<script src="/js/lib/tether/tether.min.js"></script>
+	<script src="/js/lib/bootstrap/bootstrap.min.js"></script>
+	<script src="/js/plugins.js"></script>
+	<script src="/js/app.js"></script>
+	<script src="/js/lib/datatables-net/datatables.min.js"></script>
+	<script src="/js/lib/bootstrap-sweetalert/sweetalert.min.js"></script>
+	<script src="/js/lib/summernote/summernote.min.js"></script>
+	<script src="/js/lib/fancybox/jquery.fancybox.pack.js"></script>
+	<script src="/js/summernote-ES.js"></script>
+	<script src="/js/lib/select2/select2.full.min.js"></script>
+    <script>
+        $(document).ready(function () {
+
+            $('#cancelar').on('click', function() {
+                location.reload(); // Recargar la página
+            });
+
+            $('#editar_protocolo').click(function () {
+                var protocolo = $('#protocolo').val();
+                var nombreProtocolo = $('#protocolo option:selected').text();
+
+                // Obtener solo la parte del texto antes del signo " / "
+                var nombreSinAbreviacion = nombreProtocolo.split('/')[0].trim();
+
+                if (protocolo === '') {
+                    swal('SAPMA', 'Debe seleccionar un protocolo', 'error');
+                } else {
+                    $('#nombreactual').val(nombreSinAbreviacion); // Mostrar el nombre sin la abreviación en el campo del modal
+                    $('#editnombre').modal('show');
+                }
+            });
+
+
+            $('#guardarnombre').click(function () {
+                // Obtener el nuevo nombre ingresado en el campo "Nuevo"
+                var nuevoNombre = $('#nombrenuevo').val();
+
+                // Actualizar el nombre del protocolo seleccionado en el campo de selección de protocolo
+                $('#protocolo option:selected').text(nuevoNombre);
+
+                // Mostrar la leyenda con el nuevo nombre
+                $('#nuevo-nombre-leyenda').text(nuevoNombre);
+                $('#nuevo-nombre-titulo').show();
+                $('#nuevo-nombre-leyenda').show();
+
+                // Cerrar el modal
+                $('#editnombre').modal('hide');
+            });
+
+
+            $('#eliminar_protocolo').click(function () {
+                var protocolo = $('#protocolo').val();
+
+                if (protocolo === ''){
+                    swal('SAPMA', 'Debe seleccionar un protocolo', 'error');
+                } else {
+                    swal({
+                        title: "¡SAPMA!",
+                        text: "¿Esta seguro de eliminar este protocolo?",
+                        type: "warning",
+                        showCancelButton: true,
+                        confirmButtonClass: "btn-primary",
+                        confirmButtonText: "Si",
+                        cancelButtonText: "No",
+                        closeOnConfirm: false      
+                    }, function(isConfirm) {
+                        if (isConfirm) {
+                            $.ajax({
+                                url: "/eliminar_protocolo",
+                                type: "POST",       
+                                data: {
+                                    protocolo                 
+                                },
+                                success: function(response) {
+                                    // Mostrar mensaje de éxito
+                                    swal("¡SAPMA!", response, "success");
+                                    setTimeout(function () {
+                                        location.reload();
+                                    }, 1000);
+                                },
+                                error: function(xhr, status, error) {
+                                    // Mostrar mensaje de error
+                                    swal("¡SAPMA!", xhr.responseText, "error");
+                                }
+                            }); 
+                        } else {
+                            swal("¡SAPMA!", "Protocolo NO eliminado", "error");
+                        }
+                    }); 
+                }
+            });
+
+            $('#agregar-capitulo').click(function () {
+                var protocolo = $('#protocolo').val();
+                if (protocolo === ''){
+                    swal('SAPMA', 'Debe seleccionar un protocolo antes de agregar un nuevo capitulo', 'error');
+                }else{
+                    $('#modalAgregarCapitulo').modal('show');
+                }
+            });
+
+            $('#tipoe').on('change', function() {
+                var id = $(this).val();
+                $.get('/tipoprot/' + id, function(data) {
+                    var html = '<option value=""></option>';
+                    data.forEach(function(protocolo) {
+                    html += '<option value="' + protocolo.Id + '">' + protocolo.Descripcion + ' / '+ protocolo.TIPOEQUIPO+'</option>';
+                    });
+                    $('#protocolo').html(html);
+                });
+            });
+
+            var tiposRespuesta = [];
+
+            $.get('/tipo_respuesta', function(data) {
+                tiposRespuesta = data;
+            });
+
+            $('#agrega_input').on('click', function() {
+                var container = $('<div class="row"></div>');
+
+                var inputGroup = $('<div class="col-md-6 col-sm-6"><div class="form-group"></div></div>');
+                inputGroup.find('.form-group').append('<label for="captura">Captura:</label>');
+                inputGroup.find('.form-group').append('<input type="text" class="form-control" name="captura" id="captura">');
+                container.append(inputGroup);
+
+                var selectGroup = $('<div class="col-md-6 col-sm-6"><div class="form-group"></div></div>');
+                selectGroup.find('.form-group').append('<label for="tipo">Tipo:</label>');
+                var select = $('<select class="form-control" name="tipo" id="tipo"></select>');
+                select.append('<option value="">Seleccione un tipo</option>'); // Opción adicional
+                tiposRespuesta.forEach(function(tipoRespuesta) {
+                    select.append('<option value="' + tipoRespuesta.Id + '">' + tipoRespuesta.Descripcion + '</option>');
+                });
+                selectGroup.find('.form-group').append(select);
+                container.append(selectGroup);
+
+                $('#campos-dinamicos').append(container);
+
+                container.find('.agregar-captura').appendTo(container);
+
+                // Seleccionar opción "Seleccione un tipo" por defecto
+                select.val('');
+            });
+
+
+            function agregarCaptura(container, captura, tipo) {
+                var capturaElement = $('<div class="row"></div>');
+
+                var inputGroup = $('<div class="col-md-6"><div class="form-group"></div></div>');
+                inputGroup.find('.form-group').append('<label for="descapura">Captura:</label>');
+                inputGroup.find('.form-group').append('<input type="text" class="form-control" name="descapura" value="' + (captura || '') + '">');
+                capturaElement.append(inputGroup);
+
+                var selectGroup = $('<div class="col-md-5"><div class="form-group"></div></div>');
+                selectGroup.find('.form-group').append('<label for="tipoinput">Tipo:</label>');
+                var select = $('<select class="form-control" name="tipoinput"></select>');
+                select.append('<option value="">Seleccione un tipo</option>'); // Opción adicional
+                tiposRespuesta.forEach(function(tipoRespuesta) {
+                    var selected = tipoRespuesta.Id === tipo ? 'selected' : '';
+                    select.append('<option value="' + tipoRespuesta.Id + '" ' + selected + '>' + tipoRespuesta.Descripcion + '</option>');
+                });
+                selectGroup.find('.form-group').append(select);
+                capturaElement.append(selectGroup);
+
+                var buttonGroup = $('<div class="col-md-1"></div>');
+                buttonGroup.append('<label class="form-label" id="buscar" style="color: aliceblue;">.</label>');
+                var button = $('<button type="button" class="btn btn-danger btn-sm eliminar-campo"><i class="fa fa-trash"></i></button>');
+                button.on('click', function() {
+                    capturaElement.remove();
+                });
+                buttonGroup.append(button);
+                capturaElement.append(buttonGroup);
+
+                container.append(capturaElement);
+            }
+
+            function agregarCapitulo(nombreCapitulo, capturas, tipos) {
+            // Crear la pestaña con título editable
+            var tab = $('<li class="nav-item"><a class="nav-link" data-toggle="tab" href="#tab' + nombreCapitulo + '"><span contenteditable="true">' + nombreCapitulo + '</span>&nbsp;</a></li>');
+            tab.append('<button type="button" class="close custom-close" title="Eliminar capitulo"><span class="fa fa-minus-circle"></span></button>'); // Agregar el botón de cierre
+            $('#tabs').append(tab);
+
+            var closeButton = tab.find('.close');
+            closeButton.on('click', function () {
+                var tabId = tab.find('a').attr('href');
+                swal({
+                title: "¡SAPMA!",
+                text: "¿Estás seguro de que deseas eliminar este capítulo y todo su contenido?",
+                type: "warning",
+                showCancelButton: true,
+                confirmButtonClass: "btn-primary",
+                confirmButtonText: "Si",
+                cancelButtonText: "No",
+                closeOnConfirm: false
+                }, function (isConfirm) {
+                if (isConfirm) {
+                    tab.remove();
+                    $(tabId).remove();
+                    swal.close();
+                }
+                });
+            });
+            tab.append(closeButton);
+
+            var tabContent = $('<div class="tab-pane" id="tab' + nombreCapitulo + '"></div>');
+            $('#tab-content').append(tabContent);
+
+            for (var i = 0; i < capturas.length; i++) {
+                var captura = capturas[i];
+                var tipo = tipos[i];
+                agregarCaptura(tabContent, captura, tipo);
+                // Obtener la última captura agregada a la pestaña
+                var ultimaCaptura = tabContent.find('.row:last');
+
+                // Obtener el campo de tipo de la última captura
+                var tipoInput = ultimaCaptura.find('select[name="tipoinput"]');
+
+                // Establecer el valor del tipo seleccionado en el modal
+                tipoInput.val(tipo);
+            }
+
+            var botonAgregar = $('<button type="button" class="btn btn-primary btn-sm agregar-captura"><i class="fa fa-plus-square"></i></button>');
+            tabContent.append(botonAgregar);
+
+            // Agregar evento para capturar cambios en el título del capítulo
+            var tabLink = tab.find('a');
+            var tituloCapitulo = tabLink.find('span');
+            tituloCapitulo.on('input', function () {
+                var newTitle = $(this).text().trim();
+                var tabId = tabLink.attr('href');
+                var contenidoId = tabId.replace('#', '');
+                actualizarContenido(contenidoId, newTitle);
+            });
+            }
+            $('#guardarCapitulo').on('click', function () {
+                var nombreCapitulo = $('#nombreCapitulo').val();
+                if (nombreCapitulo === '') {
+                swal('SAPMA!', 'Por favor, ingrese un nombre para el capítulo.', 'error');
+                return;
+                }
+
+                var capturas = [];
+                var camposVacios = false;
+
+                $('input[name="captura"]').each(function () {
+                var valorCaptura = $(this).val().trim();
+                if (valorCaptura === '') {
+                    camposVacios = true;
+                    return false; // Salir del bucle each
+                }
+                capturas.push(valorCaptura);
+                });
+
+                if (camposVacios) {
+                swal('SAPMA', 'Por favor, complete todos los campos de captura y tipo en el modal.', 'error');
+                return; // Detener el proceso de guardado
+                }
+
+                var tipos = [];
+                $('select[name="tipo"]').each(function () {
+                var valorTipo = $(this).val();
+                if (valorTipo === '') {
+                    camposVacios = true;
+                    return false; // Salir del bucle each
+                }
+                tipos.push(valorTipo);
+                });
+
+                if (camposVacios) {
+                swal('SAPMA', 'Por favor, complete todos los campos de captura y tipo en el modal.', 'error');
+                return; // Detener el proceso de guardado
+                }
+
+                agregarCapitulo(nombreCapitulo, capturas, tipos);
+                
+
+                // Reiniciar el modal
+                $('#nombreCapitulo').val('');
+                $('#campos-dinamicos').empty();
+            });
+
+            $(document).on('click', '.agregar-captura', function() {
+                var container = $(this).closest('.tab-pane');
+                agregarCaptura(container);
+                container.find('.agregar-captura').appendTo(container);
+            });
+
+            $('#protocolo').on('change', function() {
+            var id = $(this).val();
+            $.get('/protselect/' + id, function(data) {
+                $('#tabs').empty();
+                $('#tab-content').empty();
+
+                var capitulos = {};
+                data.forEach(function(row) {
+                if (!capitulos.hasOwnProperty(row.ID_CAPITULO)) {
+                    capitulos[row.ID_CAPITULO] = {
+                    nombre: row.CAPITULO,
+                    capturas: []
+                    };
+                }
+                capitulos[row.ID_CAPITULO].capturas.push(row);
+                });
+
+                Object.keys(capitulos).forEach(function(idCapitulo, index) {
+                var capitulo = capitulos[idCapitulo];
+                var activeClass = index === 0 ? 'active' : '';
+
+                // Crear la pestaña con título editable
+                var tab = $('<li class="nav-item"><a class="nav-link ' + activeClass + '" data-toggle="tab" href="#tab' + idCapitulo + '"><span contenteditable="true">' + capitulo.nombre + '</span>&nbsp;</a></li>');
+                tab.append('<button type="button" class="close custom-close" title="Eliminar capitulo"><span class="fa fa-minus-circle"></span></button>');  // Agregar el botón de cierre
+                $('#tabs').append(tab);
+
+                var closeButton = tab.find('.close');
+                closeButton.on('click', function() {
+                    var tabId = tab.find('a').attr('href');
+                    swal({
+                    title: "¡SAPMA!",
+                    text: "¿Estás seguro de que deseas eliminar este capítulo y todo su contenido?",
+                    type: "warning",
+                    showCancelButton: true,
+                    confirmButtonClass: "btn-primary",
+                    confirmButtonText: "Si",
+                    cancelButtonText: "No",
+                    closeOnConfirm: false
+                    }, function (isConfirm) {
+                    if (isConfirm) {
+                        tab.remove();
+                        $(tabId).remove();
+                        swal.close();
+                    }
+                    });
+                });
+                tab.append(closeButton);
+
+                var tabContent = $('<div class="tab-pane ' + activeClass + '" id="tab' + idCapitulo + '"></div>');
+                capitulo.capturas.forEach(function(captura, index) {
+                    var capturaElement = $('<div class="row"></div>');
+
+                    var inputGroup = $('<div class="col-md-6"><div class="form-group"></div></div>');
+                    inputGroup.find('.form-group').append('<label for="descapura' + index + '">Captura:</label>');
+                    inputGroup.find('.form-group').append('<input type="text" class="form-control" id="descapura' + index + '" value="' + captura.CAPTURA + '">');
+                    capturaElement.append(inputGroup);
+
+                    var selectGroup = $('<div class="col-md-5"><div class="form-group"></div></div>');
+                    selectGroup.find('.form-group').append('<label for="tipoinput' + index + '">Tipo:</label>');
+                    var select = $('<select class="form-control" id="tipoinput' + index + '"></select>');
+                    tiposRespuesta.forEach(function(tipoRespuesta) {
+                    var selected = tipoRespuesta.Id === captura.ID_TR ? 'selected' : '';
+                    select.append('<option value="' + tipoRespuesta.Id + '" ' + selected + '>' + tipoRespuesta.Descripcion + '</option>');
+                    });
+                    selectGroup.find('.form-group').append(select);
+                    capturaElement.append(selectGroup);
+
+                    var buttonGroup = $('<div class="col-md-1"></div>');
+                    buttonGroup.append('<label class="form-label" id="buscar" style="color: aliceblue;">.</label>');
+                    var button = $('<button type="button" class="btn btn-danger btn-sm eliminar-campo"><i class="fa fa-trash"></i></button>');
+                    button.on('click', function() {
+                    capturaElement.remove();
+                    });
+                    buttonGroup.append(button);
+                    capturaElement.append(buttonGroup);
+
+                    tabContent.append(capturaElement);
+                });
+
+                $('#tab-content').append(tabContent);
+                
+                // Agregar evento para capturar cambios en el título del protocolo
+                var tabLink = tab.find('a');
+                var tituloProtocolo = tabLink.find('span');
+                tituloProtocolo.on('input', function () {
+                    var newTitle = $(this).text().trim();
+                    var tabId = tabLink.attr('href');
+                    var contenidoId = tabId.replace('#', '');
+                    // Actualizar el contenido asociado con el nuevo título
+                    actualizarContenido(contenidoId, newTitle);
+                });
+
+                });
+                $('#tabs .nav-link').each(function() {
+                var tabLink = $(this);
+                var tabId = tabLink.attr('href');
+                var container = $(tabId);
+                var botonAgregar = $('<button type="button" class="btn btn-primary btn-sm agregar-captura"><i class="fa fa-plus-square"></i></button>');
+                container.append(botonAgregar);
+                });
+            });
+            });
+       
+            $('#cambios').on('click', function() {
+                var protocolo = $('#protocolo').val();
+                var cambio_nombre = $('#nuevo-nombre-leyenda').text();
+                var nombreProtocolo = $('#protocolo option:selected').text();
+                var nombre = nombreProtocolo.split('/')[0].trim();
+
+                // Variable de bandera para verificar si todos los capítulos tienen al menos una captura y un tipo
+                var allChaptersHaveCaptures = true;
+
+                // Recorrer cada pestaña
+                $('.tab-pane').each(function() {
+                    // Verificar si la pestaña contiene al menos una fila con campos de captura y tipo
+                    if ($(this).find('.row').length === 0) {
+                        allChaptersHaveCaptures = false;
+                        return false; // Salir del bucle each
+                    }
+                });
+
+                if (!allChaptersHaveCaptures) {
+                    swal('SAPMA!', 'Por favor, agregue al menos una captura y un tipo en cada capítulo.', 'error');
+                    return; // Detener el proceso de envío de la solicitud AJAX
+                }
+
+                var hasEmptyFields = false;
+
+                // Recorrer cada captura en cada capítulo
+                $('.tab-pane .row').each(function() {
+                    var captura = $(this).find('input[type="text"]').val();
+                    var tipo = $(this).find('select').val();
+
+                    // Verificar si la captura o el tipo están vacíos
+                    if (captura === '' || tipo === '') {
+                        hasEmptyFields = true;
+                        return false; // Salir del bucle each
+                    }
+                });
+
+                if (hasEmptyFields) {
+                    swal('SAPMA!', 'Por favor, complete todos los campos de captura y tipo en cada capítulo.', 'error');
+                    return; // Detener el proceso de envío de la solicitud AJAX
+                }
+
+                var numCapitulos = $('#tabs li').length;
+                if (numCapitulos === 0) {
+                    swal('SAPMA!', 'Debe agregar al menos un capítulo antes de guardar los cambios.', 'error');
+                    return;
+                }
+
+                if (protocolo === ''){
+                    swal('SAPMA', 'Debe seleccionar un protocolo antes de actualizar', 'error');
+                }else{
+                    var capitulos = [];
+                    $('#tabs li').each(function() {
+                        var tabLink = $(this).find('a');
+                        var tabId = tabLink.attr('href');
+                        var idCapitulo = tabId.replace('#tab', '');
+                        var capitulo = tabLink.text();
+                        capitulos.push({
+                            idCapitulo: idCapitulo,
+                            capitulo: capitulo
+                        });
+                    });
+                    var nuevoIdCapitulo = 1;
+                    capitulos.forEach(function(capitulo) {
+                        capitulo.idCapitulo = nuevoIdCapitulo;
+                        nuevoIdCapitulo++;
+                    });
+
+                    var capturas = [];
+                    var ultimoIdCapitulo = 0;
+
+                    $('#tab-content .tab-pane').each(function() {
+                    ultimoIdCapitulo++;
+                    var tabId = $(this).attr('id');
+                    var idCapitulo = tabId.replace('tab', '');
+                    var correlativo = 1;
+
+                    $(this).find('.row').each(function() {
+                        var captura = $(this).find('input[type="text"]').val();
+                        var tipo = $(this).find('select').val();
+                        capturas.push({
+                        idCapitulo: ultimoIdCapitulo,
+                        correlativo: correlativo,
+                        captura: captura,
+                        tipo: tipo
+                        });
+                        correlativo++;
+                    });
+                    });
+
+                    swal({
+                        title: "¡SAPMA!",
+                        text: "¿Desea actualizar protocolo?",
+                        type: "warning",
+                        showCancelButton: true,
+                        confirmButtonClass: "btn-primary",
+                        confirmButtonText: "Si",
+                        cancelButtonText: "No",
+                        closeOnConfirm: true
+                    }, function (isConfirm) {
+                            if (isConfirm) {
+                                $.ajax({
+                                    url: '/actualizar_protocolo',
+                                    type: 'POST',
+                                    data: {
+                                        protocolo: protocolo,
+                                        nombre: nombre,
+                                        capitulos: capitulos, 
+                                        capturas: capturas
+                                    },
+                                    beforeSend: function () {
+                                        swal({
+                                            title: "Guardando",
+                                            text: "Espere un momento por favor...",
+                                            imageUrl: "/img/Spinner-1s-200px2.gif",
+                                            showConfirmButton: false,
+                                            allowOutsideClick: false
+                                        });
+                                    }
+                                }).done(function (data) {
+                                    swal({
+                                        title: "¡SAPMA!",
+                                        text: "Protocolo actualizado correctamente",
+                                        type: "success",
+                                        confirmButtonText: "Aceptar",
+                                        allowOutsideClick: false
+                                    });
+                                    setTimeout(function () {
+                                        location.reload();
+                                    }, 1000);
+                                })
+                            }
+                        }
+                    )                  
+                }
+            });
+       });
+    </script>  
+
+   

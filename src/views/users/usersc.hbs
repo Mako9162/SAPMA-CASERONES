@@ -1,0 +1,133 @@
+<body class="with-side-menu">
+	{{> navbar }}
+
+	<div class="mobile-menu-left-overlay-"></div>
+
+	{{> nav }}
+
+	<div class="page-content">
+		<div class="container-fluid">
+			<header class="section-header">
+				<div class="tbl">
+					<div class="tbl-row">
+						<div class="tbl-cell">
+							<h3>Usuarios</h3>
+							<ol class="breadcrumb breadcrumb-simple">
+								<li><a href="/home">Inicio</a></li>
+								<li class="active">Usuarios</li>
+							</ol>
+						</div>
+					</div>
+				</div>
+			</header>
+			<div class="box-typical box-typical-padding">
+				<table id="tabla_users" class="table table-bordered table-striped table-vcenter js-dataTable-full">
+					<thead>
+						<tr>
+					
+							<th>Nombre de usuario</th>
+							<th>Email</th>  
+							<th>Teléfono</th>
+							<th>Perfil</th>
+							<th>Estado</th>
+ 
+							{{!-- <th class="text-center" style="width: 10%;">Perfil</th>  --}}
+						</tr>
+					</thead>
+					<tbody>
+						{{#each usersc}}
+						<tr>
+						
+							<td>{{Descripcion}}</td>
+							<td>{{Email}}</td>
+							<td>{{Telefono}}</td>
+							<td>{{Perfiles}}</td>
+							{{#if Estado}}
+							<td>Activo</td>
+							{{else}}
+							<td>Inactivo</td>
+							{{/if}}
+							{{!-- <td class="text-center"><a href="/users/edit/{{Id}}" type="button" id="btneditar" class="btn btn-inline btn-warning btn-sm ladda-button"><i class="fa fa-edit"></i></a></td> --}}
+						</tr>
+						{{/each}}
+					</tbody>
+				</table>
+					<style>
+						.dataTables_filter {
+							float: left;
+						}
+						.dt-buttons {
+							float: right;
+						}
+					</style>
+			</div>
+		</div>
+	</div>
+	<script src="/js/lib/jquery/jquery.min.js"></script>
+	<script src="/js/lib/tether/tether.min.js"></script>
+	<script src="/js/lib/bootstrap/bootstrap.min.js"></script>
+	<script src="/js/plugins.js"></script>
+	<script src="/js/app.js"></script>
+	<script src="/js/lib/datatables-net/datatables.min.js"></script>
+	<script src="/js/lib/bootstrap-sweetalert/sweetalert.min.js"></script>
+	<script src="/js/lib/summernote/summernote.min.js"></script>
+	<script src="/js/lib/fancybox/jquery.fancybox.pack.js"></script>
+	<script src="/js/summernote-ES.js"></script>
+	<script src="/js/lib/select2/select2.full.min.js"></script>
+	<script>
+		//Datatable
+		$(document).ready(function () {
+			$('#tabla_users').DataTable({
+				'columnDefs': [
+					{
+						'targets': 0,
+						'checkboxes': {
+							'selectRow': true
+						}
+					}
+				],
+				'order': [[1, 'asc']],
+				"dom": 'Bfrtip',
+				"searching": true,
+				"lengthChange": false,
+				"colReorder": true,
+				"buttons": [{
+						"extend": 'excelHtml5',
+						"text": '<i class="fa fa-file-excel-o"></i>',
+						"titleAttr": 'Exportar a Excel',
+						"className": 'btn btn-rounded btn-success',
+				}],
+				"bDestroy": true, 	
+				"scrollX": true,
+				"bInfo": true,
+				"iDisplayLength": 20,
+				"autoWidth": false,
+				"language": {
+					"sProcessing": "Procesando...",
+					"sLengthMenu": "Mostrar _MENU_ registros",
+					"sZeroRecords": "No se encontraron resultados",
+					"sEmptyTable": "Ningún dato disponible en esta tabla",
+					"sInfo": "Mostrando un total de _TOTAL_ registros",
+					"sInfoEmpty": "Mostrando un total de 0 registros",
+					"sInfoFiltered": "(filtrado de un total de _MAX_ registros)",
+					"sInfoPostFix": "",
+					"sSearch": "Buscar:",
+					"sUrl": "",
+					"sInfoThousands": ".",
+					"sLoadingRecords": "Cargando...",
+					"oPaginate": {
+						"sFirst": "Primero",
+						"sLast": "Último",
+						"sNext": "Siguiente",
+						"sPrevious": "Anterior"
+					},
+					"oAria": {
+						"sSortAscending": ": Activar para ordenar la columna de manera ascendente",
+						"sSortDescending": ": Activar para ordenar la columna de manera descendente"
+					},
+				},
+			}).DataTable();
+		});
+
+	</script>
+</body>

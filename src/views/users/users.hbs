@@ -1,0 +1,365 @@
+<body class="with-side-menu">
+	{{> navbar }}
+
+	<div class="mobile-menu-left-overlay-"></div>
+
+	{{> nav }}
+
+	<div class="page-content">
+		<div class="container-fluid">
+			<header class="section-header">
+				<div class="tbl">
+					<div class="tbl-row">
+						<div class="tbl-cell">
+							<h3>Usuarios</h3>
+							<ol class="breadcrumb breadcrumb-simple">
+								<li><a href="/home">Inicio</a></li>
+								<li class="active">Usuarios</li>
+							</ol>
+						</div>
+						<div>
+							<button type="button" id="btnCrear" class="btn btn-inline btn-primary float-right">Nuevo</button>
+						</div>
+					</div>
+				</div>
+			</header>
+			<div class="box-typical box-typical-padding">
+				
+				{{!-- Modal Usuario --}}
+					<div class="modal fade bd-example-modal-lg" id="modalmantenimiento" tabindex="-1" role="dialog" aria-labelledby="myLargeModalLabel" aria-hidden="true">
+						<div class="modal-dialog">
+							<div class="modal-content">
+								<div class="modal-header">
+									<button type="button" class="modal-close" data-dismiss="modal" aria-label="Close">
+										<i class="font-icon-close-2"></i>
+									</button>
+									<h4 class="modal-title" id="mdltitulo"></h4>
+								</div>
+							{{#ifEquals user.Id_Perfil "2"}}	
+								<form id="usuario_form">
+							{{/ifEquals}}	
+							{{#ifEquals user.Id_Perfil "9"}}	
+								<form id="usuario_form1">
+							{{/ifEquals}}	
+								<div class="modal-body">
+									<cdiv class="form-group">
+										<label class="form-label" for="Descripcion">Nombre</label>
+										<input type="text"  class="form-control" id="Descripcion" name="Descripcion" placeholder="Ingrese el nombre del usuario" required>
+									</cdiv>
+									<cdiv class="form-group">
+										<label class="form-label" for="Email">E-mail</label>
+										<input type="e-mail"  class="form-control" id="Email" name="Email" placeholder="Ingrese correo electronico" required>
+									</cdiv>
+									<cdiv class="form-group">
+										<label class="form-label" for="Login">Usuario</label>
+										<input type="text"  class="form-control" id="Login" name="Login" placeholder="Asigne un nombre de usuario" required>
+									</cdiv>
+									{{!-- <script>
+										const usernameInput = document.getElementById('Login');
+										const descriptionInput = document.getElementById('Descripcion');
+										const emailInput = document.getElementById('Email');
+
+										usernameInput.addEventListener('input', () => {
+										const usernameValue = usernameInput.value;
+
+										// Asigna el valor del nombre de usuario al campo de descripción
+										descriptionInput.value = usernameValue.split('@')[0];
+
+										// Asigna el valor del nombre de usuario al campo de correo electrónico
+										emailInput.value = usernameValue;
+										});
+									</script> --}}
+									<cdiv class="form-group">
+										<label class="form-label" for="usu_correo">Teléfono</label>
+										<input type="text"  class="form-control" id="Telefono" name="Telefono" placeholder="Ingrese numero de telefono">
+									</cdiv>
+									<cdiv class="form-group">
+										<label class="form-label" for="Clave">Contraseña</label>
+										<input type="password"  class="form-control" id="Clave" name="Clave" placeholder="Ingrese contraseña" required>
+									</cdiv>
+									{{#ifEquals user.Id_Perfil "2"}}
+									<cdiv class="form-group">
+										<label class="form-label" for="Id_Perfil">Perfil</label>
+										<select class="select2" id="Id_Perfil" name="Id_Perfil">
+											{{!-- <option value="1">Administrador</option>
+											<option value="2">Planificador</option> --}}
+											<option value="3">Técnico</option>
+											<option value="6">Perfil General</option>
+											<option value="5">Perfil Gerencia</option>
+											<option value="10">Perfil Gerencia Visualizador</option>
+											<option value="4">Perfil Area</option>
+											<option value="7">Perfil Sector</option>
+											<option value="8">Perfil Equipo</option>											
+										</select>
+									</cdiv>
+									{{/ifEquals}}
+									{{#ifEquals user.Id_Perfil "9"}}
+									<cdiv class="form-group">
+										<label class="form-label" for="Id_Perfil">Perfil</label>
+										<select class="select2" id="Id_Perfil" name="Id_Perfil">
+											<option value="9">Administrador</option>
+											<option value="2">Planificador</option>
+											<option value="3">Técnico</option>
+											<option value="6">Perfil General</option>
+											<option value="5">Perfil Gerencia</option>
+											<option value="10">Perfil Gerencia Visualizador</option>
+											<option value="4">Perfil Area</option>
+											<option value="7">Perfil Sector</option>
+											<option value="8">Perfil Equipo</option>											
+										</select>
+									</cdiv>
+									{{/ifEquals}}
+									<cdiv class="form-group">
+										<label class="form-label" for="Id_Cliente">Cliente</label>
+										<select class="select2" id="Id_Cliente" name="Id_Cliente">
+											{{#each clientes }}
+											<option value={{ id_cli }}>{{ des_cli}}</option>
+											{{/each}}
+										</select>
+									</cdiv>
+								</div>
+								<div class="modal-footer">
+									<button type="button" class="btn btn-rounded btn-default" data-dismiss="modal">Cerrar</button>
+									<button type="submit"  name="action" id="guardar_user" value="add" class="btn btn-rounded btn-primary">Guardar</button>
+								</div>
+							</form>
+						</div>
+					</div>
+				</div>
+				{{!-- Fin Modal Usuario --}}	
+				
+				<table id="tabla_users" class="table table-bordered table-striped table-vcenter js-dataTable-full">
+					<thead>
+						<tr>
+							<th style="width: 5%;">Id</th>
+							<th style="width: 10%;">Usuario</th>
+							<th style="width: 15%;">Nombre</th>
+							<th style="width: 10%;">Perfil</th>
+							<th style="width: 10%;">Email</th>
+							<th style="width: 10%;">Telefono</th>
+							<th style="width: 10%;">Cliente</th>
+							{{!-- <th style="width: 10%;">Estado</th> --}}
+							<th class="text-center" style="width: 10%;">Editar</th>
+							<th class="text-center" style="width: 10%;">Eliminar</th>     
+						</tr>
+					</thead>
+					{{#ifEquals user.Id_Perfil "2"}}
+					<tbody>
+						{{#each users}}
+						<tr>
+							<td>{{Id}}</td>
+							<td>{{Login}}</td>
+							<td>{{Descripcion}}</td>
+							<td>{{Perfiles}}</td>
+							<td>{{Email}}</td>
+							<td>{{Telefono}}</td>
+							<td>{{Cliente}}</td>
+							{{!-- {{#if Estado }} --}}
+							{{!-- <td>Activo</td>
+							{{ else }}
+							<td>Inactivo</td>
+							{{/if}} --}}
+							<td class="text-center"><a href="/users/edit/{{Id}}" type="button" id="btneditar" class="btn btn-inline btn-warning btn-sm ladda-button"><i class="fa fa-edit"></i></a></td>
+							<td class="text-center"><a onclick="confirmar({{Id}})" type="button" id="eliminar" class="btn btn-inline btn-danger btn-sm ladda-button"><i class="fa fa-trash"></i></a></td>
+						</tr>
+						{{/each}}
+					</tbody>
+					{{/ifEquals}}
+					{{#ifEquals user.Id_Perfil "9"}}
+					<tbody>
+						{{#each users}}
+						<tr>
+							<td>{{Id}}</td>
+							<td>{{Login}}</td>
+							<td>{{Descripcion}}</td>
+							<td>{{Perfiles}}</td>
+							<td>{{Email}}</td>
+							<td>{{Telefono}}</td>
+							<td>{{Cliente}}</td>
+							{{!-- {{#if Estado }} --}}
+							{{!-- <td>Activo</td>
+							{{ else }}
+							<td>Inactivo</td>
+							{{/if}} --}}
+							<td class="text-center"><a href="/usert/edit/{{Id}}" type="button" id="btneditar" class="btn btn-inline btn-warning btn-sm ladda-button"><i class="fa fa-edit"></i></a></td>
+							<td class="text-center"><a onclick="confirmar({{Id}})" type="button" id="eliminar" class="btn btn-inline btn-danger btn-sm ladda-button"><i class="fa fa-trash"></i></a></td>
+						</tr>
+						{{/each}}
+					</tbody>
+					{{/ifEquals}}
+				</table>
+				
+			</div>
+					<style>
+						.dataTables_filter {
+							float: left;
+						}
+						.dt-buttons {
+							float: right;
+						}
+					</style>
+		</div>
+	</div>
+	<script src="/js/lib/jquery/jquery.min.js"></script>
+	<script src="/js/lib/tether/tether.min.js"></script>
+	<script src="/js/lib/bootstrap/bootstrap.min.js"></script>
+	<script src="/js/plugins.js"></script>
+	<script src="/js/app.js"></script>
+	<script src="/js/lib/datatables-net/datatables.min.js"></script>
+	<script src="/js/lib/bootstrap-sweetalert/sweetalert.min.js"></script>
+	<script src="/js/lib/summernote/summernote.min.js"></script>
+	<script src="/js/lib/fancybox/jquery.fancybox.pack.js"></script>
+	<script src="/js/summernote-ES.js"></script>
+	<script src="/js/lib/select2/select2.full.min.js"></script>
+	<script>
+		//Datatable
+		$(document).ready(function () {
+
+			$('#tabla_users').DataTable({
+				'columnDefs': [
+					{
+						'targets': 0,
+						'checkboxes': {
+							'selectRow': true
+						}
+					}
+				],
+				'select': {
+					'style': 'multi'
+				},
+				'order': [[0, 'asc']],
+				"dom": 'Bfrtip',
+				"searching": true,
+				"lengthChange": false,
+				"colReorder": true,
+				"buttons": [{
+						"extend": 'excelHtml5',
+						"text": '<i class="fa fa-file-excel-o"></i>',
+						"titleAttr": 'Exportar a Excel',
+						"className": 'btn btn-rounded btn-success',
+				}],
+				"bDestroy": true, 	
+				"scrollX": true,
+				"bInfo": true,
+				"iDisplayLength": 20,
+				"autoWidth": false,
+				"language": {
+					"sProcessing": "Procesando...",
+					"sLengthMenu": "Mostrar _MENU_ registros",
+					"sZeroRecords": "No se encontraron resultados",
+					"sEmptyTable": "Ningún dato disponible en esta tabla",
+					"sInfo": "Mostrando un total de _TOTAL_ registros",
+					"sInfoEmpty": "Mostrando un total de 0 registros",
+					"sInfoFiltered": "(filtrado de un total de _MAX_ registros)",
+					"sInfoPostFix": "",
+					"sSearch": "Buscar:",
+					"sUrl": "",
+					"sInfoThousands": ".",
+					"sLoadingRecords": "Cargando...",
+					"oPaginate": {
+						"sFirst": "Primero",
+						"sLast": "Último",
+						"sNext": "Siguiente",
+						"sPrevious": "Anterior"
+					},
+					"oAria": {
+						"sSortAscending": ": Activar para ordenar la columna de manera ascendente",
+						"sSortDescending": ": Activar para ordenar la columna de manera descendente"
+					},
+					"select" : {
+						"rows" : {
+							"_" : "Has seleccionado %d filas",
+							"0" : "Click en una fila para seleccionar",
+							"1" : "Has seleccionado 1 fila"
+						}
+					}
+				},
+			}).DataTable();
+		});
+
+		//Crear usuario
+		$('#btnCrear').click(function(){
+			option = 'add';
+			id = null;
+			$('#usuario_form').trigger('reset');
+			$('#mdltitulo').html('Nuevo Usuario');
+			$('#modalmantenimiento').modal('show');
+			
+		});
+                                                                                                            
+		//Eliminar usuario
+		function confirmar(Id){
+			
+			swal({
+					title: "¿Esta Seguro?",
+					text: " A continuación eliminará un usuario",
+					type: "error",
+					showCancelButton: true,
+					confirmButtonClass: "btn-danger",
+					confirmButtonText: "Si",
+					cancelButtonText: "No",
+					closeOnConfirm: false      
+				},
+				function(isConfirm) {
+					if (isConfirm) {
+						window.location = "/users/delete/"+Id;
+					}
+				});
+			}
+
+		//Formulario crear y editar plan
+		$('#usuario_form').submit(function(e){
+		e.preventDefault();
+		$.ajax({
+			url:'/users/add',
+			type:'POST',
+			data:$(this).serialize(),
+			success:function(data){
+			$('#modalmantenimiento').modal('hide');
+			swal({
+				title: "¡Bien hecho!",
+				text: "El usuario se ha guardado correctamente",
+				type: "success",
+				confirmButtonClass: "btn-success",
+				confirmButtonText: "Aceptar",
+				closeOnConfirm: false
+			},
+			function() { 
+				if (data.userPerfil == 4 || data.userPerfil == 5 || data.userPerfil == 7 || data.userPerfil == 8 || data.userPerfil == 10) {
+				window.location.href = "/users/edit/" + data.userId; // redirigimos a la página de edición del usuario
+				} else {
+				window.location.href = "/users/"; // redirigimos a la página principal
+				}
+			});
+			}
+		});
+		});
+
+		//Formulario crear y editar admincli
+		$('#usuario_form1').submit(function(e) {
+		e.preventDefault();
+		$.ajax({
+			url: '/users/add',
+			type: 'POST',
+			data: $(this).serialize(),
+			success: function(data) {
+			$('#modalmantenimiento').modal('hide');
+			swal({
+				title: "¡Bien hecho!",
+				text: "El usuario se ha guardado correctamente",
+				type: "success",
+				confirmButtonClass: "btn-success",
+				confirmButtonText: "Aceptar",
+				closeOnConfirm: false
+			}, function() {
+				if (data.userPerfil == 4 || data.userPerfil == 5 || data.userPerfil == 7 || data.userPerfil == 8 || data.userPerfil == 10) {
+				window.location.href = "/usert/edit/" + data.userId; // redirigimos a la página de edición del usuario
+				} else {
+				window.location.href = "/usert/"; // redirigimos a la página principal
+				}
+			});
+			}
+		});
+		});	
+	</script>
+</body>

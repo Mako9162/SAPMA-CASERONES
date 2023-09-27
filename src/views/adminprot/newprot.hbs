@@ -1,0 +1,588 @@
+<body class="with-side-menu">
+	{{> navbar }}
+	<div class="mobile-menu-left-overlay-"></div>
+	{{> nav }}
+	<div class="page-content">
+    <style>
+      .tab-content {
+        margin-top: 20px;
+      }
+    </style>
+		<div class="container-fluid">
+			<header class="section-header">
+				<div class="tbl">
+					<div class="tbl-row">
+						<div class="tbl-cell">
+							<h3>Nuevo Protocolo</h3>
+							<ol class="breadcrumb breadcrumb-simple">
+								<li><a href="/home">Inicio</a></li>
+								<li class="active">Nuevo Protocoloo</li>
+							</ol>
+						</div>
+                        <button type="button" id="crear" class="btn btn-success float-right">Crear</button>
+					</div>
+				</div>
+            <style>
+                /* Estilos para el botón "close" personalizado en las pestañas */
+                .nav-tabs .custom-close {
+                    font-size: 15px;
+                    color: red;
+                    line-height: 1;
+                    padding: 0;
+                    margin-left: 7px;
+                    margin-right: 5px;
+                    position: absolute;
+                    top: 7px;
+                    right: 0;
+                    background: transparent;
+                    border: none;
+                }
+
+                /* Estilo adicional para eliminar el margen a la izquierda del primer botón "close" personalizado en la primera pestaña */
+                .nav-tabs .nav-item:first-child .custom-close {
+                    margin-left: 0;
+                }
+
+                /* Resto de estilos que tenías previamente */
+                .icon-primary {
+                    color: #00bfffbc;
+                }
+
+                .vertical-center {
+                    display: flex;
+                    align-items: center;
+                }
+
+                .nav-tabs .nav-item .nav-link {
+                    display: flex;
+                    align-items: center;
+                }
+
+                .nav-tabs .nav-item .nav-link .tab-title {
+                    margin-right: 5px;
+                }
+
+                .nav-tabs .nav-item {
+                    position: relative;
+                }
+            </style>
+			</header>
+            <div class="box-typical box-typical-padding">
+                <div class="row">
+                    <div class="col-md-12 col-sm-6">
+                        <div class="checkbox-toggle float-right">
+                            <input type="checkbox" id="duplicar">
+                            <label for="duplicar">Duplicar protocolo</label>
+                        </div>
+                    </div>		
+                    <div class="col-md-4 col-sm-6">
+                        <fieldset class="form-group">
+                            <label class="form-label" for="tipoprotocolo">Seleccione un tipo de protocolo:</label>
+                            <select name="tipoprotocolo" id="tipoprotocolo" class="select2">
+                            <option value=""></option>
+                            {{#each tipo_protocolo}}
+                            <option value="{{Id}}">{{Descripcion}} {{Abreviacion}}</option>
+                            {{/each}}
+                            </select>
+                        </fieldset>
+                    </div>
+                    <div class="col-md-4 col-sm-6">
+                        <fieldset class="form-group">
+                            <label class="form-label" for="tipoe">Seleccione un tipo de equipo:</label>
+                            <select name="tipoe" id="tipoe" class="select2">
+                            <option value=""></option>
+                            {{#each tipo_equipo}}
+                            <option value="{{Id}}">{{Descripcion}}</option>
+                            {{/each}}
+                            </select>
+                        </fieldset>
+                    </div>
+                    <div class="col-md-4 col-sm-6"> 
+                        <fieldset class="form-group">
+                            <label class="form-label" for="protocolo">Asigne un nombre al protocolo:</label>
+                            <input type="text" class="form-control" id="protocolo">
+                        </fieldset>
+                    </div>   
+                    <div class="col-md-6 col-sm-6" style="display: none;"> 
+                        <fieldset class="form-group">
+                            <label class="form-label" for="protdup">Seleccione un protocolo:</label>
+                            <select name="tipoe" id="protdup" class="select2">
+                                <option value=""></option>
+                                {{#each protocolos}}
+                                    <option value="{{Id}}">{{Descripcion}}</option>
+                                {{/each}}
+                            </select>
+                        </fieldset>
+                    </div>  
+                    <div class="col-md-2 col-sm-6" style="display: none;"> 
+                        <fieldset class="form-group">
+                            <label class="form-label" for="dup" style="color: aliceblue;">.</label>
+                            <button type="button" class="btn btn-outline-primary" id="dup" >Duplicar</button>
+                        </fieldset>
+                    </div>
+                </div>
+                <h4>Agregar capitulos&nbsp;&nbsp;&nbsp;&nbsp;<span class="fa fa-plus-circle icon-primary" id="abrirModalCapitulo"></span></h4>
+                <ul class="nav nav-tabs" id="tabs">
+                <!-- Las pestañas se agregarán aquí -->
+                </ul>
+                <div class="tab-content" id="tab-content">
+                <!-- El contenido de las pestañas se agregará aquí -->
+                </div> 
+            </div>
+		</div>
+        <div class="modal fade" id="modalAgregarCapitulo" tabindex="-1" role="dialog" aria-labelledby="modalAgregarCapituloLabel">
+            <div class="modal-dialog" role="document">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h4 class="modal-title" id="modalAgregarCapituloLabel">Agregar Capítulo</h4>
+                    </div>
+                    <div class="modal-body">
+                        <div class="form-group">
+                            <label for="nombreCapitulo">Nombre del Capítulo:</label>
+                            <input type="text" class="form-control" id="nombreCapitulo">
+                        </div>  
+                        <h4 class="m-t-lg with-border">Agregar Captura&nbsp;&nbsp;&nbsp;&nbsp;<span class="fa fa-plus-circle icon-primary" id="agrega_input"></span></h4>      
+                        <div id="campos-dinamicos"> <!-- Contenedor para los campos dinámicos -->
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-default" data-dismiss="modal">Cerrar</button>
+                        <button type="button" class="btn btn-primary" id="guardarCapitulo">Guardar</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+	</div>
+	<script src="/js/lib/jquery/jquery.min.js"></script>
+	<script src="/js/lib/tether/tether.min.js"></script>
+	<script src="/js/lib/bootstrap/bootstrap.min.js"></script>
+	<script src="/js/plugins.js"></script>
+	<script src="/js/app.js"></script>
+	<script src="/js/lib/datatables-net/datatables.min.js"></script>
+	<script src="/js/lib/bootstrap-sweetalert/sweetalert.min.js"></script>
+	<script src="/js/lib/summernote/summernote.min.js"></script>
+	<script src="/js/lib/fancybox/jquery.fancybox.pack.js"></script>
+	<script src="/js/summernote-ES.js"></script>
+	<script src="/js/lib/select2/select2.full.min.js"></script>
+    <script>
+    $(document).ready(function () {
+
+        $('#duplicar').on('change', function() {
+            var tipoprotocolo = $('#tipoprotocolo').val();
+            var tipoe = $('#tipoe').val();
+            var protocolo = $('#protocolo').val();
+
+            if (tipoprotocolo === '' || tipoe === '' || protocolo === '') {
+                swal('SAPMA!', 'Por favor, seleccione y complete todos los campos para duplicar un protocolo', 'error');
+                $(this).prop('checked', false); 
+            } else {
+                if ($(this).prop('checked')) {
+                    $('#tabs').hide(); 
+                    $('#tab-content').hide();
+                    $('#abrirModalCapitulo').hide();
+                    $('.col-md-6, .col-md-2').show(); // Mostrar los divs ocultos
+                } else {
+                    $('#tabs').show(); 
+                    $('#tab-content').show();
+                    $('#abrirModalCapitulo').show();
+                    $('.col-md-6, .col-md-2').hide(); // Ocultar los divs
+                }
+            }
+        });
+
+        $('#dup').click(function () {
+            var tipoprotocolo = $('#tipoprotocolo').val();
+            var tipoe = $('#tipoe').val();
+            var protocolo = $('#protocolo').val();
+            var protdup = $('#protdup').val();
+
+            if (tipoprotocolo === '' || tipoe === '' || protocolo === '' || protdup === '') {
+                swal('SAPMA!', 'Por favor, seleccione y complete todos los campos para duplicar un protocolo', 'error');
+            }else{     
+                swal({
+                    title: "¡SAPMA!",
+                    text: "¿Desea duplicar protocolo?",
+                    type: "warning",
+                    showCancelButton: true,
+                    confirmButtonClass: "btn-primary",
+                    confirmButtonText: "Si",
+                    cancelButtonText: "No",
+                    closeOnConfirm: true
+                }, function (isConfirm) {
+                        if (isConfirm) {
+                            $.ajax({
+                                url: '/duplicar_prot',
+                                method: 'POST',
+                                data: {
+                                    tipoprotocolo: tipoprotocolo,
+                                    tipoe: tipoe,
+                                    protocolo: protocolo,
+                                    protdup: protdup
+                                },
+                                beforeSend: function () {
+                                    swal({
+                                        title: "Guardando",
+                                        text: "Espere un momento por favor...",
+                                        imageUrl: "/img/Spinner-1s-200px2.gif",
+                                        showConfirmButton: false,
+                                        allowOutsideClick: false
+                                    });
+                                }
+                            }).done(function (data) {
+                                swal({
+                                    title: "¡SAPMA!",
+                                    text: "Protocolo guardado correctamente",
+                                    type: "success",
+                                    confirmButtonText: "Aceptar",
+                                    allowOutsideClick: false
+                                });
+                                setTimeout(function () {
+                                    location.reload();
+                                }, 1000);
+                            })
+                        }
+                    }
+                )
+            }
+        });
+        
+        $('#abrirModalCapitulo').click(function () {
+        var tipoprotocolo = $('#tipoprotocolo').val();
+        var tipoe = $('#tipoe').val();
+        var protocolo = $('#protocolo').val();
+
+        if (tipoprotocolo === '' || tipoe === '' || protocolo === '') {
+            swal('SAPMA!', 'Por favor, seleccione y complete todos los campos antes de agregar un capítulo.', 'error');
+        } else {
+            $('#modalAgregarCapitulo').modal('show');
+        }
+        });
+
+        var tipoOptions = ''; // Variable global para almacenar las opciones del select de tipo
+
+        $.ajax({
+            url: '/tipo_respuesta',
+            method: 'GET',
+            success: function (response) {
+                tipoOptions = '<option value="">Seleccione un tipo</option>';
+                response.forEach(function (tipo) {
+                tipoOptions += '<option value="' + tipo.Id + '">' + tipo.Descripcion + '</option>';
+                });
+            },
+            error: function (error) {
+                console.log(error);
+            }
+        });
+
+        var contadorCampos = 1;
+        var correlativo = 1;
+        var numCapitulo = 1;
+        var capitulos = []; // Array para almacenar los capítulos
+
+        function agregarCampo() {
+            var nuevoCampo = '<div class="row">' +
+                '<div class="col-md-6">' +
+                '<div class="form-group">' +
+                '<label for="descapura' + contadorCampos + '">Captura:</label>' +
+                '<input type="text" class="form-control" id="descapura' + contadorCampos + '">' +
+                '</div>' +
+                '</div>' +
+                '<div class="col-md-6">' +
+                '<div class="form-group">' +
+                '<label for="tipoinput' + contadorCampos + '">Tipo:</label>' +
+                '<select class="form-control" id="tipoinput' + contadorCampos + '">' +
+                tipoOptions +
+                '</select>' +
+                '</div>' +
+                '</div>' +
+                '</div>';
+
+            $('#campos-dinamicos').append(nuevoCampo);
+
+            contadorCampos++;
+        }
+
+        function guardarCapitulo() {
+            var nombreCapitulo = $('#nombreCapitulo').val();
+
+            if (nombreCapitulo === '') {
+                swal('SAPMA!', 'Por favor, ingrese un nombre para el capítulo.', 'error');
+                return;
+            }
+
+            var campos = $('#campos-dinamicos').find('.form-group');
+            var capituloContent = '';
+
+            for (var i = 0; i < campos.length; i += 2) {
+                var descripcion = $(campos[i]).find('input[type="text"]').val();
+                var tipoSelect = $(campos[i + 1]).find('select');
+                var tipoValue = tipoSelect.val();
+                var correlativoValue = correlativo++;
+
+                capituloContent += '<div class="row">' + // Agregar una fila para contener ambos campos
+                '<div class="col-md-6 col-sm-6">' + // Agregar una columna para el campo de captura
+                '<div class="form-group">' +
+                '<label for="descapura' + correlativoValue + '">Captura:</label>' +
+                '<input type="text" class="form-control" id="descapura' + correlativoValue + '" value="' + descripcion + '">' +
+                '</div>' +
+                '</div>' +
+                '<div class="col-md-5 col-sm-5">' + // Agregar una columna para el campo de tipo
+                '<div class="form-group">' +
+                '<label for="tipoinput' + correlativoValue + '">Tipo:</label>' +
+                '<select class="form-control" id="tipoinput' + correlativoValue + '">' +
+                tipoOptions +
+                '</select>' +
+                '</div>' +
+                '</div>' +
+                '<div class="col-md-1 col-sm-1 text-center vertical-center">' + // Agregar una columna para el botón "Eliminar"
+                '<div class="form-group">' +
+                '<label class="form-label" id="buscar" style="color: aliceblue;">.</label>' +
+                '<button type="button" class="btn btn-danger btn-sm eliminar-campo"><i class="fa fa-trash"></i></button>' +
+                '</div>' +
+                '</div>' +
+                '</div>';
+            }
+
+                capituloContent += '<button type="button" class="btn btn-primary btn-sm agregar-campo" id="agrega_input"><i class="fa fa-plus-square"></i></button>';
+
+                nuevaPestana = '<li class="nav-item">' +
+                '<a class="nav-link" id="pestana' + numCapitulo + '" data-toggle="tab" href="#contenido' + numCapitulo + '">' +
+                '<span class="tab-title">' + nombreCapitulo + '</span>' +
+                '<button type="button" class="close custom-close" title="Eliminar capitulo" data-dismiss="alert" aria-label="Close" data-id="' + numCapitulo + '"><span class="fa fa-minus-circle"></span></button>' +
+                '</a>' +
+                '</li>';
+
+            var nuevoContenido = '<div class="tab-pane fade" id="contenido' + numCapitulo + '">' +
+                capituloContent +
+                '</div>';
+
+
+            $('#tabs').append(nuevaPestana);
+            $('#tab-content').append(nuevoContenido);
+
+            // Establecer el valor de cada select en la pestaña
+            $('#contenido' + numCapitulo).find('select[id^="tipoinput"]').each(function (index) {
+                $(this).val($(campos[index * 2 + 1]).find('select').val());
+            });
+
+            $('#contenido' + numCapitulo).on('click', '.agregar-campo', function () {
+                var nuevoCampo = '<div class="row">' +
+                '<div class="col-md-6 col-sm-6">' +
+                '<div class="form-group">' +
+                '<label for="descapura' + correlativo++ + '">Captura:</label>' +
+                '<input type="text" class="form-control">' +
+                '</div>' +
+                '</div>' +
+                '<div class="col-md-5 col-sm-5">' +
+                '<div class="form-group">' +
+                '<label for="tipoinput' + correlativo++ + '">Tipo:</label>' +
+                '<select class="form-control">' +
+                tipoOptions +
+                '</select>' +
+                '</div>' +
+                '</div>' +
+                '<div class="col-md-1 col-sm-1 text-center vertical-center">' + // Agregar una columna para el botón "Eliminar"
+                '<div class="form-group">' +
+                '<label class="form-label" id="buscar" style="color: aliceblue;">.</label>' +
+                '<button type="button" class="btn btn-danger btn-sm eliminar-campo"><i class="fa fa-trash"></i></button>' +
+                '</div>' +
+                '</div>' +
+                '</div>';
+
+                $(this).before(nuevoCampo); // Agregar el nuevo campo antes del botón de adición
+
+                // Adjuntar evento de clic al botón "Eliminar" del nuevo campo
+                $(this).prev().find('.eliminar-campo').on('click', function () {
+                $(this).closest('.row').remove(); // Eliminar el campo correspondiente
+                });
+            });
+
+            // Adjuntar evento de clic al botón "Eliminar" dentro de la pestaña
+            $('#contenido' + numCapitulo).on('click', '.eliminar-campo', function () {
+                $(this).closest('.row').remove(); // Eliminar el campo correspondiente
+            });
+
+            // Agregar el objeto capitulo al array de capitulos
+            var capitulo = {
+                id: (capitulos.length + 1),
+                capitulo: nombreCapitulo
+            };
+            
+            capitulos.push(capitulo);
+
+            // Reiniciar los campos del modal
+            $('#nombreCapitulo').val('');
+            $('#campos-dinamicos').empty();
+            contadorCampos = 1;
+
+            numCapitulo++;
+        }
+
+        function actualizarIndices(index) {
+            // Eliminar el capítulo correspondiente del array
+            capitulos.splice(index, 1);
+
+            // Recorrer el array de capítulos y actualizar el índice
+            for (var i = 0; i < capitulos.length; i++) {
+                capitulos[i].id = i + 1;
+            }
+        }
+
+        $('.nav-tabs').on('click', 'button.close', function () {
+            var tabId = $(this).attr('data-id');
+
+            swal({
+                title: "¡SAPMA!",
+                text: "¿Estás seguro de que deseas eliminar este capítulo y todo su contenido?",
+                type: "warning",
+                showCancelButton: true,
+                confirmButtonClass: "btn-primary",
+                confirmButtonText: "Si",
+                cancelButtonText: "No",
+                closeOnConfirm: false
+            }, function (isConfirm) {
+                if (isConfirm) {
+                    // Buscar el índice del capítulo en el array capitulos
+                    var index = capitulos.findIndex(function (capitulo) {
+                        return capitulo.id === parseInt(tabId);
+                    });
+
+                    // Eliminar la pestaña y su contenido
+                    $('#pestana' + tabId).closest('li').remove();
+                    $('#contenido' + tabId).remove();
+                    // Actualizar los índices de los capítulos restantes
+                    actualizarIndices(index);
+                    swal.close();
+                }
+            });
+        });
+
+        $('#modalAgregarCapitulo').on('click', '#agrega_input', function () {
+            agregarCampo();
+        });
+
+        $('#modalAgregarCapitulo').on('click', '#guardarCapitulo', function () {
+            var campos = $('#campos-dinamicos').find('.form-group');
+
+            for (var i = 0; i < campos.length; i += 2) {
+                var descripcion = $(campos[i]).find('input[type="text"]').val();
+                var tipoSelect = $(campos[i + 1]).find('select');
+                var tipoValue = tipoSelect.val();
+
+                if (descripcion === '' || tipoValue === '') {
+                    swal('SAPMA!', 'Por favor, complete todos los campos de captura y tipo en el modal.', 'error');
+                    return;
+                }
+            }
+
+            guardarCapitulo();
+        });
+
+        function obtenerCapturas() {
+            var capturas = [];
+
+            // Recorrer cada pestaña
+            $('.tab-pane').each(function () {
+                var tabId = $(this).attr('id').replace('contenido', '');
+
+                // Recorrer cada fila dentro de la pestaña
+                $(this).find('.row').each(function (index) {
+                    var descripcion = $(this).find('input[type="text"]').val();
+                    var tipo = $(this).find('select').val();
+
+                    // Agregar la información de la captura al array
+                    capturas.push({
+                        idCapitulo: tabId,
+                        correlativo: index + 1,
+                        captura: descripcion,
+                        tipo: tipo
+                    });
+                });
+            });
+
+            return capturas;
+        }
+
+        $('#crear').on('click', function () {
+            var tipoprotocolo = $('#tipoprotocolo').val();
+            var tipoe = $('#tipoe').val();
+            var protocolo = $('#protocolo').val();
+            var capturas = obtenerCapturas();
+
+            if (tipoprotocolo === '' || tipoe === '' || protocolo === '' || capitulos.length === 0) {
+                swal('SAPMA!', 'Por favor, seleccione y complete todos los campos antes de crear un protocolo. Debe agregar al menos un capitulo', 'error');
+                return;
+            }
+
+            // Variable de bandera para verificar si todos los capítulos tienen al menos una captura y un tipo
+            var allChaptersHaveCaptures = true;
+
+            // Recorrer cada pestaña
+            $('.tab-pane').each(function () {
+                // Verificar si la pestaña contiene al menos una fila con campos de captura y tipo
+                if ($(this).find('.row').length === 0) {
+                    allChaptersHaveCaptures = false;
+                    return false;
+                }
+            });
+
+            if (!allChaptersHaveCaptures) {
+                swal('SAPMA!', 'Por favor, agregue al menos una captura y un tipo en cada capítulo.', 'error');
+                return;
+            }
+
+            for (var i = 0; i < capturas.length; i++) {
+                if (capturas[i].captura === '' || capturas[i].tipo === '') {
+                    swal('SAPMA!', 'Por favor, complete todos los campos de captura y tipo en los capítulos.', 'error');
+                    return;
+                }
+            }
+
+            swal({
+                title: "¡SAPMA!",
+                text: "¿Desea crear este protocolo?",
+                type: "warning",
+                showCancelButton: true,
+                confirmButtonClass: "btn-primary",
+                confirmButtonText: "Si",
+                cancelButtonText: "No",
+                closeOnConfirm: true
+            }, function (isConfirm) {
+                if (isConfirm) {
+                    $.ajax({
+                        url: '/crear_prot',
+                        method: 'POST',
+                        data: {
+                            tipoprotocolo: tipoprotocolo,
+                            tipoe: tipoe,
+                            protocolo: protocolo,
+                            capitulos: capitulos,
+                            capturas: capturas
+                        },
+                        beforeSend: function () {
+                            swal({
+                                title: "Guardando",
+                                text: "Espere un momento por favor...",
+                                imageUrl: "/img/Spinner-1s-200px2.gif",
+                                showConfirmButton: false,
+                                allowOutsideClick: false
+                            });
+                        }
+                    }).done(function (data) {
+                        swal({
+                            title: "¡SAPMA!",
+                            text: "Protocolo guardado correctamente",
+                            type: "success",
+                            confirmButtonText: "Aceptar",
+                            allowOutsideClick: false
+                        });
+                        setTimeout(function () {
+                            location.reload();
+                        }, 1000);
+                    })
+                }
+            });
+        });
+    });
+    </script>
+

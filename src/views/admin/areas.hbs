@@ -1,0 +1,287 @@
+<body class="with-side-menu">
+	{{> navbar }}
+	<div class="mobile-menu-left-overlay-"></div>
+	{{> nav }}
+	<div class="page-content">
+		<div class="container-fluid">
+			<header class="section-header">
+				<div class="tbl">
+					<div class="tbl-row">
+						<div class="tbl-cell">
+							<h3>Areas</h3>
+							<ol class="breadcrumb breadcrumb-simple">
+								<li><a href="/home">Inicio</a></li>
+								<li class="active">Areas</li>
+							</ol>
+						</div>
+					</div>
+				</div>
+			</header>
+			<div class="row">
+				<div class="col-md-4">
+					<div class="box-typical box-typical-padding">
+						<h2>Agregar areas</h2>
+						<form id="agregar-area-form" action="" method="post">
+							<br>
+							<div class="form-group">
+								<label class="form-label" for="gerencia">Seleccione una Gerencia</label>
+								<select class="select2" id="gerencia" name="gerencia">
+									<option value="">Seleccione una gerencia</option>
+									{{#each gerencias }}
+										<option value={{ ID }}>{{ GER}}</option>
+									{{/each}}
+								</select>
+							</div>
+							<input type="text" name="ida" id="ida" hidden="true">
+							<div class="form-group">
+								<label for="area">Area</label>
+								<input type="text" class="form-control" id="area" name="area" required oninput="this.value = this.value.trim()" placeholder="Asigne un nombre al area" >
+							</div>
+							<button type="submit" class="btn btn-primary" id="boton-master" name="boton-master">Agregar</button>
+						</form>
+					</div>
+				</div>
+				<div class="col-md-8">
+					<div class="box-typical box-typical-padding">
+						<table id="tabla_prot" class="table table-bordered table-striped table-vcenter js-dataTable-full">
+							<thead>
+								<tr>
+									<th>Id</th>
+									<th>Area</th>
+									<th>Pertenece a Gerencia: </th>
+								</tr>
+							</thead>
+							<tbody>
+								{{#each are}}
+								<tr>
+									<td>{{ID}}</td>
+									<td>{{AREA}}</td>
+									<td>{{GERENCIA}}</td>
+								</tr>    
+								{{/each}}
+							</tbody>
+						</table>
+					</div>
+				</div>
+			</div>
+	</div>
+	<script src="/js/lib/jquery/jquery.min.js"></script>
+	<script src="/js/lib/tether/tether.min.js"></script>
+	<script src="/js/lib/bootstrap/bootstrap.min.js"></script>
+	<script src="/js/plugins.js"></script>
+	<script src="/js/app.js"></script>
+	<script src="/js/lib/datatables-net/datatables.min.js"></script>
+	<script src="/js/lib/bootstrap-sweetalert/sweetalert.min.js"></script>
+	<script src="/js/lib/summernote/summernote.min.js"></script>
+	<script src="/js/lib/fancybox/jquery.fancybox.pack.js"></script>
+	<script src="/js/summernote-ES.js"></script>
+	<script src="/js/lib/select2/select2.full.min.js"></script>
+    <script type="text/javascript" src="https://gyrocode.github.io/jquery-datatables-checkboxes/1.2.12/js/dataTables.checkboxes.min.js"></script>
+	<script>
+		var table;
+		$(document).ready(function () {
+			table = $('#tabla_prot').DataTable({
+				"dom": 'f<"toolbar">rtip',
+				'select': {
+					'style': 'single'
+				},
+				"bInfo": true,
+				"iDisplayLength": 10,
+				"language": {
+					"sProcessing": "Procesando...",
+					"sLengthMenu": "Mostrar _MENU_ registros",
+					"sZeroRecords": "No se encontraron resultados",
+					"sEmptyTable": "Ningún dato disponible en esta tabla",
+					"sInfo": "Mostrando un total de _TOTAL_ registros",
+					"sInfoEmpty": "Mostrando un total de 0 registros",
+					"sInfoFiltered": "(filtrado de un total de _MAX_ registros)",
+					"sInfoPostFix": "",
+					"sSearch": "Buscar:",
+					"sUrl": "",
+					"sInfoThousands": ".",
+					"sLoadingRecords": "Cargando...",
+					"oPaginate": {
+						"sFirst": "Primero",
+						"sLast": "Último",
+						"sNext": "Siguiente",
+						"sPrevious": "Anterior"
+					},
+					"oAria": {
+						"sSortAscending": ": Activar para ordenar la columna de manera ascendente",
+						"sSortDescending": ": Activar para ordenar la columna de manera descendente"
+					},
+					"select" : {
+						"rows" : {
+							"_" : "Has seleccionado %d filas",
+							"0" : "Click en una fila para seleccionar",
+							"1" : "Has seleccionado 1 fila"
+						}
+					}
+				}
+			});
+			$("div.toolbar").html('<button id="boton-editar" class="btn btn-inline btn-warning btn-sm ladda-button"><i class="fa fa-edit"></i></button>');
+			var editMode = false;
+			$('#boton-editar').on('click', function() {
+				var selectedRows = table.rows({selected: true});
+				if (selectedRows.count() != 1) {
+					swal("¡SAPMA!", "Debes seleccionar una fila para editar.", "error");
+				} else {
+					var data = table.row({selected: true}).data();
+					$('#ida').val(data[0]);
+					$('#area').val(data[1]);
+					$('#agregar-area-form button[type="submit"]').text('Actualizar');
+					editMode = true;
+				}
+			});
+			$('#agregar-area-form').on('submit', function(event) {
+				event.preventDefault();
+				if (editMode){
+					const gerencia = $('#gerencia').val();
+					const form = $('#agregar-area-form');
+					if (gerencia === "") {
+						swal({
+							title: "¡SAPMA!",
+							text: "Por favor seleccione una gerencia y asigne un nombre al área antes de enviar el formulario.",
+							type: "error",
+							confirmButtonClass: "btn-primary",
+							confirmButtonText: "Aceptar",
+							closeOnConfirm: true
+						});
+					} else {
+						swal({
+						title: "¡SAPMA!",
+						text: "¿Desea actualizar esta area?",
+						type: "warning",
+						showCancelButton: true,
+						confirmButtonClass: "btn-primary",
+						confirmButtonText: "Si",
+						cancelButtonText: "No",
+						closeOnConfirm: true
+					}, function(isConfirm) {
+						if (isConfirm) {
+							$.ajax({
+							url: '/actualizar-area',
+							method: 'POST',
+							data: form.serialize(),
+							success: function(data) {
+								var selectedRow = table.row({selected: true});
+								selectedRow.data([
+									data.id,
+									data.area,
+									data.gerencia
+								]).draw();
+								$('#agregar-area-form').trigger('reset');
+								$('#gerencia').val('').trigger('change');
+								editMode = false;
+								$('#agregar-area-form button[type="submit"]').text('Agregar');
+							}
+						});
+						}else{
+							$('#agregar-area-form').trigger('reset');
+						}
+					});
+					}
+				}else{
+					const form = $('#agregar-area-form');
+					const gerencia = $('#gerencia').val();
+					if (gerencia === "") {
+						swal({
+							title: "¡SAPMA!",
+							text: "Por favor seleccione una gerencia y asigne un nombre al área antes de enviar el formulario.",
+							type: "error",
+							confirmButtonClass: "btn-primary",
+							confirmButtonText: "Aceptar",
+							closeOnConfirm: true
+						});
+					} else {
+						$.ajax({
+							url: '/verificar_area',
+							method: 'POST',
+							data: form.serialize(),
+							success: function() {
+								swal({
+									title: "¡SAPMA!",
+									text: "¿Desea agregar esta area?",
+									type: "warning",
+									showCancelButton: true,
+									confirmButtonClass: "btn-primary",
+									confirmButtonText: "Si",
+									cancelButtonText: "No",
+									closeOnConfirm: true
+								}, function(isConfirm) {
+									if (isConfirm) {
+										$.ajax({
+											url: '/agregar_area',
+											method: 'POST',
+											data: form.serialize(),
+											success: function(data) {
+												const table = $('#tabla_prot').DataTable();
+												table.row.add([
+													data.id,
+													data.area,
+													data.gerencia
+												]).draw();
+												form.trigger('reset');
+												$('#gerencia').val('').trigger('change');
+											}
+										});
+									}
+								});
+							},
+							error: function(jqXHR) {
+								if (jqXHR.responseJSON && jqXHR.responseJSON.error) {
+									swal({
+										title: "¡SAPMA!",
+										text: jqXHR.responseJSON.error,
+										type: "error",
+										confirmButtonClass: "btn-primary",
+										confirmButtonText: "Aceptar",
+										closeOnConfirm: true
+									});
+								}
+							}
+						});
+					}
+				}
+			});
+			$('#boton-eliminar').on('click', function() {
+				var selectedRows = table.rows({selected: true});
+				if (selectedRows.count() === 0) {
+					swal("¡SAPMA!", "Debes seleccionar al menos una fila antes de eliminar.", "error");
+				} else {
+					var idt = [];
+					var rows_selected = table.rows({selected: true}).data();
+					$.each(rows_selected, function (index, value) {
+						idt.push(value[0]);
+					});
+					swal({
+					title: "¡SAPMA!",
+					text: "¿Desea eliminar estas areas?",
+					type: "warning",
+					showCancelButton: true,
+					confirmButtonClass: "btn-primary",
+					confirmButtonText: "Si",
+					cancelButtonText: "No",
+					closeOnConfirm: false      
+						},function(isConfirm) {
+							if (isConfirm) {
+								$.ajax({
+									url: "/eliminar-area",
+									type: "POST", 	 	
+									data: {
+										idt					
+									}	
+								}); 
+								swal("¡SAPMA!", "Areas eliminadas", "success");
+								setTimeout(function () {
+									location.reload();
+								}, 1000);
+							} else {
+								swal("¡SAPMA!", "Areas NO eliminadas", "error");
+							}
+					});		
+				}
+			});
+		});
+	</script>
+</body>

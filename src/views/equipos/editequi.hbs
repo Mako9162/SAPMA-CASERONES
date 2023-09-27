@@ -1,0 +1,1365 @@
+<body class="with-side-menu">
+	{{> navbar }}
+	<div class="mobile-menu-left-overlay-"></div>
+	{{> nav }}
+	<div class="page-content">
+		<div class="container-fluid">
+			<header class="section-header">
+				<div class="tbl">
+					<div class="tbl-row">
+						<div class="tbl-cell">
+							<h3>Equipo / {{Equipo.TAG}}</h3>
+							<ol class="breadcrumb breadcrumb-simple">
+								<li><a href="/home">Inicio</a></li>
+								<li class="active">Edición de equipo</li>
+							</ol>
+						</div>
+						<div class="form-group float-right">
+                            <button type="button" class="btn btn-danger" onclick="location.reload()" >Cancelar cambios</button>
+                        </div>
+					</div>
+				</div>
+				<style>
+					.icon-primary {
+						color: #00bfffbc;
+					}
+					.fa-plus-circle {
+						cursor: pointer;
+					}
+					label.required:before {
+						content: "* ";
+						color: red;
+					}
+					h5.required:before {
+						content: "* ";
+						color: red;
+					}
+
+				</style>
+			</header>
+			<div class="box-typical box-typical-padding">
+				<form>
+					<h5 class="m-t-lg with-border">INFORMACIÓN DE EQUIPO</strong></h5>
+					<div class="row">
+						<div class="col-md-3 col-sm-6">
+							<fieldset class="form-group">
+								<label class="form-label " for="tag">TAG de Equipo:</label>
+								<input type="text" hidden="true" id="id_equipo" value="{{Equipo.ID}}">
+								<input type="text" class="form-control" Value="{{Equipo.TAG}}" id="tag" readonly onblur="formatInput(this)">
+							</fieldset>
+						</div>
+						<div class="col-md-3 col-sm-6">
+							<fieldset class="form-group">
+								<label class="form-label float-left " for="tipoe">Tipo de equipo:</label>
+								<span class="fa fa-plus-circle float-right icon-primary" id="tipoequipo"></span>
+								<input type="text" hidden="true" id="old_tipo_equipo_id" value="{{Equipo.ID_TIPO_EQUIPO}}">
+								<input type="text" hidden="true" id="old_tipo_equipo" value="{{Equipo.TIPO_EQUIPO}}">
+								<select name="tipoe" id="tipoe" class="select2" >
+									<option value="">Seleccione un tipo de equipo</option>
+									{{#each tipo_equipo }}
+										<option value="{{Id}}" {{#if (eq Id ../Equipo.ID_TIPO_EQUIPO)}}selected{{/if}}>{{Descripcion}}</option>
+									{{/each}}
+								</select>
+							</fieldset>
+						</div>
+						<div class="col-md-3 col-sm-6">
+							<fieldset class="form-group">
+								<label class="form-label " for="serie">Serie:</label>
+								<input type="text" hidden="true" id="old_serie" value="{{Equipo.SERIE}}">
+								<input type="text" class="form-control" id="serie" Value="{{Equipo.SERIE}}" oninput="this.value = this.value.trim()">
+							</fieldset>
+						</div>
+						<div class="col-md-3 col-sm-6">
+							<fieldset class="form-group">
+								<label class="form-label " for="cer">Certificación:</label>
+								<input type="text" hidden="true" id="old_cer" value="{{Equipo.CERTIFICACION}}">
+								<input type="text" class="form-control" id="cer" Value="{{Equipo.CERTIFICACION}}" oninput="this.value = this.value.trim()">
+							</fieldset>
+						</div>
+						<div class="col-md-2 col-sm-6">
+							<fieldset class="form-group">
+								<label class="form-label float-left" for="agente">Agente:</label>
+								<span class="fa fa-plus-circle float-right icon-primary" id="agenteagente"></span>
+								<input type="text" hidden="true" id="old_agente_id" value="{{Equipo.ID_AGENTE}}">
+								<input type="text" hidden="true" id="old_agente" value="{{Equipo.AGENTE}}">
+								<select name="agente" id="agente" class="select2">
+									<option value=""></option>
+									{{#each agentes }}
+										<option value="{{Id}}" {{#if (eq Descripcion ../Equipo.AGENTE)}}selected{{/if}}>{{Descripcion}}</option>
+									{{/each}}
+								</select>
+							</fieldset>
+						</div>
+						{{#ifEquals Equipo.DINAMICO "0"}}
+						<div class="col-md-1 col-sm-6">
+							<fieldset class="form-group">
+								<label class="form-label " for="critico">Critico:</label>
+								<input type="text" hidden="true" id="old_critico" value="{{Equipo.CRITICO}}">
+								<select name="critico" id="critico" class="select2">
+									<option value="0" {{#if (eq Equipo.CRITICO 0)}}selected{{/if}}>No</option>
+									<option value="1" {{#if (eq Equipo.CRITICO 1)}}selected{{/if}}>Si</option>
+								</select>
+							</fieldset>
+						</div>
+						{{/ifEquals}}
+						{{#ifEquals Equipo.DINAMICO "1"}}
+						<div class="col-md-1 col-sm-6">
+							<fieldset class="form-group">
+								<label class="form-label " for="critico">Critico:</label>
+								<select name="critico" id="critico" class="select2">
+									<option value="0">No</option>
+									<option value="1">Si</option>
+								</select>
+							</fieldset>
+						</div>
+						{{/ifEquals}}
+						<div class="col-md-2 col-sm-6">
+							<fieldset class="form-group">
+								<label class="form-label" for="peso">Valor medida:</label>
+								<input type="text" hidden="true" id="old_peso" value="{{peso}}">
+								<input type="text" class="form-control" id="peso" Value="{{peso}}" onblur="validarPeso(this)">
+							</fieldset>
+						</div>
+						<div class="col-md-1 col-sm-6">
+							<fieldset class="form-group">
+								<label class="form-label" for="medida">Medida:</label>
+								<input type="text" hidden="true" id="old_medida" value="{{medida}}">
+								<select class="select2" id="medida">
+									<option value=""></option>
+									<option value="Kg" {{#if (eq medida "Kg")}}selected{{/if}}>Kg</option>
+									<option value="g" {{#if (eq medida "g")}}selected{{/if}}>g</option>
+									<option value="Oz" {{#if (eq medida "Oz")}}selected{{/if}}>Oz</option>
+									<option value="Psi" {{#if (eq medida "Psi")}}selected{{/if}}>Psi</option>
+									<option value="L" {{#if (eq medida "L")}}selected{{/if}}>L</option>
+									<option value="ml" {{#if (eq medida "ml")}}selected{{/if}}>ml</option>
+									<option value="Lbs" {{#if (eq medida "Lbs")}}selected{{/if}}>Lbs</option>
+								</select>
+							</fieldset>
+						</div>
+						{{#ifEquals Equipo.DINAMICO "0"}}
+						<div class="col-md-3 col-sm-6">
+							<fieldset class="form-group">
+								<label class="form-label float-left " for="mm">Marca - Modelo:</label>
+								<span class="fa fa-plus-circle float-right icon-primary" id="marcamodelo"></span>
+								<input type="text" hidden="true" id="old_mm_id" value="{{Equipo.ID_MM}}">
+								<input type="text" hidden="true" id="old_mm" value="{{Equipo.DESC_MM}}">
+								<select name="mm"  id="mm" class="select2" >
+                                      {{#each marca_modelo }}
+                                          <option value= "{{Id}}"{{#if (eq Id ../Equipo.ID_MM)}}selected{{/if}}>{{Descripcion}}</option>
+                                      {{/each}}
+                                </select>
+							</fieldset>
+						</div>
+						{{/ifEquals}}
+						{{#ifEquals Equipo.DINAMICO "1"}}
+						<div class="col-md-3 col-sm-6">
+							<fieldset class="form-group">
+								<label class="form-label float-left " for="mm">Marca - Modelo:</label>
+								<select name="mm"  id="mm" class="select2" >
+                                      {{#each marca_modelo }}
+                                          <option value= "{{Id}}">{{Descripcion}}</option>
+                                      {{/each}}
+                                </select>
+							</fieldset>
+						</div>
+						{{/ifEquals}}
+						<div class="col-md-2 col-sm-6">
+							<fieldset class="form-group">
+								<label class="form-label float-left " for="dinamico">Dinámico:</label>
+								<input type="text" hidden="true" id="old_dinamico" value="{{Equipo.DINAMICO}}">
+								<select name="dinamico"  id="dinamico" class="select2" >
+									<option value="0" {{#if (eq Equipo.DINAMICO 0)}}selected{{/if}}>No</option>
+									<option value="1" {{#if (eq Equipo.DINAMICO 1)}}selected{{/if}}>Si</option>
+                                </select>
+							</fieldset>
+						</div>
+						<div class="col-md-1 col-sm-6">
+							<fieldset class="form-group">
+								<label class="form-label float-left " for="ph">PH:</label>
+								<input type="text" hidden="true" id="old_ph" value="{{Equipo.PH}}">
+								<input type="text" class="form-control" id="ph" value="{{Equipo.PH}}">
+							</fieldset>
+						</div>
+						<div class="col-md-3 col-sm-6">
+							<fieldset class="form-group">
+								<label class="form-label" for="gerencia">Gerencia:</label>
+								<input type="text" hidden="true" id="old_gerencia" value="{{Equipo.GERENCIA}}">
+								<input type="text" class="form-control" id="gerencia" Value="{{Equipo.GERENCIA}}" readonly onblur="validarPeso(this)">
+							</fieldset>
+						</div>
+						<div class="col-md-3 col-sm-6">
+							<fieldset class="form-group">
+								<label class="form-label" for="area">Area:</label>
+								<input type="text" hidden="true" id="old_area" value="{{Equipo.AREA}}">
+								<input type="text" class="form-control" id="area" Value="{{Equipo.AREA}}" readonly onblur="validarPeso(this)">
+							</fieldset>
+						</div>
+						<div class="col-md-3 col-sm-6">
+							<fieldset class="form-group">
+								<label class="form-label " for="sector">Sector:</label>
+								<input type="text" hidden="true" id="id_sector_old" value="{{Equipo.ID_SECTOR}}">
+								<input type="text" hidden="true" id="old_sector" value="{{Equipo.SECTOR}}">
+								<input type="text" class="form-control" id="sector" Value="{{Equipo.SECTOR}}" readonly onblur="validarPeso(this)">
+							</fieldset>
+						</div>
+						<div class="col-md-3 col-sm-6">
+							<fieldset class="form-group">
+								<label class="form-label" for="sup">Superintendencia:</label>
+								<input type="text" hidden="true" id="old_sup" value="{{Equipo.SUPERINTENDENCIA}}">
+								<input type="text" class="form-control" id="sup" value="{{Equipo.SUPERINTENDENCIA}}" onblur="formatInput(this)" list="super">
+								<datalist id="super"></datalist>
+							</fieldset>
+						</div>
+						<div class="col-md-6 col-sm-6">
+							<fieldset class="form-group">
+								<label class="form-label" for="du">Detalle de ubicación:</label>
+								<input type="text" hidden="true" id="old_du" value="{{Equipo.DETALLE_UBICACION}}">
+								<input type="text" class="form-control" id="du" value="{{Equipo.DETALLE_UBICACION}}" onblur="formatInput(this)">
+							</fieldset>
+						</div>
+
+						<div class="col-md-3 col-sm-6">
+							<fieldset class="form-group">
+								<label class="form-label" for="unidad">Unidad técnica:</label>
+								<input type="text" hidden="true" id="old_unidad" value="{{Equipo.UNIDAD}}">
+								<input type="text" class="form-control" id="unidad" value="{{Equipo.UNIDAD}}" onblur="formatInput(this)" list="results-list">
+								<datalist id="results-list"></datalist>
+							</fieldset>
+						</div>
+						<div class="col-md-3 col-sm-6">
+							<fieldset class="form-group">
+								<label class="form-label" for="ut">Ubicación técnica:</label>
+								<input type="text" hidden="true" id="old_ut" value="{{Equipo.UBICACION_TECNICA}}">
+								<input type="text" class="form-control" id="ut" value="{{Equipo.UBICACION_TECNICA}}" onblur="formatInput(this)" list="utec">
+								<datalist id="utec"></datalist>
+							</fieldset>
+						</div>
+						<div class="col-md-12 col-sm-6">
+							<fieldset class="form-group">
+								<label class="form-label" for="obs_dand">Observaciones:</label>
+								<input type="text" class="form-control" id="obs_dand" placeholder="" value="{{Equipo.OBS}}" readonly >
+							</fieldset>
+						</div>
+						<div id="results-container"></div>
+					</div>
+					<h5 class="m-t-lg with-border">CAMBIO DE UBICACION</h5>
+						<div class="col-md-4 col-sm-6">
+							<fieldset class="form-group">
+								<label class="form-label" for="gerencia1">Gerencia:</label>
+								<select name="gerencia1" id="gerencia1" class="select2" >
+									<option value="">Seleccione una gerencia</option>
+                                        {{#each gerencias }}
+                                            <option value= "{{Id}}">{{Descripcion}}</option>
+                                        {{/each}}
+                                </select>
+							</fieldset>
+						</div>
+						<div class="col-md-4 col-sm-6">
+							<fieldset class="form-group">
+								<label class="form-label required" for="area1">Area:</label>
+								<select class="select2" name="area1" id="area1" disabled="true">
+									<option value="">Seleccione un área</option>
+								</select>
+							</fieldset>
+						</div>
+						<div class="col-md-4 col-sm-6">
+							<fieldset class="form-group">
+								<label class="form-label required" for="sector1">Sector:</label>
+								<select class="select2" name="sector1" id="sector1" disabled="true">
+									<option value="">Seleccione un sector</option>
+								</select>
+							</fieldset>
+						</div>
+						<br><br><br>
+					<h5 class="m-t-lg with-border">CAMBIO DE PROTOCOLOS&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="fa fa-plus-circle icon-primary" id="agrega_protocolos" hidden="true"></span></h5>
+					<br>
+					<table class="table protocolo-field">
+						<thead>
+							<tr>
+							<th>Id TP</th>	
+							<th>Tipo de Protocolo</th>
+							<th>Id P</th>
+							<th>Protocolo</th>
+							<th>Eliminar</th>
+							</tr>
+						</thead>
+						<tbody id="protocolos-seleccionados">
+							{{#each protocolos}}
+							<tr>
+								<td id="ID_TP">{{ID_TP}}</td>
+								<td id="TIPO_PROTOCOLO">{{TIPO_PROTOCOLO}} {{ABREVIACION}}</td>
+								<td id="ID_P">{{ID_P}}</td>
+								<td id="PROTOCOLO">{{PROTOCOLO}}</td>
+								<td></button><button class="btn btn-inline btn-danger btn-sm ladda-button eliminar"><i class="fa fa-trash"></i></button></td>
+							</tr>
+							{{/each}}
+						</tbody>
+					</table>
+					<br>
+					<button type="button" id="guardar" class="btn btn-outline-primary">Actualizar</button>
+				</form>
+				<div class="modal fade bd-example-modal-lg" id="modal_agente" tabindex="-1" role="dialog" aria-labelledby="myLargeModalLabel" aria-hidden="true">
+                    <div class="modal-dialog">
+                        <div class="modal-content">
+                            <div class="modal-header">
+                                <button type="button" class="modal-close" data-dismiss="modal" aria-label="Close">
+                                    <i class="font-icon-close-2"></i>
+                                </button>
+                                <h4 class="modal-title" id="titu_agente">Agregar agente</h4>
+                            </div>
+                            <form action="" id="form_agente">
+                                <div class="modal-body">
+                                    <cdiv class="form-group">
+                                        <div class="card-block">
+                                            <div class="row">
+                                                <cdiv class="form-group">
+                                                    <label for="atp">Descripción</label>
+													<input type="text" class="form-control" id="aagente" name="aagente" onblur="formatInput(this)"> 
+                                                </cdiv>
+												<br>
+                                                <div>
+                                                    <button type="button"  name="action" id="guardar_agente" class="btn btn-rounded btn-primary float-right">Guardar</button>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </cdiv>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+				<div class="modal fade bd-example-modal-lg" id="modal_protocolo" tabindex="-1" role="dialog" aria-labelledby="myLargeModalLabel" aria-hidden="true">
+                    <div class="modal-dialog">
+                        <div class="modal-content">
+                            <div class="modal-header">
+                                <button type="button" class="modal-close" data-dismiss="modal" aria-label="Close">
+                                    <i class="font-icon-close-2"></i>
+                                </button>
+                                <h4 class="modal-title" id="titu_protocolo">Asignación de protocolos</h4>
+                            </div>
+                            <form action="" id="form_protocolo">
+                                <div class="modal-body">
+                                    <cdiv class="form-group">
+                                        <div class="card-block">
+                                            <div class="row">
+                                                <cdiv class="form-group">
+                                                    <label class="form-label" for="protocolo">Tipo de protocolo:</label>
+													<select name="protocolo" id="protocolo" class="select2" >
+														<option value="">Seleccione un tipo de protocolo</option>
+															{{#each tipo_protocolo }}
+																<option value= "{{Id}}">{{Descripcion}} {{Abreviacion}}</option>
+															{{/each}}
+													</select>
+                                                </cdiv>
+												<br>
+												<br>
+												<cdiv class="form-group">
+ 													<label class="form-label" for="protocolo-correspondiente">Protocolo:</label>
+													<select class="select2" id="protocolo-correspondiente">
+														<option value="">Seleccione un protocolo</option>
+													</select>
+												</cdiv>
+												<br>
+												<br>
+                                                <div>
+                                                    <button type="button"  name="asignar" id="asignar" class="btn btn-rounded btn-primary float-right">Asignar</button>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </cdiv>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+				<div class="modal fade bd-example-modal-lg" id="modal_tipoequipo" tabindex="-1" role="dialog" aria-labelledby="myLargeModalLabel" aria-hidden="true">
+                    <div class="modal-dialog">
+                        <div class="modal-content">
+                            <div class="modal-header">
+                                <button type="button" class="modal-close" data-dismiss="modal" aria-label="Close">
+                                    <i class="font-icon-close-2"></i>
+                                </button>
+                                <h4 class="modal-title" id="titu_tipoequipo">Agregar tipo de equipo</h4>
+                            </div>
+                            <form action="" id="form_tipoequipo">
+                                <div class="modal-body">
+                                    <cdiv class="form-group">
+                                        <div class="card-block">
+                                            <div class="row">
+                                                <cdiv class="form-group">
+                                                    <label for="atp">Descripción</label>
+													<input type="text" class="form-control" id="atp" name="atp" onblur="formatInput(this)"> 
+                                                </cdiv>
+												<br>
+                                                <div>
+                                                    <button type="button"  name="action" id="guardar_tipoequipo" class="btn btn-rounded btn-primary float-right">Guardar</button>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </cdiv>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+				<div class="modal fade bd-example-modal-lg" id="modal_marcamodelo" tabindex="-1" role="dialog" aria-labelledby="myLargeModalLabel" aria-hidden="true">
+                    <div class="modal-dialog">
+                        <div class="modal-content">
+                            <div class="modal-header">
+                                <button type="button" class="modal-close" data-dismiss="modal" aria-label="Close">
+                                    <i class="font-icon-close-2"></i>
+                                </button>
+                                <h4 class="modal-title" id="titu_marcamodelo">Agregar marca y modelo</h4>
+                            </div>
+                            <form action="" id="form_marcamodelo">
+                                <div class="modal-body">
+                                    <cdiv class="form-group">
+                                        <div class="card-block">
+                                            <div class="row">
+												<div class="form-group">
+													<label for="descripcion">Marca</label>
+													<input type="text" class="form-control" id="marca" name="marca" required onblur="formatInput(this)">
+												</div>
+												<div class="form-group">
+													<label for="descripcion">Modelo</label>
+													<input type="text" class="form-control" id="modelo" name="modelo" required onblur="formatInput(this)">
+												</div>
+												<br>
+												<div>
+                                                    <button type="button"  name="action" id="guardar_marcamodelo" class="btn btn-rounded btn-primary float-right">Guardar</button>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </cdiv>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+				<div id="confirmModal" class="modal fade" role="dialog">
+					<div class="modal-dialog">
+						<div class="modal-content">
+						<div class="modal-header">
+							<button type="button" class="close" data-dismiss="modal">×</button>
+							<h4 class="modal-title">CONFIRMAR CAMBIOS DE EQUIPO / {{Equipo.TAG}}</h4>
+						</div>
+						<div class="modal-body">
+							<style>
+							#actuales {
+								background-color: rgb(255, 199, 206);
+								color: rgb(126, 99, 102);
+							}
+							#cambios {
+								background-color: rgb(198, 239, 206);
+								color: rgb(112, 137, 118);
+							}
+							</style>
+							<table class="table table-bordered table-hover">
+								<thead>
+									<tr>
+									<th id="actuales">
+										<center><span class="glyphicon glyphicon-arrow-left text-danger"></span> DATOS ACTUALES</center>
+									</th>
+									<th id="cambios">
+										<center>CAMBIOS A REALIZAR <span class="glyphicon glyphicon-arrow-right text-success"></span></center>
+									</th>
+									</tr>
+								</thead>
+								<tbody>
+									<tr>
+									<!-- Contenido de la tabla -->
+									</tr>
+								</tbody>
+							</table>
+							<br>
+							<div class="form-group">
+								<label for="observaciones" class="control-label">Observaciones:</label>
+								<textarea class="form-control" id="observaciones" name="observaciones" rows="4"></textarea>
+							</div>
+						</div>
+						<div class="modal-footer">
+							<button type="button" class="btn btn-default" data-dismiss="modal">Cerrar</button>
+							<button type="button" class="btn btn-primary" id="actualizar">Guardar</button>
+						</div>
+						</div>
+					</div>
+				</div>
+
+			</div>
+		</div>	
+	</div>
+	<script src="/js/lib/jquery/jquery.min.js"></script>
+	<script src="/js/lib/tether/tether.min.js"></script>
+	<script src="/js/lib/bootstrap/bootstrap.min.js"></script>
+	<script src="/js/plugins.js"></script>
+	<script src="/js/app.js"></script>
+	<script src="/js/lib/datatables-net/datatables.min.js"></script>
+	<script src="/js/lib/bootstrap-sweetalert/sweetalert.min.js"></script>
+	<script src="/js/lib/summernote/summernote.min.js"></script>
+	<script src="/js/lib/fancybox/jquery.fancybox.pack.js"></script>
+	<script src="/js/summernote-ES.js"></script>
+	<script src="/js/lib/select2/select2.full.min.js"></script>
+	<script>
+		function _(element)
+        {
+            return document.getElementById(element); 
+        }
+
+		function fetch_data(parent_element, child_element, type) {
+		fetch('/get_databi?type=' + type + '&parent_value=' + parent_element.value).then(function(response) {
+			return response.json();
+		}).then(function(responseData) {
+			var html = '';
+
+			if (type == 'load_areass') {
+			html = '<option value="">Seleccione un área</option>';
+			for (var count = 0; count < responseData.length; count++) {
+				html += '<option value="' + responseData[count][0] + '">' + responseData[count][1] + '</option>';
+			}
+			}
+
+			if (type == 'load_sectoress') {
+			html = '<option value="">Seleccione un sector</option>';
+			for (var count = 0; count < responseData.length; count++) {
+				html += '<option value="' + responseData[count][0] + '">' + responseData[count][1] + '</option>';
+			}
+			}
+
+			if (type == 'load_equiposs') {
+			html = '<option value="">Seleccione un equipo</option>';
+			for (var count = 0; count < responseData.length; count++) {
+				html += '<option value="' + responseData[count][0] + '">' + responseData[count][1] + '</option>';
+			}
+			}
+
+			child_element.innerHTML = html;
+
+			// Restablecer el valor del campo sector1 al valor por defecto cuando no se selecciona un área
+			if (type == 'load_areass' && parent_element.value === '') {
+			var sectorDefaultText = "Seleccione un sector";
+			_('sector1').value = ''; // Restablecer el valor del campo sector1
+			_('sector1').innerHTML = '<option value="">' + sectorDefaultText + '</option>'; // Cambiar el texto del campo sector1
+			}
+		});
+		}
+
+        _('gerencia1').onchange = function(){			
+            fetch_data(_('gerencia1'), _('area1'), 'load_areass');
+        };
+
+        _('area1').onchange = function(){
+            fetch_data(_('area1'), _('sector1'), 'load_sectoress');
+        };
+	</script>
+	<script>
+		function validarPeso(input) {
+			var valor = input.value;
+			var patron = /^[\d.,]+$/; 
+
+			if (!patron.test(valor)) {
+				input.value = '';
+			}
+
+			var medida = document.getElementById('medida');
+
+			if (input.value !== '' && medida.value === '') {
+				swal('Sapma!','Por favor, selecciona una medida.','warning');
+				medida.focus();
+			}
+		}
+
+
+		function formatInput(input) {
+			input.value = input.value.toUpperCase().trim();
+		}
+	</script>
+	<script>
+		$(document).ready(function () {
+			var originalValue = $('#serie').val();
+			var dinamicoval = $('#dinamico').val();
+			if (dinamicoval == 1){
+				$('#serie').prop('disabled', true);
+				$('#cer').prop('disabled', true);
+				$('#agente').prop('disabled', true);
+				$('#critico').prop('disabled', true);
+				$('#peso').prop('disabled', true);
+				$('#medida').prop('disabled', true);
+				$('#mm').prop('disabled', true);
+				$('#ph').prop('disabled', true);
+			}
+			$('#dinamico').on('change', function() {
+				if ($(this).val() == 0) {
+					$('#serie').prop('disabled', false);
+					$('#cer').prop('disabled', false);
+					$('#agente').prop('disabled', false);
+					$('#critico').prop('disabled', false);
+					$('#peso').prop('disabled', false);
+					$('#medida').prop('disabled', false);
+					$('#mm').prop('disabled', false);
+					$('#ph').prop('disabled', false);
+				} 
+			});
+
+			$('#serie').on('blur', function() {
+				if ($(this).val() !== originalValue) {
+					swal({
+						title: "SAPMA",
+						text: "Ha modificado un campo crítico",
+						type: "warning"
+					});
+				}
+			});
+
+			var originalValue1 = $('#cer').val();
+
+			$('#cer').on('blur', function() {
+				if ($(this).val() !== originalValue1) {
+					swal({
+						title: "SAPMA",
+						text: "Ha modificado un campo crítico",
+						type: "warning"
+					});
+				}
+			});
+			
+			$('#unidad').on('input', function() {
+				const userInput = $(this).val();
+				$.get('/autocomplete_unidad', { input: userInput }, function(data) {
+					const resultsList = $('#results-list');
+					resultsList.empty();
+					data.forEach(function(result) {
+						const resultOption = $('<option></option>').text(result.ef_unidad);
+						resultsList.append(resultOption);
+					});
+				});
+			});
+
+			$('#sup').on('input', function() {
+				const userInput = $(this).val();
+				$.get('/autocomplete_superintendencia', { input: userInput }, function(data) {
+					const resultsList = $('#super');
+					resultsList.empty();
+					data.forEach(function(result) {
+						const resultOption = $('<option></option>').text(result.SUPER);
+						resultsList.append(resultOption);
+					});
+				});
+			});
+
+			$('#ut').on('input', function() {
+				const userInput = $(this).val();
+				$.get('/autocomplete_utec', { input: userInput }, function(data) {
+					const resultsList = $('#utec');
+					resultsList.empty();
+					data.forEach(function(result) {
+						const resultOption = $('<option></option>').text(result.UTEC);
+						resultsList.append(resultOption);
+					});
+				});
+			});
+
+			$('#tag').on('change', function() {
+				var tag = $(this).val();
+				$.ajax({
+					url: '/check-tag',
+					type: 'POST',
+					data: { tag: tag },
+					success: function(data) {
+					if (data.exists) {
+						swal("¡SAPMA!", "TAG ya existe. Por favor ingrese uno distinto.", "error");
+        				$('#tag').val('');
+					}
+					}
+				});
+			});
+
+			$('#serie').on('change', function() {
+				var serie = $(this).val();
+				$.ajax({
+					url: '/check-serie',
+					type: 'POST',
+					data: { serie: serie },
+					success: function(data) {
+					if (data.exists) {
+						swal("¡SAPMA!", "Esta serie ya existe. Por favor ingrese una distinta.", "error");
+        				$('#serie').val('');
+					}
+					}
+				});
+			});
+
+			$('#cer').on('change', function() {
+				var cer = $(this).val();
+				$.ajax({
+					url: '/check-cer',
+					type: 'POST',
+					data: { cer: cer },
+					success: function(data) {
+					if (data.exists) {
+						swal("¡SAPMA!", "Esta certificación ya existe. Por favor ingrese una distinta.", "error");
+        				$('#cer').val('');
+					}
+					}
+				});
+			});
+
+			$('#tipoequipo').on('click', function() {
+				$('#modal_tipoequipo').modal('show');
+			});
+
+			$('#marcamodelo').on('click', function() {
+				$('#modal_marcamodelo').modal('show');
+			});
+
+			$('#agenteagente').on('click', function() {
+				$('#modal_agente').modal('show');
+			});
+
+			$('#guardar_marcamodelo').on('click', function(){
+				var marca = $('#marca').val();
+				var modelo = $('#modelo').val();
+				if(!marca || !modelo){
+					swal("¡SAPMA!", "Debe ingresar marca y modelo.", "error");
+				}else{
+					$.ajax({
+						url: '/verificar_mm',
+						method: 'POST',
+						data: { marca: marca, modelo: modelo },
+						success: function(data) {
+						if (data.error) {
+							swal({
+							title: "¡SAPMA!",
+							text: data.error,
+							type: "error",
+							confirmButtonClass: "btn-danger",
+							confirmButtonText: "Ok",
+							closeOnConfirm: true
+							});
+						} else {
+							swal({
+							title: "¡SAPMA!",
+							text: "¿Desea agregar marca y modelo de equipo?",
+							type: "warning",
+							showCancelButton: true,
+							confirmButtonClass: "btn-primary",
+							confirmButtonText: "Si",
+							cancelButtonText: "No",
+							closeOnConfirm: true
+							}, function(isConfirm) {
+							if (isConfirm) {
+								$.ajax({
+								url: '/agregar_mm',
+								method: 'POST',
+								data: { marca: marca, modelo: modelo },
+								success: function(data) {
+									swal({
+									title: "¡SAPMA!",
+									text: "Registro agregado con exito",
+									type: "success",
+									confirmButtonClass: "btn-primary",
+									closeOnConfirm: true
+									});
+								$('#mm').append($('<option>', {
+									value: data.id,
+									text: data.descripcion
+								}));
+								$('#modal_marcamodelo').modal('hide');
+								$('#marca').val('');
+								$('#modelo').val('');
+								}
+								});
+							}
+							});
+						}
+						}
+					});
+				}
+			});
+
+			$('#guardar_tipoequipo').on('click', function() {
+			var descripcion = $('#atp').val();
+			if (!descripcion){
+				swal("¡SAPMA!", "Debe ingresar una descripción.", "error");
+			}else{
+				$.ajax({
+				url: '/verificar_tipo',
+				method: 'POST',
+				data: { descripcion: descripcion },
+				success: function(data) {
+				if (data.error) {
+					swal({
+					title: "¡SAPMA!",
+					text: data.error,
+					type: "error",
+					confirmButtonClass: "btn-danger",
+					confirmButtonText: "Ok",
+					closeOnConfirm: true
+					});
+				} else {
+					swal({
+					title: "¡SAPMA!",
+					text: "¿Desea agregar tipo de equipo?",
+					type: "warning",
+					showCancelButton: true,
+					confirmButtonClass: "btn-primary",
+					confirmButtonText: "Si",
+					cancelButtonText: "No",
+					closeOnConfirm: true
+					}, function(isConfirm) {
+					if (isConfirm) {
+						$.ajax({
+						url: '/agregar_tipo',
+						method: 'POST',
+						data: { descripcion: descripcion },
+						success: function(data) {
+							swal({
+							title: "¡SAPMA!",
+							text: "Tipo de equipo agregado con exito",
+							type: "success",
+							confirmButtonClass: "btn-primary",
+							closeOnConfirm: true
+							});
+							$('#tipoe').append($('<option>', {
+								value: data.id,
+								text: data.descripcion
+							}));
+							$('#modal_tipoequipo').modal('hide');
+							$('#atp').val('');
+						}
+						});
+					}
+					});
+				}
+				}
+			});
+			}
+			});
+
+			$('#guardar_agente').on('click', function() {
+			var descripcion = $('#aagente').val();
+			if (!descripcion){
+				swal("¡SAPMA!", "Debe ingresar una descripción.", "error");
+			}else{
+				$.ajax({
+				url: '/verificar_agente',
+				method: 'POST',
+				data: { descripcion: descripcion },
+				success: function(data) {
+				if (data.error) {
+					swal({
+					title: "¡SAPMA!",
+					text: data.error,
+					type: "error",
+					confirmButtonClass: "btn-danger",
+					confirmButtonText: "Ok",
+					closeOnConfirm: true
+					});
+				} else {
+					swal({
+					title: "¡SAPMA!",
+					text: "¿Desea agregar agente?",
+					type: "warning",
+					showCancelButton: true,
+					confirmButtonClass: "btn-primary",
+					confirmButtonText: "Si",
+					cancelButtonText: "No",
+					closeOnConfirm: true
+					}, function(isConfirm) {
+					if (isConfirm) {
+						$.ajax({
+							url: '/agregar_agente',
+							method: 'POST',
+							data: { descripcion: descripcion },
+							success: function(data) {
+								swal({
+									title: "¡SAPMA!",
+									text: "Agente agregado con exito",
+									type: "success",
+									confirmButtonClass: "btn-primary",
+									closeOnConfirm: true
+								});
+								// Agregar el nuevo agente a la lista desplegable
+								$('#agente').append($('<option>', {
+									value: data.id,
+									text: data.descripcion
+								}));
+								$('#modal_agente').modal('hide');
+								$('#aagente').val('');
+							}
+						});
+					}
+					});
+				}
+				}
+			});
+			}
+			});
+
+			$('#agrega_protocolos').on('click', function() {
+				$('#modal_protocolo').modal('show');
+			});
+
+			$('#modal_protocolo').on('hidden.bs.modal', function() {
+
+				$('#form_protocolo')[0].reset();
+				
+				$('#protocolo').val('').trigger('change');
+				$('#protocolo-correspondiente').empty().append('<option value="">Seleccione un protocolo</option>');
+			});
+
+			function updateProtocoloCorrespondienteOptions() {
+				let tipoProtocolo = $('#protocolo').val();
+				let tipoEquipo = $('#tipoe').val();
+				$('#protocolo-correspondiente').empty().append('<option value="">Seleccione un protocolo</option>');
+
+				if (tipoProtocolo) {
+					$.get(`/ruta/protocolos/${tipoProtocolo}/${tipoEquipo}`, function(data) {
+						data.forEach(function(protocolo) {
+							// Verificar si el protocolo ya está en la tabla
+							var isInTable = false;
+							$('#protocolos-seleccionados tr').each(function() {
+								var rowTipoProtocolo = $(this).find('td:nth-child(1)').text();
+								var rowProtocolo = $(this).find('td:nth-child(3)').text();
+								if (rowTipoProtocolo === tipoProtocolo && rowProtocolo === protocolo.Id) {
+									isInTable = true;
+									return false;
+								}
+							});
+
+							// Agregar la opción solo si el protocolo no está en la tabla
+							if (!isInTable) {
+								$('#protocolo-correspondiente').append(`<option value="${protocolo.Id}">${protocolo.Descripcion}</option>`);
+							}
+						});
+					});
+				}
+			}
+
+			$('#tipoe').change(function() {
+				$('#agrega_protocolos').prop("hidden", false);
+				$('#protocolos-seleccionados tr').each(function() {
+					let tipoProtocolo = $(this).find('td:first-child').text();
+					$(this).remove();
+					$(`#protocolo option[value="${tipoProtocolo}"]`).prop('disabled', false);
+				});
+
+				tiposAsignados = [];
+			});
+
+			$('#protocolo').change(function() {
+ 				updateProtocoloCorrespondienteOptions();
+			});
+
+			let tiposAsignados = [];
+
+			$('#asignar').click(function() {
+				let tipoProtocolo = $('#protocolo option:selected');
+				let protocolo = $('#protocolo-correspondiente option:selected');
+				let tipoProtocoloValue = tipoProtocolo.val();
+				let protocoloValue = protocolo.val();
+
+				if (tipoProtocoloValue && protocoloValue) {
+					// Verificar si el protocolo ya está en la tabla
+					var isInTable = false;
+					$('#protocolos-seleccionados tr').each(function() {
+						var rowTipoProtocolo = $(this).find('td:nth-child(1)').text();
+						var rowProtocolo = $(this).find('td:nth-child(3)').text();
+						if (rowTipoProtocolo === tipoProtocoloValue) {
+							isInTable = true;
+							return false;
+						}
+					});
+
+					if (isInTable) {
+						// Mostrar una alerta si el protocolo ya está en la tabla
+						swal('SAPMA','Este tipo de tipo de protocolo ya está asignado. Por favor, elimínelo para poder continuar.','error');
+						$('#modal_protocolo').modal('hide');
+					} else {
+						// Agregar la fila a la tabla si el protocolo no está en la tabla
+						$('#protocolos-seleccionados').append(`<tr><td>${tipoProtocoloValue}</td><td>${tipoProtocolo.text()}</td><td>${protocoloValue}</td><td>${protocolo.text()}</td><td></button><button class="btn btn-inline btn-danger btn-sm ladda-button eliminar"><i class="fa fa-trash"></i></button></td></tr>`);
+						$('#protocolo').val('');
+						$('#protocolo-correspondiente').empty().append('<option value="">Seleccione un protocolo</option>');
+						$('#modal_protocolo').modal('hide');
+						$('.protocolo-field').show();
+
+						tiposAsignados.push(tipoProtocoloValue);
+
+						$(`#protocolo option[value="${tipoProtocoloValue}"]`).prop('disabled', true);
+						$(`#protocolo option[value="${tipoProtocoloValue}"]`).prop('selected', false);
+					}
+				}
+			});
+
+			var tipoProtocoloIds = [];
+			var protocoloIds = [];
+
+			$('#protocolos-seleccionados').on('click', '.eliminar', function(event) {
+				var row = $(this).closest('tr');
+				var tipoProtocoloId = row.find('td:nth-child(1)').text();
+				var protocoloId = row.find('td:nth-child(3)').text();
+				tipoProtocoloIds.splice(tipoProtocoloIds.indexOf(tipoProtocoloId), 1);
+				protocoloIds.splice(protocoloIds.indexOf(protocoloId), 1);
+				row.remove();
+				// Habilitar la opción en el menú desplegable del modal
+				$('#protocolo option[value="' + tipoProtocoloId + '"]').prop('disabled', false);
+				$('#agrega_protocolos').prop("hidden", false);
+				updateProtocoloCorrespondienteOptions();
+
+			});
+		
+			var protactu = [];
+			$('.protocolo-field tbody tr').each(function() {
+				var protocoloId = $(this).find('td#ID_TP').text();
+				var tipoProtocolo = $(this).find('td#TIPO_PROTOCOLO').text();
+				var idP = $(this).find('td#ID_P').text();
+				var protocolo = $(this).find('td#PROTOCOLO').text();
+
+				var datosProtocolo = {
+					protocoloId: protocoloId,
+					tipoProtocolo: tipoProtocolo,
+					idP: idP,
+					protocolo: protocolo
+				};
+
+				protactu.push(datosProtocolo);
+			});
+			
+			$('#gerencia1').change(function() {
+				var gerenciaSeleccionada = $(this).val();
+				if (gerenciaSeleccionada !== '') {
+					$('#area1').prop('disabled', false);
+				} else {
+					$('#area1').prop('disabled', true);
+					$('#sector1').prop('disabled', true);
+				}
+			});
+
+			$('#area1').change(function() {
+				var areaSeleccionada = $(this).val();
+				if (areaSeleccionada !== '') {
+					$('#sector1').prop('disabled', false);
+				} else {
+					$('#sector1').prop('disabled', true);
+				}
+			});
+			
+			$('#guardar').on('click', function() {
+				var gerenciaSeleccionada = $('#gerencia1').val();
+				var areaSeleccionada = $('#area1').val();
+				var sectorSeleccionado = $('#sector1').val();
+				var dinamicos = $('#dinamico').val();
+				var series = $('#serie').val();
+				var cers = $('#cer').val();
+
+				if((gerenciaSeleccionada !== '' && areaSeleccionada === '' && sectorSeleccionado === '') || (gerenciaSeleccionada !== '' && areaSeleccionada !== '' && sectorSeleccionado === '')) {
+					swal('Sapma','Debe seleccionar una gerencia, un área y un sector.', 'error');
+				} else {
+					if (dinamicos == 1) {
+						if (series == '' & cers == '') {
+							swal("¡SAPMA!", "Si el equipo es dinamico, debe agregar una serie o una certificación.", "error");
+							return;
+						}
+					} 
+
+					var old_tipoe = $('#old_tipo_equipo_id').val();
+					var old_tipoe_text = $('#old_tipo_equipo').val();
+					var old_serie = $('#old_serie').val();
+					var old_cer = $('#old_cer').val();
+					var old_agente_id = $('#old_agente_id').val();
+					var old_agente = $('#old_agente').val();
+					var old_critico = $('#old_critico').val();
+					var old_dinamico = $('#old_dinamico').val();
+					var old_peso = $('#old_peso').val();
+					var old_medida = $('#old_medida').val();
+					var old_pesoConMedida = old_peso + ' ' + old_medida;
+					var old_mm_id = $('#old_mm_id').val();
+					var old_mm_text = $('#old_mm').val();
+					var old_ph= $('#old_ph').val();
+					var old_gerencia = $('#old_gerencia').val();
+					var old_area = $('#old_area').val();
+					var old_sector = $('#old_sector').val();
+					var old_du = $('#old_du').val();
+					var old_unidad = $('#old_unidad').val();
+					var old_sup = $('#old_sup').val();
+					var old_ut = $('#old_ut').val();
+
+					var id_equipo = $('#id_equipo').val();
+					var tag = $('#tag').val();
+					var tipoe = $('#tipoe').val();
+					var tipoe_text = $('#tipoe option:selected').text();
+					var serie = $('#serie').val();
+					var cer = $('#cer').val();
+					var agente_id = $('#agente').val();
+					var agente = $('#agente option:selected').text();
+					var peso = $('#peso').val();
+					var medida = $('#medida').val();
+					var pesoConMedida = peso + ' ' + medida;
+					var unidad = $('#unidad').val();
+					var mm = $('#mm').val();
+					var mm_text = $('#mm option:selected').text();
+					var critico = $('#critico').val();
+					var dinamico = $('#dinamico').val();
+					var ph = $('#ph').val();
+					var sup = $('#sup').val();
+					var gerencia = $('#gerencia').val();
+					var area = $('#area').val();
+					var sector = $('#sector').val();
+					var id_sector_old = $('#id_sector_old').val();
+					var gerencia_new = $('#gerencia1 option:selected').text();
+					var area_new = $('#area1 option:selected').text();
+					var sector_new_text = $('#sector1 option:selected').text();
+					var sector_new = $('#sector1').val();
+					var du = $('#du').val();
+					var ut = $('#ut').val();
+
+
+					$('#tipoequiponew').text(tipoe_text);
+
+					$('#protocolos-seleccionados tr').each(function() {
+						var tipoProtocoloId = $(this).find('td:nth-child(1)').text();
+						var protocoloId = $(this).find('td:nth-child(3)').text();
+						tipoProtocoloIds.push(tipoProtocoloId);
+						protocoloIds.push(protocoloId);
+					});
+
+					var cambios = [];
+					$('#protocolos-seleccionados tr').each(function() {
+						var protocoloId1 = $(this).find('td:nth-child(1)').text();
+						var tipoProtocolo1 = $(this).find('td:nth-child(2)').text();
+						var idP1 = $(this).find('td:nth-child(3)').text();
+						var protocolo1 = $(this).find('td:nth-child(4)').text();
+
+						var datosProtocolo1 = {
+							protocoloId1: protocoloId1,
+							tipoProtocolo1: tipoProtocolo1,
+							idP1: idP1,
+							protocolo1: protocolo1
+						};
+
+						cambios.push(datosProtocolo1);
+					});
+
+					var idP1Array = [];
+
+					for (var i = 0; i < cambios.length; i++) {
+						var idP1 = cambios[i].idP1;
+						idP1Array.push(idP1);
+					}
+
+					var protocoloId1Array = [];
+
+					for (var i = 0; i < cambios.length; i++) {
+						var protocoloId1 = cambios[i].protocoloId1;
+						protocoloId1Array.push(protocoloId1);
+					}
+
+					if (cambios.length < 1) {
+						swal("SAPMA", "Debe asignar todos los protocolos", "error");
+					}else{
+							var data = {
+								id_equipo: id_equipo,
+								tag: tag,
+								tipoe_text: tipoe_text,
+								tipoe: tipoe,
+								serie: serie,
+								cer: cer,
+								agente_id: agente_id,
+								agente: agente, 
+								pesoConMedida: pesoConMedida,
+								unidad: unidad,
+								mm: mm,
+								mm_text: mm_text,
+								critico: critico,
+								dinamico: dinamico,
+								ph: ph,
+								sup: sup,
+								gerencia: gerencia,
+								area: area, 
+								sector: sector,
+								id_sector_old: id_sector_old,
+								gerencia_new: gerencia_new,
+								area_new: area_new,
+								sector_new: sector_new,
+								sector_new_text,
+								du: du,
+								ut: ut,
+								protocoloId1Array: protocoloId1Array,
+								idP1Array: idP1Array,
+								cambios: cambios,
+								protactu: protactu
+							};
+
+						$('#confirmModal tbody').empty();
+
+						if (old_tipoe_text !== tipoe_text) {
+							$('#confirmModal tbody').append('<tr><td>Tipo de Equipo: ' +old_tipoe+ ' | '+ old_tipoe_text + '</td><td>Tipo de Equipo: ' + tipoe +' | ' +tipoe_text + '</td></tr>');
+						}
+						if (old_serie !== serie) {
+							$('#confirmModal tbody').append('<tr><td>Serie: ' + old_serie + '</td><td>Serie: ' + serie + '</td></tr>');
+						}
+						if (old_ph !== ph) {
+							$('#confirmModal tbody').append('<tr><td>PH: ' + old_ph + '</td><td>PH: ' + ph + '</td></tr>');
+						}
+						if (old_cer !== cer) {
+							$('#confirmModal tbody').append('<tr><td>Certificación: ' + old_cer + '</td><td>Certificación: ' + cer + '</td></tr>');
+						}
+						if (old_agente !== agente) {
+							$('#confirmModal tbody').append('<tr><td>Agente: ' + old_agente_id +' | '+old_agente + '</td><td>Agente: ' + agente_id+' | ' +agente + '</td></tr>');
+						}
+						if (old_critico !== critico) {
+							var old_critico_text = old_critico == 1 ? 'Sí' : 'No';
+							var critico_text = critico == 1 ? 'Sí' : 'No';
+							$('#confirmModal tbody').append('<tr><td>Critico: ' + old_critico_text + '</td><td>Critico: ' + critico_text + '</td></tr>');
+						}
+						if (old_dinamico !== dinamico) {
+							var old_dinamico_text = old_dinamico == 1 ? 'Sí' : 'No';
+							var dinamico_text = dinamico == 1 ? 'Sí' : 'No';
+							$('#confirmModal tbody').append('<tr><td>Dinámico: ' + old_dinamico_text + '</td><td>Dinámico: ' + dinamico_text + '</td></tr>');
+						}
+						if (old_pesoConMedida !== pesoConMedida) {
+							$('#confirmModal tbody').append('<tr><td>Valor medida: ' + old_pesoConMedida + '</td><td>Valor medida: ' + pesoConMedida + '</td></tr>');
+						}
+						if (old_mm_text !== mm_text) {
+							$('#confirmModal tbody').append('<tr><td>Marca / Modelo: ' + old_mm_id+' | '+old_mm_text + '</td><td>Marca - Modelo: ' + mm + ' - ' +mm_text + '</td></tr>');
+						}
+						if (old_du !== du) {
+							$('#confirmModal tbody').append('<tr><td>Detalle de ubicación: ' + old_du + '</td><td>Detalle de ubicación: ' + du + '</td></tr>');
+						}
+						if (old_unidad !== unidad) {
+							$('#confirmModal tbody').append('<tr><td>Unidad técnica: ' + old_unidad + '</td><td>Unidad técnica: ' + unidad + '</td></tr>');
+						}	
+						if (old_sup !== sup) {
+							$('#confirmModal tbody').append('<tr><td>Superintendencia: ' + old_sup + '</td><td>Superintendencia: ' + sup + '</td></tr>');
+						}
+						if (old_ut !== ut) {
+							$('#confirmModal tbody').append('<tr><td>Ubicación técnica: ' + old_ut + '</td><td>Ubicación técnica: ' + ut + '</td></tr>');
+						}
+						if (old_gerencia !== gerencia_new && gerencia_new !== "Seleccione una gerencia") {
+							$('#confirmModal tbody').append('<tr><td>Gerencia: ' + old_gerencia + '</td><td>Gerencia: ' + gerencia_new + '</td></tr>');
+						}
+
+						if (old_area !== area_new && area_new !== "Seleccione un área") {
+							$('#confirmModal tbody').append('<tr><td>Area: ' + old_area + '</td><td>Area: ' + area_new + '</td></tr>');
+						}
+						if (old_sector !== sector_new_text && sector_new_text !== "Seleccione un sector") {
+							$('#confirmModal tbody').append('<tr><td>Sector: ' + old_sector + '</td><td>Sector: ' + sector_new_text + '</td></tr>');
+						}
+						for (var i = 0; i < protactu.length; i++) {
+							var protocoloId = protactu[i].protocoloId;
+							var protocolo = protactu[i].protocolo;
+							var idP = protactu[i].idP;
+
+							for (var j = 0; j < cambios.length; j++) {
+								var protocoloId1 = cambios[j].protocoloId1;
+								var protocolo1 = cambios[j].protocolo1;
+								var idP1 = cambios[j].idP1;
+
+								if (protocoloId === protocoloId1) {
+
+								if (protocolo === protocolo1) {
+									console.log('Valores iguales:', protocoloId, protocoloId1);
+									console.log('protocolo:', protocolo);
+									console.log('protocolo1:', protocolo1);
+								} else {
+									var tabla = $('#confirmModal tbody'); 
+									var fila = '<tr><td>Protocolo: ' + idP +' / ' +protocolo + '</td><td>Protocolo: ' + idP1 + ' / ' +  protocolo1 + '</td></tr>';
+									tabla.append(fila);
+								}
+								}
+							}
+						}
+						
+						var tabla = $('#confirmModal tbody');
+
+						if (tabla.is(':empty')) {
+							$('#actualizar').prop('hidden', true);
+							swal("SAPMA", "No hay cambios a realizar", "warning");
+							$('#confirmModal').modal('hide');
+						} else {
+							$('#actualizar').prop('hidden', false);
+							$('#confirmModal').modal('show');
+						}
+
+						$('#actualizar').on('click', function() {
+
+							var datosTabla = [];
+
+							$('#confirmModal tbody tr').each(function() {
+								var datosActuales = $(this).find('td:eq(0)').text();
+								var cambiosRealizar = $(this).find('td:eq(1)').text();
+
+								var fila = {
+									datosActuales: datosActuales,
+									cambiosRealizar: cambiosRealizar
+								};
+
+								datosTabla.push(fila);
+							});
+
+							var obs = $('#observaciones').val();
+
+							var datos = {
+								data: data, // Agrega aquí el otro objeto que deseas enviar
+								datosTabla: datosTabla,
+								observaciones: obs
+							};
+
+							swal({
+								title: "¡SAPMA!",
+								text: "¿Desea actualizar este equipo?",
+								type: "warning",
+								showCancelButton: true,
+								confirmButtonClass: "btn-primary",
+								confirmButtonText: "Si",
+								cancelButtonText: "No",
+								closeOnConfirm: true
+							}, function(isConfirm){
+								if(isConfirm){
+									$.ajax({
+									url: '/actualizar_equipo',
+									type: 'POST',
+									data: datos,
+									beforeSend: function(){
+										swal({
+											title: "Guardando",
+											text: "Espere un momento por favor...",
+											imageUrl:"/img/Spinner-1s-200px2.gif",
+											showConfirmButton: false,
+											allowOutsideClick: false
+										});
+									}
+								}).done(function(data){
+									if (data.error) {
+										// Mostrar mensaje de error
+										swal({
+											title: "¡Error!",
+											text: data.error,
+											type: "error",
+											confirmButtonText: "Aceptar",
+											allowOutsideClick: false
+										});
+									} else {
+										// Mostrar mensaje de éxito
+										swal({
+											title: "¡SAPMA!",
+											text: "Equipo actualizado correctamente",
+											type: "success",
+											confirmButtonText: "Aceptar",
+											allowOutsideClick: false
+										});
+										setTimeout(function () {
+											location.reload();
+										}, 1000);
+									}
+								})
+								}
+								}
+							);
+							$('#confirmModal').modal('hide');
+						});
+					}
+				}
+			});
+
+		});
+	</script>

@@ -1,0 +1,203 @@
+<body class="with-side-menu">
+	{{> navbar }}
+	<div class="mobile-menu-left-overlay-"></div>
+	{{> nav }}
+	<div class="page-content">
+		<div class="container-fluid">
+			<header class="section-header">
+				<div class="tbl">
+					<div class="tbl-row">
+						<div class="tbl-cell">
+							<h3>Tareas Generales</h3>
+							<ol class="breadcrumb breadcrumb-simple">
+								<li><a href="/home">Inicio</a></li>
+								<li class="active">Tareas</li>
+							</ol>
+						</div>
+						<div class="form-group float-right">
+                            <button type="button" class="btn btn-rounded btn-warning" id="pdfs" name="pdfs" hidden="true" ><i class="fa fa-file-pdf-o"></i></button>
+							<button type="button" class="btn btn-rounded btn-warning" id="pdfs1" name="pdfs1" hidden="true" ><i class="fa fa-file-pdf-o"></i></button>
+						</div>
+					</div>
+				</div>
+				<style>
+					.dataTables_filter {
+							float: left;
+					}
+					.dt-buttons {
+						float: right;
+					}
+					.no-seleccionable {
+						cursor: not-allowed;
+						pointer-events: none;
+					}
+				</style>
+			</header>
+			<div class="box-typical box-typical-padding">
+				<div class="row">
+					<form action="/tgenerales" method="post" return="false">
+						<div class="col-md-3" id="ano">
+							<label class="form-label" for="date3">Seleccione año</label>
+							<select class="form-control" name="date3" id="date3"></select>
+						</div>
+						<div class="col-md-3" id="mes">
+							<label class="form-label" for="date4">Seleccione mes</label>
+							<select class="form-control" name="date4" id="date4">
+								<option value="">--Seleccione un mes--</option>
+								<option value="1">Enero</option>
+								<option value="2">Febrero</option>
+								<option value="3">Marzo</option>
+								<option value="4">Abril</option>
+								<option value="5">Mayo</option>
+								<option value="6">Junio</option>
+								<option value="7">Julio</option>
+								<option value="8">Agosto</option>
+								<option value="9">Septiembre</option>
+								<option value="10">Octubre</option>
+								<option value="11">Noviembre</option>
+								<option value="12">Diciembre</option>  
+							</select> 
+						</div>
+						<div class="col-md-3">
+							<label class="form-label" id="buscar">Buscar una Tarea</label>
+							<input class="form-control" id="tarea" name="tarea" placeholder="Ingrese un ID de Tarea">
+						</div>
+						<div class="col-md-3">
+							<label class="form-label" id="buscar" style="color: aliceblue;">.</label>
+							<button type="submit" name="buscar" id="buscar" class="btn btn-rounded btn-primary " return="false">Filtrar</button>
+						</div>
+						<div class="col-md-12 col-xs-12" >
+							<h5 class="m-t-lg with-border"><strong></strong></h5>
+						</div>
+				</div>
+					{{#if title }}
+						<div class="alert alert-danger" role="alert">
+							{{ title }}
+						</div>
+					{{/if}}
+					<br>
+					<style>
+						#check-toggle-1:checked + label::before {
+							background-color: #f00;
+							border-color: #f00;
+						}
+						#check-toggle-3:checked + label::before {
+							background-color: #f00;
+							border-color: #f00;
+						}
+						#check-toggle-4:checked + label::before {
+							background-color: #f00;
+							border-color: #f00;
+						}
+						#check-toggle-2:checked + label::before {
+							background-color: rgb(14, 228, 18);
+							border-color: rgb(14, 228, 18);
+						}
+					</style>
+					<div class="checkbox-toggle">
+						<input type="checkbox" id="check-toggle-1">
+						<label for="check-toggle-1">Anular Tareas</label>
+					</div>		
+					<div class="checkbox-toggle" id="anula_todo">
+						<input type="checkbox" id="check-toggle-3">
+						<label for="check-toggle-3">Anular Tareas usando lista</label>
+					</div>			
+					<div class="checkbox-toggle" id="second-div" style="display: none;">
+						<input type="checkbox" id="check-toggle-2" >
+						<label for="check-toggle-2">Seleccionar todo</label>
+					</div>
+					<div class="checkbox-toggle" id="anula_ex">
+						<input type="checkbox" id="check-toggle-4" >
+						<label for="check-toggle-4">Anular usando archivo</label>
+					</div>
+
+					<table id="tabla_prot" class="table table-bordered table-striped table-vcenter js-dataTable-full">
+						<thead>
+							<tr>
+								<th title="Seleccionar todo"></th>
+								<th>Tarea</th>
+								<th>Fecha</th>
+								<th>Tag</th>
+								<th>Técnico planificado</th>
+								<th>Gerencia</th>
+								<th>Area</th>
+								<th>Sector</th>
+								<th>Tipo de servicio</th>
+								<th>Estado de tarea</th>
+								<th>Estado equipo</th>
+								<th>Observación estado</th>
+								<th>Repuestos</th>
+								<th>Ver</th>
+							</tr>
+						<tbody>
+							{{#each prot}}
+							<tr>
+								<td>{{IDT}}</td>
+								<td>{{IDT}}</td>
+								<td>{{FECHA}}</td>
+								<td>{{CODIGO}}</td>
+								<td>{{TECNICO}}</td>
+								<td>{{GERENCIA}}</td>
+								<td>{{AREA}}</td>
+								<td>{{SECTOR}}</td>
+								<td>{{SERVICIO}}</td>
+								<td>{{ESTADO}}</td>
+								<td>{{ESTADO_EQUIPO}}</td>
+								<td>{{OBSERVACION_ESTADO}}</td>
+								<td>{{REPUESTOS}}</td>
+								{{#ifEquals ESTADO "Terminada sin validar"}}
+									<td><center><a href="/protocolo/{{ IDT }}" class="btn btn-inline btn-primary btn-sm ladda-button" target="_blank"><i class="fa fa-file-archive-o"></i></a></center></td>	
+								{{else}}
+									{{#ifEquals ESTADO "Terminada validada"}}
+										<td><center><a href="/protocolo/{{ IDT }}" class="btn btn-inline btn-primary btn-sm ladda-button" target="_blank"><i class="fa fa-file-archive-o"></i></a></center></td>
+									{{else}}
+										<td><center></center></td>
+									{{/ifEquals}}
+								{{/ifEquals}}
+							</tr>
+							{{/each}}
+						</tbody>
+					</table>
+					</form>
+					<form id="form_todo" style="display: none;">
+						<br>
+						<br>
+						<div class="form-group row">
+							<label for="exampleSelect" class="col-sm-2 form-control-label">* Ingrese una lista de tareas separadas por coma:</label>
+							<div class="col-sm-10">
+								<textarea rows="5" class="form-control" id="tareas_lista"></textarea>
+							</div>
+						</div>
+						<br>
+					</form>
+					<form id="form_ex" style="display: none;">
+						<br>
+						<br>
+						<div class="form-group">
+							<label for="file-input">* Descarga la plantilla, luego ingresa los IDs de las tareas a anular en el archivo excel. Selecciona el archivo y anula las tareas.</label>
+							<br>
+							<input type="file" class="form-control" id="file-input" accept=".csv, application/vnd.ms-excel, application/vnd.openxmlformats-officedocument.spreadsheetml.sheet">
+						</div>
+					</form>
+					<button class="btn btn-rounded btn-danger" id="anula_lista" name="anula_lista" hidden="true">Anular Tareas</button>
+					<button class="btn btn-rounded btn-danger" id="anular1" name="anular1" hidden="true">Anular Tareas</button>
+					<br>
+					<button class="btn btn-rounded btn-danger" id="anular2" name="anular2" hidden="true">Anular Tareas</button>
+					<button class="btn btn-rounded btn-success float-right" id="excel" name="excel" hidden="true">Descarga plantilla</button>
+			</div>
+		</div>	
+	</div>
+	<script src="/js/lib/jquery/jquery.min.js"></script>
+	<script src="/js/lib/tether/tether.min.js"></script>
+	<script src="/js/lib/bootstrap/bootstrap.min.js"></script>
+	<script src="/js/plugins.js"></script>
+	<script src="/js/app.js"></script>
+	<script src="/js/lib/datatables-net/datatables.min.js"></script>
+	<script src="/js/lib/bootstrap-sweetalert/sweetalert.min.js"></script>
+	<script src="/js/lib/summernote/summernote.min.js"></script>
+	<script src="/js/lib/fancybox/jquery.fancybox.pack.js"></script>
+	<script src="/js/summernote-ES.js"></script>
+	<script src="/js/lib/select2/select2.full.min.js"></script>
+	<script type="text/javascript" src="https://gyrocode.github.io/jquery-datatables-checkboxes/1.2.12/js/dataTables.checkboxes.min.js"></script>
+	<script src="/generales.js"></script>
+</body>

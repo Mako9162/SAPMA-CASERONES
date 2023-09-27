@@ -1,0 +1,609 @@
+<body class="with-side-menu">
+	{{> navbar }}
+	<div class="mobile-menu-left-overlay-"></div>
+	{{> nav }}
+	<div class="page-content">
+		<div class="container-fluid">
+			<header class="section-header">
+				<div class="tbl">
+					<div class="tbl-row">
+						<div class="tbl-cell">
+							<h3>Equipos</h3>
+							<ol class="breadcrumb breadcrumb-simple">
+								<li><a href="/home">Inicio</a></li>
+								<li class="active">Equipos</li>
+							</ol>
+						</div>
+						<div class="form-group float-right">
+                            <a href="/equiposnew" type="button" class="btn btn-inline btn-primary-outline">Nuevo</a>
+                        </div>
+					</div>
+				</div>
+				<style>
+						.miClase {
+							font-family: Verdana, Geneva, Tahoma, sans-serif;
+							font-size: 10px; /* Cambia el tamaño de la fuente a 14px */
+						}
+						.dataTables_filter {
+							float: left;
+						}
+						.dt-buttons {
+							float: right;
+						}
+					</style>
+			</header>
+			<div class="box-typical box-typical-padding">
+				<div class="row">
+					</div>
+					<form action="" method="post" return="false">					
+					<div class="checkbox-toggle col-md-12">
+							<style>
+							#check-toggle-1:checked + label::before {
+								background-color: #f00;
+								border-color: #f00;
+							}
+							</style>
+						<input type="checkbox" id="check-toggle-1">
+						<label for="check-toggle-1">Baja de equipos</label>&nbsp;&nbsp;&nbsp;
+							<style>
+							#check-toggle-2:checked + label::before {
+								background-color: #f00;
+								border-color: #f00;
+							}
+							</style>
+						<input type="checkbox" id="check-toggle-2">
+						<label for="check-toggle-2">Baja de equipos usando lista</label>
+					</div>
+					<br>
+					<br>
+					<br>
+					{{#if title }}
+						<div class="alert alert-danger" role="alert">
+							{{ title }}
+						</div>
+					{{/if}}
+					<div class="col-md-3">
+						<label class="form-label" id="equipos">Buscar Equipo</label>
+						<input class="form-control" id="equipo" name="equipo" placeholder="Ingrese un TAG de Equipo">
+					</div>
+					<div class="col-md-3">
+						<label class="form-label" id="buscar" style="color: aliceblue;">.</label>
+						<button type="submit" name="buscar1" id="buscar1" class="btn btn-rounded btn-primary ">Buscar</button>
+					</div>
+					<div class="col-md-12 col-xs-12" >
+						<h5 class="m-t-lg with-border"><strong></strong></h5>
+					</div>
+				<br>		
+					<table id="tabla_prot" class="table table-bordered table-striped table-vcenter js-dataTable-full">
+						<thead>
+							<tr>
+								<th>Id</th>
+								<th>Tag</th>
+								<th>Critico</th>
+								<th>Dinámico</th>
+								<th>Gerencia</th>
+								<th>Area</th>
+								<th hidden="true">Id_Sector</th>
+								<th>Sector</th>
+								<th>Detalle ubicación</th>
+								<th>Tipo de equipo</th>
+								<th>Serie</th>
+								<th>Certificación</th>
+								<th>Marca</th>
+								<th>Modelo</th>
+								<th>Agente</th>
+								<th>Peso</th>
+								<th>PH</th>
+								<th>Superintendencia</th>
+								<th>Ubicación técnica</th>
+								<th>Unidad</th>
+								<th>Ver</th>
+							</tr>
+						</thead>
+						{{#each data}}
+							<tr>
+								<td>{{ID}}</td>
+								<td>{{TAG}}</td>
+								<td>{{CRITICO}}</td>	
+								<td>{{DINAMICO}}</td>							
+								<td>{{GERENCIA}}</td>
+								<td>{{AREA}}</td>
+								<td hidden="true">{{ID_SECTOR}}</td>
+								<td>{{SECTOR}}</td>
+								<td>{{UBICACION}}</td>
+								<td>{{TIPO}}</td>
+								<td>{{SERIE}}</td>
+								<td>{{CERTIFICACION}}</td>
+								<td>{{MARCA}}</td>
+								<td>{{MODELO}}</td>
+								<td>{{AGENTE}}</td>
+								<td>{{PESO}}</td>
+								<td>{{PH}}</td>
+								<td>{{SUPERINTENDENCIA}}</td>
+								<td>{{UTECNICA}}</td>
+								<td>{{UNIDAD}}</td>
+								<td class="text-center"><a href="/editequi/{{ID}}" type="button" id="btneditar" class="btn btn-inline btn-warning btn-sm ladda-button"><i class="fa fa-eye"></i></a></td>
+							</tr>
+						{{/each}}	
+						<tbody>
+						</tbody>
+					</table>
+					</form>
+					<form id="form_todo" style="display: none;">
+						<br>
+						<br>
+						<div class="form-group row">
+							<label for="exampleSelect" class="col-sm-2 form-control-label">* Ingrese una lista de Tags separados por coma:</label>
+							<div class="col-sm-10">
+								<textarea rows="5" class="form-control" id="tag_lista"></textarea>
+							</div>
+						</div>
+						<br>
+					</form>
+                    <br>
+					<button class="btn btn-rounded btn-danger" id="baja1" name="baja1" hidden="true">Dar de baja</button>	
+					<button class="btn btn-rounded btn-danger" id="baja" name="baja" hidden="true">Dar de baja</button>
+			</div>
+			<div id="my-dialog" class="modal" tabindex="-1" role="dialog" style="display: none;">
+				<div class="modal-dialog" role="document">
+					<div class="modal-content">
+					<div class="modal-header">
+						<h5 class="modal-title">¡SAPMA!</h5>
+						<button type="button" class="close" data-dismiss="modal" aria-label="Close">
+						<span aria-hidden="true">&times;</span>
+						</button>
+					</div>
+					<div class="modal-body">
+						<p>Para dar de baja estos equipos debe ingresar una fecha</p>
+						<p>¿Desea dar de baja estos equipos?</p>
+						<input type="date" id="my-date-input" class="form-control"/>
+					</div>
+					<div class="modal-footer">
+						<button type="button" id="my-confirm-button" class="btn btn-primary">Si</button>
+						<button type="button" id="my-cancel-button" class="btn btn-secondary" data-dismiss="modal">No</button>
+					</div>
+					</div>
+				</div>
+			</div>
+			<style>
+			/* Estilos personalizados para el cuadro de diálogo */
+			#my-dialog .modal-content {
+				border-radius: 5px;
+				box-shadow: 0px 0px 20px rgba(0, 0, 0, 0.2);
+			}
+
+			#my-dialog .modal-header {
+				border-bottom: none;
+				padding-bottom: 0;
+			}
+
+			#my-dialog .modal-title {
+				font-weight: bold;
+				font-size: 18px;
+			}
+
+			#my-dialog .modal-body {
+				padding-top: 10px;
+				font-size: 16px;
+			}
+
+			#my-dialog .form-control {
+				margin-top: 10px;
+			}
+
+			#my-dialog .modal-footer {
+				border-top: none;
+				padding-top: 0;
+				justify-content: center;
+			}
+			</style>
+			<style>
+				.miClase {
+					font-family: Verdana, Geneva, Tahoma, sans-serif;
+					font-size: 12px; /* Cambia el tamaño de la fuente a 14px */
+				}
+			</style>	
+		</div>	
+	</div>
+	<script src="/js/lib/jquery/jquery.min.js"></script>
+	<script src="/js/lib/tether/tether.min.js"></script>
+	<script src="/js/lib/bootstrap/bootstrap.min.js"></script>
+	<script src="/js/plugins.js"></script>
+	<script src="/js/app.js"></script>
+	<script src="/js/lib/datatables-net/datatables.min.js"></script>
+	<script src="/js/lib/bootstrap-sweetalert/sweetalert.min.js"></script>
+	<script src="/js/lib/summernote/summernote.min.js"></script>
+	<script src="/js/lib/fancybox/jquery.fancybox.pack.js"></script>
+	<script src="/js/summernote-ES.js"></script>
+	<script src="/js/lib/select2/select2.full.min.js"></script>
+	<script>
+		var table;
+		$(document).ready(function () {
+			
+			table = $('#tabla_prot').DataTable({
+				'columnDefs': [
+					{ 
+						"targets": [0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17], 
+						"className": "miClase" 
+					},
+					{ 	
+						"width": "60px", 
+						"targets": 1 
+					},
+					{ 	
+						"width": "130px", 
+						"targets": 7 
+					}
+				],
+				'select': {
+					'style': 'multi'
+				},
+				"dom": 'Bf<"filters">rtip',
+				"searching": true,
+				"lengthChange": false,
+				"colReorder": true,
+				"buttons": [
+				{
+					"extend": 'excelHtml5',
+					"text": '<i class="fa fa-file-excel-o"></i>',
+					"title": 'Equipos',
+					"titleAttr": 'Exportar a Excel',
+					"className": 'btn btn-rounded btn-success',
+					"exportOptions": {
+					"columns": [0, 1, 2, 3, 4, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16 , 17]
+					},
+					customize: function(xlsx) {
+					const sheet = xlsx.xl.worksheets['sheet1.xml'];
+						$('row:first c', sheet).attr('s', '47');
+            		}
+				}],
+				initComplete: function() {
+				$('.filters').html(`
+					<style>
+					#parentFilter {
+					float: left;
+					margin-left: 15px;
+					}
+
+					#parentSelect {
+					height: 38px;
+					width: 100%;
+					border: 1px solid rgb(227, 227, 227);
+					border-radius: 4px;
+					}
+
+					#infoFilter {
+					float: left;
+					margin-left: 15px;
+					}
+
+					#infoSelect {
+					height: 38px;
+					width: 100%;
+					border: 1px solid rgb(227, 227, 227);
+					border-radius: 4px;
+					}
+
+					#subInfoFilter {
+					float: left;
+					margin-left: 15px;
+					}
+
+					#subInfoSelect {
+					height: 38px;
+					width: 100%;
+					border: 1px solid rgb(227, 227, 227);
+					border-radius: 4px;
+					}
+
+					@media (max-width: 768px) {
+					#parentFilter,
+					#infoFilter,
+					#subInfoFilter {
+						float: none;
+						margin-left: 0;
+					}
+
+					#parentSelect,
+					#infoSelect,
+					#subInfoSelect {
+						width: 100%;
+					}
+					}
+					</style>			
+					<div>
+						<div id="parentFilter">
+							<select id="parentSelect" width: 50%;>
+							</select>
+						</div>
+						<div id="infoFilter">
+							<select id="infoSelect" width: 50%;>
+							</select>
+						</div>
+						<div id="subInfoFilter">
+							<select id="subInfoSelect" width: 50%;">
+							</select>
+						</div>
+					</div>
+				`);
+				},
+				"bDestroy": true, 	
+				"scrollX": true,
+				"bInfo": true,
+				"iDisplayLength": 20,
+				"autoWidth": true,
+				"language": {
+					"sProcessing": "Procesando...",
+					"sLengthMenu": "Mostrar _MENU_ registros",
+					"sZeroRecords": "No se encontraron resultados",
+					"sEmptyTable": "Ningún dato disponible en esta tabla",
+					"sInfo": "Mostrando un total de _TOTAL_ registros",
+					"sInfoEmpty": "Mostrando un total de 0 registros",
+					"sInfoFiltered": "(filtrado de un total de _MAX_ registros)",
+					"sInfoPostFix": "",
+					"sSearch": "Buscar:",
+					"sUrl": "",
+					"sInfoThousands": ".",
+					"sLoadingRecords": "Cargando...",
+					"oPaginate": {
+						"sFirst": "Primero",
+						"sLast": "Último",
+						"sNext": "Siguiente",
+						"sPrevious": "Anterior"
+					},
+					"oAria": {
+						"sSortAscending": ": Activar para ordenar la columna de manera ascendente",
+						"sSortDescending": ": Activar para ordenar la columna de manera descendente"
+					},
+					"select" : {
+						"rows" : {
+							"_" : "Has seleccionado %d filas",
+							"0" : "Click en una fila para seleccionar",
+							"1" : "Has seleccionado 1 fila"
+						}
+					}
+				},
+			}).columns.adjust();
+
+			var parentValues = table.column(3).data().unique();
+			parentValues.sort();
+			$('#parentFilter select').append('<option value="">Seleccione una gerencia</option>');
+			parentValues.each(function(value) {
+				$('#parentFilter select').append('<option value="' + value + '">' + value + '</option>');
+				table.on('draw.dt', function() {
+					table.rows().deselect();
+				});
+			});
+			$('#parentFilter select').on('change', function() {
+				var selectedParent = $(this).val();
+				if (!selectedParent) {
+					table.search('').columns().search('').draw();
+					$('#infoFilter select').empty();
+					$('#subInfoFilter select').empty();
+					return;
+				}
+				table.column(3).search(selectedParent).draw();
+				$('#infoFilter select').empty();
+				$('#subInfoFilter select').empty();
+				var infoValues = table
+					.column(4)
+					.data()
+					.filter(function(value, index) {
+						return table.column(3).data()[index] === selectedParent;
+					})
+					.unique();
+				infoValues.sort();
+				$('#infoFilter select').append('<option value="">Selecciones un área</option>');
+				infoValues.each(function(value) {
+					$('#infoFilter select').append('<option value="' + value + '">' + value + '</option>');
+				});
+				table.on('draw.dt', function() {
+					table.rows().deselect();
+				});
+			});
+			$('#infoFilter select').on('change', function() {
+				var selectedInfo = $(this).val();
+				if (!selectedInfo) {
+					table.column(3).search($('#parentFilter select').val()).draw();
+					$('#subInfoFilter select').empty();
+					return;
+				}
+				table.column(4).search(selectedInfo).draw();
+				$('#subInfoFilter select').empty();
+				var subInfoValues = table
+					.column(6)
+					.data()
+					.filter(function(value, index) {
+						return (
+							table.column(3).data()[index] === $('#parentFilter select').val() &&
+							table.column(4).data()[index] === selectedInfo
+						);
+					})
+					.unique();
+				subInfoValues.sort();				
+				subInfoValues.each(function(value) {
+					$('#subInfoFilter select').append('<option value="' + value + '">' + value + '</option>');
+				});
+				table.on('draw.dt', function() {
+					table.rows().deselect();
+				});
+			});
+			$('#subInfoFilter select').on('change', function() {
+				var selectedSubInfo = $(this).val();
+				if (!selectedSubInfo) {
+					table.column(4).search($('#infoFilter select').val()).draw();
+					return;
+				}
+				table.column(6).search(selectedSubInfo).draw();
+				table.on('draw.dt', function() {
+					table.rows().deselect();
+				});
+			});
+
+		var state = false;
+		$('#check-toggle-1').on('click', function() {
+		if (state){
+			$("#baja").prop("hidden", true);
+			$('#check-toggle-2').prop("disabled", false);
+		}else{
+			$("#baja").prop("hidden", false);
+			$('#check-toggle-2').prop("disabled", true);
+		}
+		state = !state;
+		});
+
+		var state1 = false;
+		$('#check-toggle-2').on('click', function() {
+		if (state1){
+			$('#check-toggle-1').prop("disabled", false);
+			$("#tabla_prot").parents('.dataTables_wrapper').first().show();
+			$("#form_todo").hide();
+			$("#baja1").prop("hidden", true);
+			$("#buscar").show();
+			$("#buscar1").show();
+			$("#equipo").show();
+			$("#equipos").show();
+		}else{
+			$('#check-toggle-1').prop("disabled", true);
+			$("#tabla_prot").parents('.dataTables_wrapper').first().hide();
+			$("#form_todo").show();
+			$("#baja1").prop("hidden", false);
+			$("#buscar").hide();
+			$("#equipo").hide();
+			$("#equipos").hide();
+			$("#buscar1").hide();
+		}
+		state1 = !state1;
+		});
+
+
+		$("#baja").on("click", function () {
+			var rows_selected = table.rows({ selected: true }).data();
+			if (rows_selected.length > 0) {
+			var datos = [];
+			$.each(rows_selected, function (index, value) {
+				datos.push({
+				id: value[0],
+				tag: value[1],
+				ger: value[4],
+				area: value[5],
+				idsec: value[6],
+				sec: value[7]
+				});
+			});
+			$("#my-dialog").show();
+
+			$("#my-confirm-button").on("click", function () {
+				var dateValue = $("#my-date-input").val();
+				if (!dateValue) {
+					swal("Error", "Debe ingresar una fecha para proceder", "error");
+					return;
+				}
+				$.ajax({
+				url: "/elimequi",
+				type: "POST",
+				data: {
+					datos,
+					fecha: dateValue,
+				},
+				beforeSend: function () {
+					swal({
+					title: "Trabajando",
+					text: "Espere un momento por favor...",
+					imageUrl: "/img/Spinner-1s-200px2.gif",
+					showConfirmButton: false,
+					allowOutsideClick: false,
+					});
+				},
+				}).done(function (data) {
+				swal({
+					title: "¡SAPMA!",
+					text: "Los equipos fueron dados de baja",
+					type: "success",
+					confirmButtonText: "Aceptar",
+					allowOutsideClick: false,
+				});
+				setTimeout(function () {
+					location.reload();
+				}, 1000);
+				});
+				$("#my-dialog").hide();
+			});
+			$("#my-cancel-button").on("click", function () {
+				swal("¡SAPMA!", "Equipos no eliminados", "error");
+				$("#my-dialog").hide();
+			});
+			} else {
+			swal("Error", "Debe seleccionar alguna fila para proceder", "error");
+			}
+		});
+
+		$("#baja1").on("click", function () {
+			var textareaValue = $('#tag_lista').val().trim();
+			var datos = textareaValue.split(',');
+				if (/^[a-zA-Z0-9-]+(,[a-zA-Z0-9-]+)*$/.test(textareaValue)) {
+					var uniqueDatos = [];
+					var hasDuplicates = false;
+					for (var i = 0; i < datos.length; i++) {
+					if (uniqueDatos.includes(datos[i])) {
+						hasDuplicates = true;
+						break;
+					} else {
+						uniqueDatos.push(datos[i]);
+					}
+					}
+					if (!hasDuplicates) {
+						$("#my-dialog").show();
+						$("#my-confirm-button").on("click", function () {
+							var dateValue = $("#my-date-input").val();
+							if (!dateValue) {
+								swal("Error", "Debe ingresar una fecha para proceder", "error");
+								return;
+							}
+							$.ajax({
+							url: "/elimlista",
+							type: "POST",
+							data: {
+								uniqueDatos,
+								fecha: dateValue,
+							},
+							beforeSend: function () {
+								swal({
+								title: "Trabajando",
+								text: "Espere un momento por favor...",
+								imageUrl: "/img/Spinner-1s-200px2.gif",
+								showConfirmButton: false,
+								allowOutsideClick: false,
+								});
+							},
+							}).done(function (data) {
+							swal({
+								title: "¡SAPMA!",
+								text: "Los equipos fueron dados de baja",
+								type: "success",
+								confirmButtonText: "Aceptar",
+								allowOutsideClick: false,
+							});
+							setTimeout(function () {
+								location.reload();
+							}, 1000);
+							});
+							$("#my-dialog").hide();
+						});
+						$("#my-cancel-button").on("click", function () {
+							swal("¡SAPMA!", "Equipos no eliminados", "error");
+							$("#my-dialog").hide();
+						});
+						} else {
+							swal('Error', 'Por favor no ingreses tags repetidos', 'error');
+						}
+						
+				} else {
+					swal('Error', 'Por favor ingresa al menos dos tags separados por comas, sin coma en el último tag', 'error');
+				}
+				
+		});
+
+		});
+	</script>
+</body>

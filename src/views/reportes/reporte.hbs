@@ -1,0 +1,232 @@
+<body class="with-side-menu">
+	{{> navbar }}
+	<div class="mobile-menu-left-overlay-"></div>
+	{{> nav }}
+	<div class="page-content">
+		<div class="container-fluid">
+			<header class="section-header">
+				<div class="tbl">
+					<div class="tbl-row">
+						<div class="tbl-cell">
+							<h3>Reportes</h3>
+							<ol class="breadcrumb breadcrumb-simple">
+								<li><a href="/home">Inicio</a></li>
+								<li class="active">Reportes</li>
+							</ol>
+						</div>
+					</div>
+				</div>
+			</header>
+			<div class="box-typical box-typical-padding">
+				<div class="row">
+					<form action="/reportes"  method="post" onsubmit="return submitForm(this);" id="my-form">
+						<div class="col-md-4">
+							<label class="form-label" >Fecha Inicial</label>
+							<input class="form-control" type="date" name="date1" id="date1" required>
+						</div>
+						<div class="col-md-4">
+							<label class="form-label" >Fecha Final</label>
+							<input class="form-control" type="date" name="date2" id="date2" required>
+						</div>
+						<div class="col-md-4">
+							<label class="form-label">Nombre de Archivo</label>
+							<input class="form-control" type="text" id="nombre" name="nombre" placeholder="Asigne un nombre al archivo" required>
+						</div>
+						<div class="col-md-12">
+							<label class="form-label" id="" style="color: aliceblue;">.</label>
+						</div>
+						<div class="col-md-12">
+							<label class="form-label">Link de Power BI</label>
+							<input class="form-control" type="text" id="enlace" name="enlace" placeholder="Pegue el enlace de Power BI" required>
+						</div>
+						<div class="col-md-12">
+							<label class="form-label" id="" style="color: aliceblue;">.</label>
+						</div>
+						<div class="col-md-12">
+							<p class="form-p" id="" style="color:">* Seleccione Gerencia, Area o Sector para asignación de permisos de visualización. Para dar acceso a nivel ADC no seleccione ninguno y solo guarde.</label>
+						</div>
+						<div class="checkbox-toggle col-md-12">
+							<style>
+							#check-toggle-1:checked + label::before {
+								background-color: rgb(14, 228, 18);
+								border-color: rgb(14, 228, 18);
+							}
+							</style>
+							<input type="hidden" name="rep_todo" id="rep_todo">
+							<input type="checkbox"  id="check-toggle-1" value="0" disabled>
+							<label for="check-toggle-1">Dar permiso a todos los ususarios de la gerencia</label>
+						</div>	
+						<div class="col-md-3">
+							<label class="form-label" >Gerencia</label>
+							<select class="select2" name="gerencia" id="gerencia">
+								<option value="">Seleccione una gerencia</option>
+								{{#each gerencias}}
+								<option value="{{vcgas_idGerencia}}">{{vcgas_gerenciaN}}</option>
+								{{/each}}
+							</select>
+						</div>
+						<div class="col-md-3">
+							<label class="form-label" >Areas</label>
+							<select class="select2" name="area" id="area" disabled="true">
+								<option value="">Seleccione un área</option>
+							</select>
+						</div>
+						<div class="col-md-3">
+							<label class="form-label" >Sectores</label>
+							<select class="select2" name="sector" id="sector" disabled="true">
+								<option value="">Seleccione un sector</option>
+							</select>
+						</div>
+						<div class="col-md-3">
+							<label class="form-label" >Equipos</label>
+							<select class="select2" name="equipo" id="equipo" disabled="true">
+								<option value="">Seleccione un equipo</option>
+							</select>
+						</div>
+				</div>
+					<br>
+					{{#if title }}
+						<div class="alert alert-danger" role="alert">
+							{{ title }}
+						</div>
+					{{/if}}
+					<br>
+					<button type="submit" class="btn btn-rounded btn-primary">Guardar</button>
+					<br><br>
+					</form>
+			</div>
+		</div>	
+	</div>
+	<script src="/js/lib/jquery/jquery.min.js"></script>
+	<script src="/js/lib/tether/tether.min.js"></script>
+	<script src="/js/lib/bootstrap/bootstrap.min.js"></script>
+	<script src="/js/plugins.js"></script>
+	<script src="/js/app.js"></script>
+	<script src="/js/lib/datatables-net/datatables.min.js"></script>
+	<script src="/js/lib/bootstrap-sweetalert/sweetalert.min.js"></script>
+	<script src="/js/lib/summernote/summernote.min.js"></script>
+	<script src="/js/lib/fancybox/jquery.fancybox.pack.js"></script>
+	<script src="/js/summernote-ES.js"></script>
+	<script src="/js/lib/select2/select2.full.min.js"></script>
+	<script type="text/javascript" src="https://gyrocode.github.io/jquery-datatables-checkboxes/1.2.12/js/dataTables.checkboxes.min.js"></script>
+	<script>
+		$(document).ready(function() {
+			var date1 = document.querySelector('#date1');
+			var date2 = document.querySelector('#date2');
+
+			date1.addEventListener('change', function() {
+				date2.min = this.value;
+			});
+
+			$('#gerencia').on('change', function() {
+				if ($(this).val() !== '') {
+					$('#check-toggle-1').removeAttr('disabled');
+				} else {
+					$('#check-toggle-1').attr('disabled', true);
+				}
+			});
+
+			$('#area').on('change', function() {
+				if ($(this).val() !== '') {
+					$('#check-toggle-1').attr('disabled', true);
+					
+				} else {
+					$('#check-toggle-1').removeAttr('disabled');
+				}
+			});
+
+			$('#check-toggle-1').on('click', function() {
+				if ($(this).val() == 0) {
+					$(this).val(1);
+					$('#area').prop('disabled', true);
+					$('#area').val('');
+					$('#sector').prop('disabled', true);
+					$('#sector').val('');
+					$('#equipo').prop('disabled', true);
+					$('#equipo').val('');
+				} else {
+					$(this).val(0);
+					$('#area').prop('disabled', false);
+				}
+			});
+		});
+
+		document.getElementById('my-form').addEventListener('submit', function(event) {
+			event.preventDefault();
+			document.getElementById('rep_todo').value = document.getElementById('check-toggle-1').value;
+			this.submit();
+		});
+		
+
+        function _(element)
+        {
+            return document.getElementById(element); 
+        }
+
+        function fetch_data( parent_element, child_element, type)
+        {
+            fetch('/get_databi?type='+type+'&parent_value='+parent_element.value+'').then(function(response){
+                return response.json();
+            }).then(function(responseData){
+
+                var html = '';
+
+                if(type == 'load_areass'){
+                    html = '<option value="">Seleccione un área</option>';
+                    for(var count = 0; count < responseData.length; count++)
+                    {
+                        html += '<option value="'+responseData[count][0]+'">'+responseData[count][1]+'</option>';    
+                    }
+                    
+                }
+
+                if(type == 'load_sectoress'){
+					html = '<option value="">Seleccione un sector</option>';
+                    for(var count = 0; count < responseData.length; count++)
+                    {
+                        html += '<option value="'+responseData[count][0]+'">'+responseData[count][1]+'</option>';    
+                    }
+                }
+
+				if(type == 'load_equiposs'){
+					html = '<option value="">Seleccione un equipo</option>';
+                    for(var count = 0; count < responseData.length; count++)
+                    {
+                        html += '<option value="'+responseData[count][0]+'">'+responseData[count][1]+'</option>';    
+                    }
+                }
+
+				child_element.innerHTML = html;
+            });
+        }
+
+        _('gerencia').onchange = function(){			
+            fetch_data(_('gerencia'), _('area'), 'load_areass');
+			$('#area').prop('disabled', false);
+        };
+
+        _('area').onchange = function(){
+            fetch_data(_('area'), _('sector'), 'load_sectoress');
+			$('#sector').prop('disabled', false);
+        };
+
+		_('sector').onchange = function(){
+            fetch_data(_('sector'), _('equipo'), 'load_equiposs');
+			$('#equipo').prop('disabled', false);
+        };
+	</script>
+	<script>
+		function submitForm(form) {
+			swal({
+				title: "Guardado!",
+				text: "se ha guardado el reporte!",
+				type: "success",
+				confirmButtonClass: "btn-success",
+				confirmButtonText: "Aceptar"
+			}, function () {
+				window.location.href = '/reportes';
+			}
+			);
+		}
+	</script>
+</body>

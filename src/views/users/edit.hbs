@@ -1,0 +1,1055 @@
+<body class="with-side-menu">
+    {{> navbar }}
+    <div class="mobile-menu-left-overlay-"></div>
+    {{> nav }}
+    <div class="page-content">
+        <div class="container-fluid">
+            <header class="section-header">
+                <div class="tbl">
+                    <div class="tbl-row">
+                        <div class="tbl-cell">
+                            <h3>Usuarios</h3>
+                            <ol class="breadcrumb breadcrumb-simple">
+                                <li><a href="/home">Inicio</a></li>
+                                <li class="active">Actualización de Usuario</li>
+                            </ol>
+                        </div>
+                        {{#ifEquals user.Id_Perfil "2"}}
+                        <div class="form-group float-right">
+                            <button type="button" class="btn btn-danger" onclick="window.location.href ='/users'" >Volver</button>
+                        </div>
+                        {{/ifEquals}}
+                        {{#ifEquals user.Id_Perfil "9"}}
+                        <div class="form-group float-right">
+                            <button type="button" class="btn btn-danger" onclick="window.location.href ='/usert'" >Volver</button>
+                        </div>
+                        {{/ifEquals}}
+
+                    </div>
+                </div>
+            </header>
+                <div class="modal fade bd-example-modal-lg" id="modalcli"  role="dialog"
+                    aria-labelledby="myLargeModalLabel" aria-hidden="true">
+                    <div class="modal-dialog">
+                        <div class="modal-content">
+                            <div class="modal-header">
+                                <button type="button" class="modal-close" data-dismiss="modal" aria-label="Close">
+                                    <i class="font-icon-close-2"></i>
+                                </button>
+                                <h4 class="modal-title" id="mdltitulo"></h4>
+                            </div>
+                            <form action="" id="usuario_cli">
+                                <div class="modal-body">
+                                    <cdiv class="form-group">
+                                        <div class="card-block">
+                                            <div class="row">
+                                                <div class="container-fluid">  
+                                                        {{#ifEquals perfil.Id_Perfiles "5"}}
+                                                            {{#each gerencias }}
+                                                            <div class="col-md-12 checkbox-bird green">
+                                                                <input class= "form-check-input" type="checkbox" name="checkger" id="checkger{{vcgas_idGerencia}}" value="{{vcgas_idGerencia}}">
+                                                                <label  class="form-check-label" for="checkger{{vcgas_idGerencia}}" >{{vcgas_gerenciaN}}</label>
+                                                            </div>
+                                                            <br>
+                                                            {{/each}}
+                                                        {{/ifEquals}}
+                                                        {{#ifEquals perfil.Id_Perfiles "10"}}
+                                                            {{#each gerencias }}
+                                                            <div class="col-md-12 checkbox-bird green">
+                                                                <input class= "form-check-input" type="checkbox" name="checkger" id="checkger{{vcgas_idGerencia}}" value="{{vcgas_idGerencia}}">
+                                                                <label  class="form-check-label" for="checkger{{vcgas_idGerencia}}" >{{vcgas_gerenciaN}}</label>
+                                                            </div>
+                                                            <br>
+                                                            {{/each}}
+                                                        {{/ifEquals}}
+                                                        {{#ifEquals perfil.Id_Perfiles "4"}}
+                                                                <div class="form-group row">
+                                                                    <label for="gerencias" class="col-sm-4 form-label">Gerencias</label>
+                                                                    <div class="col-sm-8">
+                                                                        <select name="gerenciass" id="gerenciass" class="select2">
+                                                                            <option value="">Seleccione una Gerencia</option>
+                                                                            {{#each gerencias }}
+                                                                            <option value= "{{vcgas_idGerencia}}">{{vcgas_gerenciaN}}</option>
+                                                                            {{/each}}
+                                                                        </select>                                                                        
+                                                                    </div>
+                                                                </div>
+                                                                <div class="form-group row">
+                                                                    <br>
+                                                                    <center><label for="exampleSelect" class="form-label"><strong>Areas</strong></label></center>
+                                                                    <br>
+                                                                    <div class="col-md-12 checkbox-bird green" id="container_checkbox">                                                                  
+                                                                    </div>
+                                                                </div>
+                                                        {{/ifEquals}}
+                                                        {{#ifEquals perfil.Id_Perfiles "7"}}
+                                                                <div class="form-group row">
+                                                                    <label for="gerenciass" class="col-sm-4 form-label">Gerencias</label>
+                                                                    <div class="col-sm-8">
+                                                                        <select name="gerenciass" id="gerenciass" class="select2">
+                                                                            <option value="">Seleccione una Gerencia</option>
+                                                                            {{#each gerencias }}
+                                                                            <option value= "{{vcgas_idGerencia}}">{{vcgas_gerenciaN}}</option>
+                                                                            {{/each}}
+                                                                        </select>                                                                        
+                                                                    </div>
+                                                                </div>
+                                                                <div class="form-group row">
+                                                                    <label for="exampleSelect" class="col-sm-4 form-label">Areas</label>
+                                                                    <div class="col-sm-8">                                                                  
+                                                                        <select name="areass" id="areass" class="select2" class="form">
+                                                                           <option value="">Seleccione un Area</option>                                                                             
+                                                                        </select>                                                                        
+                                                                    </div>
+                                                                </div>
+                                                                <div class="form-group row">
+                                                                    <br>
+                                                                    <center><label for="exampleSelect" class="form-control-label"><strong>Sectores</strong></label></label></center>
+                                                                    <br>
+                                                                    <div class="col-md-12 checkbox-bird green" id="container_checkbox">                                                                  
+                                                                    </div>
+                                                                </div>
+                                                        {{/ifEquals}}
+                                                        {{#ifEquals perfil.Id_Perfiles "8"}}
+                                                                <div class="form-group row">
+                                                                    <label for="exampleSelect" class="col-sm-4 form-label">Gerencias</label>
+                                                                    <div class="col-sm-8">
+                                                                        <select name="gerenciass" id="gerenciass" class="select2" class="form control">
+                                                                            <option value="">Seleccione una Gerencia</option>
+                                                                            {{#each gerencias }}
+                                                                            <option value= "{{vcgas_idGerencia}}">{{vcgas_gerenciaN}}</option>
+                                                                            {{/each}}
+                                                                        </select>                                                                        
+                                                                    </div>
+                                                                </div>
+                                                                <div class="form-group row">
+                                                                    <label for="exampleSelect" class="col-sm-4 form-label">Areas</label>
+                                                                    <div class="col-sm-8">                                                                  
+                                                                        <select name="areass" id="areass" class="select2">
+                                                                           <option value="">Seleccione un Area</option>                                                                             
+                                                                        </select>                                                                        
+                                                                    </div>
+                                                                </div>
+                                                                <div class="form-group row">
+                                                                    <label for="exampleSelect" class="col-sm-4 form-label">Sectores</label>
+                                                                    <div class="col-sm-8">                                                                  
+                                                                        <select name="sectoress" id="sectoress" class="select2">
+                                                                           <option value="">Seleccione un Sector</option>                                                                             
+                                                                        </select>                                                                        
+                                                                    </div>
+                                                                </div>
+                                                                <div class="form-group row">
+                                                                    <br>
+                                                                    <center><label for="exampleSelect" class="form-label"><strong>Equipos</strong></label></label></center>
+                                                                    <br>
+                                                                    <div class="col-md-12 checkbox-bird green" id="container_checkbox">                                                                  
+                                                                    </div>
+                                                                </div>
+                                                        {{/ifEquals}}
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </cdiv>
+                                </div>
+                                <br>
+                                <div class="modal-footer">
+                                    <button type="button" class="btn btn-rounded btn-default" data-dismiss="modal">Cerrar</button>
+                                    {{#ifEquals perfil.Id_Perfiles "5"}}
+                                    <button type="button" id="guardar_ger" name="guardar_ger" class="btn btn-rounded btn-primary">Guardar</button>
+                                    {{/ifEquals}}
+                                    {{#ifEquals perfil.Id_Perfiles "10"}}
+                                    <button type="button" id="guardar_ger" name="guardar_ger" class="btn btn-rounded btn-primary">Guardar</button>
+                                    {{/ifEquals}}
+                                    {{#ifEquals perfil.Id_Perfiles "4"}}
+                                    <button type="button" id="guardar_area" name="guardar_area" class="btn btn-rounded btn-primary">Guardar</button>
+                                    {{/ifEquals}}
+                                    {{#ifEquals perfil.Id_Perfiles "7"}}
+                                    <button type="button" id="guardar_sec" name="guardar_sec" class="btn btn-rounded btn-primary">Guardar</button>
+                                    {{/ifEquals}}
+                                    {{#ifEquals perfil.Id_Perfiles "8"}}
+                                    <button type="button" id="guardar_equipo" name="guardar_equipo" class="btn btn-rounded btn-primary">Guardar</button>
+                                    {{/ifEquals}}
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="modal fade bd-example-modal-lg" id="modalpass" tabindex="-1" role="dialog"
+                    aria-labelledby="myLargeModalLabel" aria-hidden="true">
+                    <div class="modal-dialog">
+                        <div class="modal-content">
+                            <div class="modal-header">
+                                <button type="button" class="modal-close" data-dismiss="modal" aria-label="Close">
+                                    <i class="font-icon-close-2"></i>
+                                </button>
+                                <h4 class="modal-title" id="titulopass"></h4>
+                            </div>
+                            <form action="" id="cambiarpass">
+                                <div class="modal-body">
+                                    <cdiv class="form-group">
+                                        <div class="card-block">
+                                            <div class="row">
+                                                <cdiv class="form-group">
+                                                    <label class="form-label" for="Clave">Nueva Contraseña</label>
+                                                    <input type="password"  class="form-control" id="pass1" name="pass1" placeholder="Ingrese contraseña" required>
+                                                </cdiv>
+                                                <br>
+                                                <cdiv class="form-group">
+                                                    <label class="form-label" for="Clave">Confirmar Contraseña</label>
+                                                    <input type="password"  class="form-control" id="pass2" name="pass2" placeholder="Confirme contraseña" required>
+                                                </cdiv>
+                                                <div class="modal-footer">
+                                                    <button type="button" class="btn btn-rounded btn-default" data-dismiss="modal">Cerrar</button>
+                                                    <button type="submit"  name="action" id="guardar_pass" class="btn btn-rounded btn-primary">Guardar</button>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </cdiv>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            <div class="box-typical box-typical-padding">
+                <form id="form_actualizar" action="/users/edit/{{useru.Id}}" method="POST">
+                <div class="form-group row">
+                    <div class="col-sm-8">
+                        <p>En esta pestaña puede actualizar un usuario existente.</p>
+                    </div>
+                    <div class="col-sm-4">
+                        <input type="submit" id="btn_actualizar" name="submit" value="Actualizar" class="btn btn-warning float-right">
+                    </div>
+                </div>
+                <h5 class="m-t-lg with-border">Actualizar Usuario</h5>                  
+                    <br><br>
+                    <div class="form-group row">
+                        <label class="col-sm-2 form-control-label">Usuario</label>
+                        <div class="col-sm-10">
+                            <p class="form-control-static"><input type="text"  value="{{useru.Login}}"  id="login" name="login" class="form-control"
+                                    ></p>
+                        </div>
+                    </div>
+                    <div class="form-group row">
+                        <label class="col-sm-2 form-control-label">Nombre</label>
+                        <div class="col-sm-10">
+                            <p class="form-control-static"><input type="text" value="{{useru.Descripcion}}" id="desc" name="desc"class="form-control"
+                                    ></p>
+                        </div>
+                    </div>
+                    <div class="form-group row">
+                        <label class="col-sm-2 form-control-label">E-mail</label>
+                        <div class="col-sm-10">
+                            <p class="form-control-static"><input type="e-mail" value="{{useru.Email}}" id="email" name="email" class="form-control"
+                                    ></p>
+                        </div>
+                    </div>
+                    <div class="form-group row">
+                        <label class="col-sm-2 form-control-label">Teléfono</label>
+                        <div class="col-sm-10">
+                            <p class="form-control-static"><input type="text" value="{{useru.Telefono}}" id="telefono" name="telefono"class="form-control"
+                                ></p>
+                        </div>
+                    </div>
+                    {{#ifEquals user.Id_Perfil "2"}}
+                    <div class="form-group row">
+                        <label for="exampleSelect" class="col-sm-2 form-control-label">Perfil</label>
+                        <div class="col-sm-10">
+                            <select name="Id_Perfil" id="Id_Perfil" class="form-control">
+                                <option value= "{{ perfil.Id_Perfiles}}">{{ perfil.Desc_Perfiles}}</option>
+								{{!-- <option value="1">Administrador</option>
+								<option value="2">Planificador</option> --}}
+								<option value="3">Técnico</option>
+								<option value="6">Perfil General</option>
+								<option value="5">Perfil Gerencia</option>
+                                <option value="10">Perfil Gerencia Visualizador</option>
+								<option value="4">Perfil Area</option>
+								<option value="7">Perfil Sector</option>
+								<option value="8">Perfil Equipo</option>
+                            </select>
+                        </div>
+                    </div>
+                    {{/ifEquals}}
+                    {{#ifEquals user.Id_Perfil "9"}}
+                    <div class="form-group row">
+                        <label for="exampleSelect" class="col-sm-2 form-control-label">Perfil</label>
+                        <div class="col-sm-10">
+                            <select name="Id_Perfil" id="Id_Perfil" class="form-control">
+                                <option value= "{{ perfil.Id_Perfiles}}">{{ perfil.Desc_Perfiles}}</option>
+								<option value="9">Admin. Cliente</option>
+								<option value="2">Planificador</option>
+								<option value="3">Técnico</option>
+								<option value="6">Perfil General</option>
+								<option value="5">Perfil Gerencia</option>
+                                <option value="10">Perfil Gerencia Visualizador</option>
+								<option value="4">Perfil Area</option>
+								<option value="7">Perfil Sector</option>
+								<option value="8">Perfil Equipo</option>
+                            </select>
+                        </div>
+                    </div>
+                    {{/ifEquals}}
+                    <div class="form-group row">
+                        <label for="exampleSelect" class="col-sm-2 form-control-label">Cliente</label>
+                         <div class="col-sm-10">
+                            <p class="form-control-static"><input type="text" value="{{ cliente.Desc_Clientex  }}" class="form-control"
+                                   readonly ></p>
+                        </div>
+                    </div>
+                    <br>
+                    <div class="form-group row">
+                        <label for="exampleSelect" class="col-sm-2 form-control-label"></label>
+                        <div class="col-sm-10">
+                        <button type="button" class="btn btn-inline btn-secondary-outline" id="campass" name="campass">Cambiar contraseña</button>
+                        </div>
+                    </div> 
+                    <h5 class="m-t-lg with-border"></h5>
+                    {{#ifEquals perfil.Id_Perfiles "5"}}
+                    {{#if geruser }}
+                    <div class="form-group row">
+                        <label class="col-sm-2 form-control-label">Gerencias asignadas</label>
+                        <div class="col-sm-10">
+                            <button type="button" class="btn btn-inline btn-primary-outline" id="ger" name="ger">
+                                Asignar Gerencia  
+                            </button>
+                            <br><br>
+                            <Table class="table table-bordered table-hover">        
+                                <thead>
+                                    <tr>
+                                        <th>Gerencia</th>
+                                        <th class="tabledit-toolbar-column">Eliminar</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                {{#each geruser }}
+                                    <tr>
+                                        <td><strong>{{ vcgas_gerenciaN }}</strong></td>
+                                        <td><button type="button" class="tabledit-delete-button btn btn-sm btn-danger" onclick="confirmar({{...useru.Id}},{{vcgas_idGerencia}})" id="elimger1" name="elimger1" style="float: none;">
+                                                <span class="glyphicon glyphicon-trash" ></span>
+                                            </button>
+                                        </td>
+                                    </tr>
+                                {{/each}}    
+                                </tbody>
+                            </Table>
+                        </div>
+                    </div>
+                    {{else}}
+                    <div class="form-group row">
+                        <label class="col-sm-2 form-control-label">Gerencias</label>
+                        <div class="col-sm-10">
+                            <button type="button" class="btn btn-inline btn-primary-outline" id="ger" name="ger">
+                                Asignar Gerencia  
+                            </button>
+                            <p class="form-control-static"><input type="text"  value="Sin Gerencias Asignadas"  class="form-control" readonly></p>
+                        </div>
+                    </div>
+                    {{/if}} 
+                    {{/ifEquals}}
+                    {{#ifEquals perfil.Id_Perfiles "10"}}
+                    {{#if geruser }}
+                    <div class="form-group row">
+                        <label class="col-sm-2 form-control-label">Gerencias asignadas</label>
+                        <div class="col-sm-10">
+                            <button type="button" class="btn btn-inline btn-primary-outline" id="ger" name="ger">
+                                Asignar Gerencia  
+                            </button>
+                            <br><br>
+                            <Table class="table table-bordered table-hover">        
+                                <thead>
+                                    <tr>
+                                        <th>Gerencia</th>
+                                        <th class="tabledit-toolbar-column">Eliminar</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                {{#each geruser }}
+                                    <tr>
+                                        <td><strong>{{ vcgas_gerenciaN }}</strong></td>
+                                        <td><button type="button" class="tabledit-delete-button btn btn-sm btn-danger" onclick="confirmar({{...useru.Id}},{{vcgas_idGerencia}})" id="elimger1" name="elimger1" style="float: none;">
+                                                <span class="glyphicon glyphicon-trash" ></span>
+                                            </button>
+                                        </td>
+                                    </tr>
+                                {{/each}}    
+                                </tbody>
+                            </Table>
+                        </div>
+                    </div>
+                    {{else}}
+                    <div class="form-group row">
+                        <label class="col-sm-2 form-control-label">Gerencias</label>
+                        <div class="col-sm-10">
+                            <button type="button" class="btn btn-inline btn-primary-outline" id="ger" name="ger">
+                                Asignar Gerencia  
+                            </button>
+                            <p class="form-control-static"><input type="text"  value="Sin Gerencias Asignadas"  class="form-control" readonly></p>
+                        </div>
+                    </div>
+                    {{/if}} 
+                    {{/ifEquals}}
+                    {{#ifEquals perfil.Id_Perfiles "4"}}
+                    {{#if userarea }}
+                    <div class="form-group row">
+                        <label class="col-sm-2 form-control-label">Areas asignadas</label>
+                        <div class="col-sm-10">
+                            <button type="button" class="btn btn-inline btn-primary-outline" id="area" name="area"> 
+                                Asignar Area  
+                            </button>
+                            <br><br>
+                            <Table class="table table-bordered table-hover">        
+                                <thead>
+                                    <tr>
+                                        <th>Gerencia</th>
+                                        <th>Area</th>
+                                        <th class="tabledit-toolbar-column">Eliminar</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                {{#each userarea }}
+                                    <tr>
+                                        <td>{{ vcgas_gerenciaN }}</td>
+                                        <td><strong>{{ vcgas_areaN }}</strong></td>
+                                        <td><button type="button" class="tabledit-delete-button btn btn-sm btn-danger" onclick="confirmar1({{...useru.Id}},{{vcgas_idArea}})" id="elimger1" name="elimger1" style="float: none;">
+                                                <span class="glyphicon glyphicon-trash" ></span>
+                                            </button>
+                                        </td>
+                                    </tr>
+                                {{/each}}    
+                                </tbody>
+                            </Table>
+                        </div>
+                    </div>
+                    {{else}}
+                    <div class="form-group row">
+                        <label class="col-sm-2 form-control-label">Areas</label>
+                        <div class="col-sm-10">
+                            <button type="button" class="btn btn-inline btn-primary-outline" id="area" name="area"> 
+                                Asignar Area  
+                            </button>
+                            <p class="form-control-static"><input type="text"  value="Sin Areas Asignadas"  class="form-control" readonly></p>
+                        </div>
+                    </div>
+                    {{/if}}
+                    {{/ifEquals}}
+                    {{#ifEquals perfil.Id_Perfiles "7"}}
+                    {{#if sectores }}
+                    <div class="form-group row">
+                        <label class="col-sm-2 form-control-label">Sectores asignados</label>
+                        <div class="col-sm-10">
+                            <button type="button" class="btn btn-inline btn-primary-outline" id="sectores" name="sectores">
+                                Asignar Sector  
+                            </button>
+                            <br><br>
+                            <Table class="table table-bordered table-hover">        
+                                <thead>
+                                    <tr>
+                                        <th>Gerencia</th>
+                                        <th>Area</th>
+                                        <th>Sector asignado</th>
+                                        <th class="tabledit-toolbar-column">Eliminar</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                {{#each sectores }}
+                                    <tr>
+                                        <td>{{ vcgas_gerenciaN }}</td>
+                                        <td>{{ vcgas_areaN }}</td>
+                                        <td><strong>{{ vcgas_sectorN }}</strong></td>
+                                        <td><button type="button" class="tabledit-delete-button btn btn-sm btn-danger" onclick="confirmar2({{...useru.Id}},{{vcgas_idSector}})" id="elimger1" name="elimger1" style="float: none;">
+                                                <span class="glyphicon glyphicon-trash" ></span>
+                                            </button>
+                                        </td>
+                                    </tr>
+                                {{/each}}    
+                                </tbody>
+                            </Table>
+                        </div>
+                    </div>
+                    {{else}}
+                    <div class="form-group row">
+                        <label class="col-sm-2 form-control-label">Sectores</label>
+                        <div class="col-sm-10">
+                            <button type="button" class="btn btn-inline btn-primary-outline" id="sectores" name="sectores">
+                                Asignar Sector  
+                            </button>
+                            <p class="form-control-static"><input type="text"  value="Sin Sectores Asignados"  class="form-control" readonly></p>
+                        </div>
+                    </div>
+                    {{/if}}
+                    {{/ifEquals}}
+                    {{#ifEquals perfil.Id_Perfiles "8"}}
+                    {{#if equipos }}
+                    <div class="form-group row">
+                        <label class="col-sm-2 form-control-label">Equipos asignados</label>
+                        <div class="col-sm-10">
+                            <button type="button" class="btn btn-inline btn-primary-outline" id="equipos" name="equipos">
+                                Asignar Equipo   
+                            </button>
+                            <br><br>
+                            <Table class="table table-bordered table-hover">        
+                                <thead>
+                                    <tr>
+                                        <th>Gerencia</th>
+                                        <th>Area</th>
+                                        <th>Sector</th>
+                                        <th>Equipo Asignado</th>
+                                        <th class="tabledit-toolbar-column">Eliminar</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                {{#each equipos }}
+                                    <tr>
+                                        <td>{{ vcgas_gerenciaN }}</td>
+                                        <td>{{ vcgas_areaN }}</td>
+                                        <td>{{ vcgas_sectorN }}</td>
+                                        <td><strong>{{ vce_codigo }}</strong></td>
+                                        <td><button type="button" class="tabledit-delete-button btn btn-sm btn-danger" onclick="confirmar3({{...useru.Id}},{{vce_idEquipo}})" id="elimger1" name="elimger1" style="float: none;">
+                                                <span class="glyphicon glyphicon-trash" ></span>
+                                            </button>
+                                        </td>
+                                    </tr>
+                                {{/each}}    
+                                </tbody>
+                            </Table>
+                        </div>
+                    </div>
+                    {{else}}
+                    <div class="form-group row">
+                        <label class="col-sm-2 form-control-label">Equipos</label>
+                        <div class="col-sm-10">
+                            <button type="button" class="btn btn-inline btn-primary-outline" id="equipos" name="equipos">
+                                Asignar Equipo   
+                            </button>
+                            <p class="form-control-static"><input type="text"  value="Sin Equipos Asignados"  class="form-control" readonly></p>
+                        </div>
+                    </div>
+                    {{/if}}
+                    {{/ifEquals}}   
+                </form>
+            </div>
+        </div>
+    </div>
+
+
+    <script src="/js/lib/jquery/jquery.min.js"></script>
+    <script src="/js/lib/tether/tether.min.js"></script>
+    <script src="/js/lib/bootstrap/bootstrap.min.js"></script>
+    <script src="/js/plugins.js"></script>
+    <script src="/js/app.js"></script>
+
+    <script src="/js/lib/datatables-net/datatables.min.js"></script>
+
+    <script src="/js/lib/bootstrap-sweetalert/sweetalert.min.js"></script>
+
+    <script src="/js/lib/summernote/summernote.min.js"></script>
+
+    <script src="/js/lib/fancybox/jquery.fancybox.pack.js"></script>
+
+    <script src="/js/summernote-ES.js"></script>
+
+    <script src="/js/lib/select2/select2.full.min.js"></script>
+    <script>
+        // Agregar evento submit al formulario
+        $("#form_actualizar").submit(function(e){
+            // Detener la acción por defecto del botón submit
+            e.preventDefault();
+
+            swal({
+                        title: "¡SAPMA!",
+                        text: "¿Desea actualizar el usuario?",
+                        type: "warning",
+                        showCancelButton: true,
+                        confirmButtonClass: "btn-primary",
+                        confirmButtonText: "Si",
+                        cancelButtonText: "No",
+                        closeOnConfirm: false      
+                            }, function(isConfirm) {
+                                if (isConfirm) {
+                                    $.ajax({
+                                    url: $("#form_actualizar").attr("action"),
+                                    type: "POST",
+                                    data: $("#form_actualizar").serialize(),
+                                    success: function(response) {
+                                        // Mostrar mensaje de éxito
+                                        swal("¡Actualizado!", "El usuario ha sido actualizado correctamente.", "success");
+                                        
+                                        // Redireccionar a la página de usuarios
+                                        setTimeout(function() {
+                                            window.location.reload();
+                                        }, 1000);
+                                    },
+                                    error: function(xhr, status, error) {
+                                        // Mostrar mensaje de error
+                                        swal("¡Error!", "Ha ocurrido un error al actualizar el usuario.", "error");
+                                    }
+                                });
+                                }
+                            }
+                            
+                        );	
+        });
+    </script>
+
+    {{#ifEquals useru.Id_Perfil 4}}
+    <script>
+        function _(element)
+        {
+            return document.getElementById(element); 
+        }
+
+        function fetch_data( parent_element, child_element, type)
+        {
+            fetch('/get_data?type='+type+'&parent_value='+parent_element.value+'').then(function(response){
+                return response.json();
+            }).then(function(responseData){
+
+                var html = '';
+
+        if(type == 'load_areass'){
+            $('#container_checkbox').html('');    
+            for (var count = 0; count < responseData.length; count++) {
+                var checkbox = document.createElement('input');
+                checkbox.className = 'form-check-input';
+                checkbox.type = 'checkbox';
+                checkbox.id = 'checkarea' + count;
+                checkbox.name = 'checkarea';
+                checkbox.value = responseData[count][0];
+
+                var label = document.createElement('label')
+                label.className = 'form-check-label';
+                label.htmlFor = 'checkarea' + count;
+                label.appendChild(document.createTextNode(responseData[count][1]));
+
+                var br1 = document.createElement('br');
+
+                var container = document.getElementById('container_checkbox');
+                container.appendChild(checkbox);
+                container.appendChild(label);
+                container.appendChild(br1);
+            }                  
+        }
+
+            });
+        }
+
+        _('gerenciass').onchange = function(){
+
+            fetch_data(_('gerenciass'), _('areass'), 'load_areass');
+
+        };
+
+
+    </script>
+    {{/ifEquals}}
+    {{#ifEquals useru.Id_Perfil 7}}
+    <script>
+        function _(element)
+        {
+            return document.getElementById(element); 
+        }
+
+        function fetch_data( parent_element, child_element, type)
+        {
+            fetch('/get_data?type='+type+'&parent_value='+parent_element.value+'').then(function(response){
+                return response.json();
+            }).then(function(responseData){
+
+                var html = '';
+
+                if(type == 'load_areass'){
+                    html = '<option value="">Selecione un Area</option>';
+                    for(var count = 0; count < responseData.length; count++)
+                    {
+                        html += '<option value="'+responseData[count][0]+'">'+responseData[count][1]+'</option>';    
+                    }
+                    child_element.innerHTML = html;
+                }
+
+                if(type == 'load_sectoress'){
+                    $('#container_checkbox').html('');    
+                    for (var count = 0; count < responseData.length; count++) {
+                        
+                        var checkbox = document.createElement('input');
+                        checkbox.className = 'form-check-input';
+                        checkbox.type = 'checkbox';
+                        checkbox.id = 'sectoress'+ count;
+                        checkbox.name = 'sectoress';
+                        checkbox.value = responseData[count][0];
+
+                        var label = document.createElement('label')
+                        label.className = 'form-check-label';
+                        label.htmlFor = 'sectoress' + count;
+                        label.appendChild(document.createTextNode(responseData[count][1]));
+
+                        var br1 = document.createElement('br');
+
+                        var container = document.getElementById('container_checkbox');
+                        container.appendChild(checkbox,);
+                        container.appendChild(label);
+                        container.appendChild(br1);
+                    }                  
+                }
+            });
+        }
+
+        _('gerenciass').onchange = function(){
+
+            fetch_data(_('gerenciass'), _('areass'), 'load_areass');
+
+        };
+
+        _('areass').onchange = function(){
+
+            fetch_data(_('areass'), _('sectoress'), 'load_sectoress');
+
+        };
+
+    </script>
+    {{/ifEquals}}
+    {{#ifEquals useru.Id_Perfil 8}}
+    <script>
+        function _(element)
+        {
+            return document.getElementById(element); 
+        }
+
+        function fetch_data( parent_element, child_element, type)
+        {
+            fetch('/get_data?type='+type+'&parent_value='+parent_element.value+'').then(function(response){
+                return response.json();
+            }).then(function(responseData){
+
+                var html = '';
+
+                if(type == 'load_areass'){
+                    html = '<option value="">Selecione un Area</option>';
+                    for(var count = 0; count < responseData.length; count++)
+                    {
+                        html += '<option value="'+responseData[count][0]+'">'+responseData[count][1]+'</option>';    
+                    }
+                    child_element.innerHTML = html;
+                }
+
+                if(type == 'load_sectoress'){
+                    html = '<option value="">Selecione un Sector</option>';
+                    for(var count = 0; count < responseData.length; count++)
+                    {
+                        html += '<option value="'+responseData[count][0]+'">'+responseData[count][1]+'</option>';    
+                    }
+                    child_element.innerHTML = html;
+                }
+
+                if(type == 'load_equiposs'){
+                    $('#container_checkbox').html('');    
+                    for (var count = 0; count < responseData.length; count++) {
+                        
+                        var checkbox = document.createElement('input');
+                        checkbox.className = 'form-check-input';
+                        checkbox.type = 'checkbox';
+                        checkbox.id = 'equiposs' + count;
+                        checkbox.name = 'equiposs';
+                        checkbox.value = responseData[count][0];
+
+                        var label = document.createElement('label')
+                        label.className = 'form-check-label';
+                        label.htmlFor = 'equiposs' + count;
+                        label.appendChild(document.createTextNode(responseData[count][1]));
+
+                        var br1 = document.createElement('br');
+
+                        var container = document.getElementById('container_checkbox');
+                        container.appendChild(checkbox,);
+                        container.appendChild(label);
+                        container.appendChild(br1);
+                    }                  
+                }
+
+            });
+        }
+
+        _('gerenciass').onchange = function(){
+
+            fetch_data(_('gerenciass'), _('areass'), 'load_areass');
+
+        };
+
+        _('areass').onchange = function(){
+
+            fetch_data(_('areass'), _('sectoress'), 'load_sectoress');
+
+        };
+
+        _('sectoress').onchange = function(){
+
+            fetch_data(_('sectoress'), _('equiposs'), 'load_equiposs');
+
+        };
+
+    </script>
+    {{/ifEquals}}
+    <script>
+
+        //Cambio de contraseña
+        $(document).on( "click", "#campass", function() {
+            $('#titulopass').html('Cambiar contraseña');
+            $('#modalpass').modal('show');   
+            $("#guardar_pass").on("click", function () {
+                var pass = $('#pass1').val();
+                var pass2 = $('#pass2').val();
+                if(pass == pass2){
+                    $.ajax({
+                        url: "/pass/{{useru.Id}}",
+                        type: "POST",
+                        data: {
+                            pass: pass,
+                        },
+                        success: function () {
+                            swal({
+                                title: "Contraseña actualizada",
+                                icon: "success",
+                            });
+                            $('#modalpass').modal('hide');
+                        },
+                        error: function () {
+                            swal({
+                                title: "Error al actualizar la contraseña",
+                                icon: "error",
+                            });
+                        }
+                    });
+                }else{
+                    alert('Las contraseñas no coinciden');
+                }
+            });
+        });
+
+        //Agregar Area
+        $(document).on( "click", "#area", function() {
+			$('#usuario_cli').trigger('reset');
+			$('#mdltitulo').html('Agregar Areas');
+			$('#modalcli').modal('show');          
+            $("#guardar_area").on("click", function () {
+                var arr = $('[name="checkarea"]:checked').map(function(){
+                            return this.value;
+                            }).get();
+                
+                var ger = $('#gerenciass').val();
+
+                    $.ajax({
+                        url: "/area/{{useru.Id}}/{{ perfil.Id_Perfiles}}/{{cliente.Id_Clientex}}",
+                        type: "POST",
+                        data: {
+                            arr,
+                            ger
+                        }
+                    });
+                    swal({
+                        title: "Guardado!",
+                        text: "Areas añadidas",
+                        type: "success",
+                        confirmButtonClass: "btn-success",
+                        confirmButtonText: "Aceptar"
+                    }, function () {
+                        location.reload();
+                    });
+
+
+            });
+        });
+        //Agregar Gerencia
+        $(document).on( "click", "#ger", function() {
+            $('#usuario_cli').trigger('reset');
+            $('#mdltitulo').html('Agregar Gerencias');
+            $('#modalcli').modal('show');	            
+            $("#guardar_ger").on("click", function () {
+                var arr = $('[name="checkger"]:checked').map(function(){
+                            return this.value;
+                            }).get();
+                
+                var str = arr.join(',');
+                
+                $('#arr').text(JSON.stringify(arr));
+                
+                $('#str').text(str);
+
+                    $.ajax({
+                        url: "/gerencia/{{useru.Id}}/{{ perfil.Id_Perfiles}}/{{cliente.Id_Clientex}}",
+                        type: "POST",
+                        data: {
+                            str
+                        }
+                    });
+
+                    swal({
+                        title: "Guardado!",
+                        text: "Gerencias añadidas",
+                        type: "success",
+                        confirmButtonClass: "btn-success",
+                        confirmButtonText: "Aceptar"
+                    }, function () {
+                        location.reload();
+                    });
+
+            });
+
+        });
+        //Agregar Sector
+        $(document).on( "click", "#sectores", function() {
+			$('#usuario_cli').trigger('reset');
+			$('#mdltitulo').html('Agregar Sector');
+			$('#modalcli').modal('show');          
+            $("#guardar_sec").on("click", function () {
+                var arr = $('[name="sectoress"]:checked').map(function(){
+                            return this.value;
+                            }).get();
+
+                var ger = $('#gerenciass').val();            
+                
+                    $.ajax({
+                        url: "/sector/{{useru.Id}}/{{ perfil.Id_Perfiles}}/{{cliente.Id_Clientex}}",
+                        type: "POST",
+                        data: {
+                            arr,
+                            ger
+                        }
+                    });
+                    swal({
+                        title: "Guardado!",
+                        text: "Sectores añadidos",
+                        type: "success",
+                        confirmButtonClass: "btn-success",
+                        confirmButtonText: "Aceptar"
+                    }, function () {
+                        location.reload();
+                    });
+
+
+
+            });
+        });
+
+        //Agregar Equipo
+        $(document).on( "click", "#equipos", function() {
+			$('#usuario_cli').trigger('reset');
+			$('#mdltitulo').html('Agregar Equipo');
+			$('#modalcli').modal('show');          
+            $("#guardar_equipo").on("click", function () {
+                var arr = $('[name="equiposs"]:checked').map(function(){
+                            return this.value;
+                        }).get();
+                
+                var ger = $('#gerenciass').val();   
+
+                $.ajax({
+                        url: "/equipo/{{useru.Id}}/{{ perfil.Id_Perfiles}}/{{cliente.Id_Clientex}}",
+                        type: "POST",
+                        data: {
+                            arr,
+                            ger
+                        }
+                    });
+
+                    swal({
+                        title: "Guardado!",
+                        text: "Equipos añadidos",
+                        type: "success",
+                        confirmButtonClass: "btn-success",
+                        confirmButtonText: "Aceptar"
+                    }, function () {
+                        location.reload();
+                    });
+            });
+        });
+
+        function confirmar(Id, ger){
+                swal({
+					title: "¿Esta Seguro?",
+					text: " A continuación eliminará una gerencia",
+					type: "error",
+					showCancelButton: true,
+					confirmButtonClass: "btn-danger",
+					confirmButtonText: "Si",
+					cancelButtonText: "No",
+					closeOnConfirm: false      
+				},
+				function(isConfirm) {
+					if (isConfirm) {
+						window.location.href = "/gerencia/"+Id+"/"+ger;
+                        setTimeout(() => {
+                            window.location.reload();
+                        }, 500);
+					}
+				});
+
+        }
+
+        function confirmar1(Id, area){
+                swal({
+					title: "¿Esta Seguro?",
+					text: " A continuación eliminará un area",
+					type: "error",
+					showCancelButton: true,
+					confirmButtonClass: "btn-danger",
+					confirmButtonText: "Si",
+					cancelButtonText: "No",
+					closeOnConfirm: false      
+				},
+				function(isConfirm) {
+					if (isConfirm) {
+						window.location = "/area/"+Id+"/"+area;
+                        setTimeout(() => {
+                            window.location.reload();
+                        }, 500);
+                        
+					}
+				});
+                
+
+        }
+
+        function confirmar2(Id, sector){
+                swal({
+					title: "¿Esta Seguro?",
+					text: " A continuación eliminará un sector",
+					type: "error",
+					showCancelButton: true,
+					confirmButtonClass: "btn-danger",
+					confirmButtonText: "Si",
+					cancelButtonText: "No",
+					closeOnConfirm: false      
+				},
+				function(isConfirm) {
+					if (isConfirm) {
+						window.location = "/sector/"+Id+"/"+sector;
+                        setTimeout(() => {
+                            window.location.reload();
+                        }, 500);
+					}
+				});
+
+        }
+
+        function confirmar3(Id, equipo){
+                swal({
+					title: "¿Esta Seguro?",
+					text: " A continuación eliminará un equipo",
+					type: "error",
+					showCancelButton: true,
+					confirmButtonClass: "btn-danger",
+					confirmButtonText: "Si",
+					cancelButtonText: "No",
+					closeOnConfirm: false      
+				},
+				function(isConfirm) {
+					if (isConfirm) {
+						window.location = "/equipo/"+Id+"/"+equipo;
+                        setTimeout(() => {
+                            window.location.reload();
+                        }, 500);
+					}
+				});
+
+        }
+    </script>
+</body>

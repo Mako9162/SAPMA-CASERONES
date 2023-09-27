@@ -1,0 +1,103 @@
+<body class="with-side-menu">
+	{{> navbar }}
+	<div class="mobile-menu-left-overlay-"></div>
+	{{> nav }}
+	<div class="page-content">
+		<div class="container-fluid">
+			<header class="section-header">
+				<div class="tbl">
+					<div class="tbl-row">
+						<div class="tbl-cell">
+							<h3>Reporte Power BI</h3>
+							<ol class="breadcrumb breadcrumb-simple">
+								<li><a href="/home">Inicio</a></li>
+								<li class="active">Reporte</li>
+							</ol>
+						</div>
+                        <div class="form-group float-right">
+                            <button type="button" class="btn btn-danger" onclick="history.back()" >Volver</button>
+                        </div>
+					</div>
+				</div>
+			</header>
+			<div class="box-typical box-typical-padding">
+				<div class="row">
+					<form action="/" method="">
+				</div>
+                <div class="embed-responsive embed-responsive-21by9">
+                    <iframe class="embed-responsive-item" src="{{power}}"></iframe>
+                </div>
+					</form>	
+					<br>
+			</div>
+		</div>	
+	</div>
+	<script src="/js/lib/jquery/jquery.min.js"></script>
+	<script src="/js/lib/tether/tether.min.js"></script>
+	<script src="/js/lib/bootstrap/bootstrap.min.js"></script>
+	<script src="/js/plugins.js"></script>
+	<script src="/js/app.js"></script>
+	<script src="/js/lib/datatables-net/datatables.min.js"></script>
+	<script src="/js/lib/bootstrap-sweetalert/sweetalert.min.js"></script>
+	<script src="/js/lib/summernote/summernote.min.js"></script>
+	<script src="/js/lib/fancybox/jquery.fancybox.pack.js"></script>
+	<script src="/js/summernote-ES.js"></script>
+	<script src="/js/lib/select2/select2.full.min.js"></script>
+	<script>
+		var table;
+		$(document).ready(function () {
+			table = $('#tabla_reporte').dataTable({
+				'columnDefs': [
+					{
+						'targets': 0,
+						'checkboxes': {
+							'selectRow': true
+						}
+					}
+				],
+				'select': {
+					'style': 'multi'
+				},
+				'order': [[1, 'asc']],
+				aProcessing: true,
+				aServerSide: true,
+				dom: 'Bfrtip',
+				searching: true,
+				lengthChange: false,
+				colReorder: true,
+				"buttons": [
+					'excelHtml5',
+				],
+				"bDestroy": true,
+				"responsive": true,
+				"bInfo": true,
+				"iDisplayLength": 8,
+				"autoWidth": false,
+				"language": {
+					"sProcessing": "Procesando...",
+					"sLengthMenu": "Mostrar _MENU_ registros",
+					"sZeroRecords": "No se encontraron resultados",
+					"sEmptyTable": "Ningún dato disponible en esta tabla",
+					"sInfo": "Mostrando un total de _TOTAL_ registros",
+					"sInfoEmpty": "Mostrando un total de 0 registros",
+					"sInfoFiltered": "(filtrado de un total de _MAX_ registros)",
+					"sInfoPostFix": "",
+					"sSearch": "Buscar:",
+					"sUrl": "",
+					"sInfoThousands": ",",
+					"sLoadingRecords": "Cargando...",
+					"oPaginate": {
+						"sFirst": "Primero",
+						"sLast": "Último",
+						"sNext": "Siguiente",
+						"sPrevious": "Anterior"
+					},
+					"oAria": {
+						"sSortAscending": ": Activar para ordenar la columna de manera ascendente",
+						"sSortDescending": ": Activar para ordenar la columna de manera descendente"
+					},
+				},
+			}).DataTable();
+    	});
+    </script>
+</body>

@@ -1,0 +1,30 @@
+{{#if message }}
+    <div class="form-group">
+    <div class="container p-4">
+        <div class="col md-4 mx-auto">
+            <div class="alert alert-danger alert-icon alert-close alert-dismissible fade in" role="alert">
+                {{message}}
+                <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+					<span aria-hidden="true">×</span>
+				</button>
+				<i class="font-icon font-icon-warning"></i>    
+            </div>
+        </div>
+    </div>
+    </div>
+{{/if}}
+{{#if danger }}
+    <div class="form-group">
+    <div class="container p-4">
+        <div class="col md-4 mx-auto">
+            <div class="alert alert-danger alert-icon alert-close alert-dismissible fade in" role="alert">
+                {{danger}}
+                <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+					<span aria-hidden="true">×</span>
+				</button>
+				<i class="font-icon font-icon-warning"></i>    
+            </div>
+        </div>
+    </div>
+    </div>
+{{/if}}

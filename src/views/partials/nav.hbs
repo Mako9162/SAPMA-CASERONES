@@ -1,0 +1,355 @@
+				<style>
+					.side-menu{
+						position: fixed;
+					}
+
+					.side-menu .side-menu-list {
+						position: absolute;
+						width: 100%;
+						padding: 0;
+						margin: 0;
+						list-style: none;
+					}
+					.side-menu div {
+					color:#ffffff; 
+					position: absolute;
+					bottom: 0px; 
+
+
+					}
+
+					.side-menu div img{
+						width: 60%;
+						margin-left: auto;
+						margin-right: auto;
+						display: block;
+					}
+
+					.side-menu div p{
+						text-align: center;
+						margin-top: 5px;
+						margin-bottom: 5px;
+						margin-left: 5px;
+						margin-right: auto;
+						font-size: small;
+					}
+					</style>
+			<nav class="side-menu jspScrollable">
+				<ul class="side-menu-list">
+					<li class="grey">
+						<a href="/home">
+							<span class="glyphicon glyphicon-home"></span>
+							<span class="lbl">Inicio</span>
+						</a>
+					</li>	
+					{{#ifEquals user.Id_Perfil "7"}}
+					<li class="grey with-sub">
+						<span>
+							<i class="glyphicon glyphicon-tasks"></i>
+							<span class="lbl">Tareas</span>
+						</span>
+						<ul style="">
+							<li><a href="/aprobacionesd"><span class="lbl">Para aprobar</span></a></li>
+							<li><a href="/aprobadasd"><span class="lbl">Aprobadas</span></a></li>	
+							<li><a href="/rechazadasd"><span class="lbl">Rechazadas</span></a></li>
+						</ul>
+					</li>
+					<li class="grey with-sub">
+						<span>
+							<i class="glyphicon glyphicon-file"></i>
+							<span class="lbl">Reportes BI</span>
+						</span>
+						<ul style="">
+							<li><a href="/listarepd"><span class="lbl">Ver</span></a></li>
+						</ul>
+					</li>
+					{{/ifEquals}}
+					{{#ifEquals user.Id_Perfil "8"}}
+					<li class="grey with-sub">
+						<span>
+							<i class="glyphicon glyphicon-tasks"></i>
+							<span class="lbl">Tareas</span>
+						</span>
+						<ul style="">
+							<li><a href="/aprobacionese"><span class="lbl">Para aprobar</span></a></li>
+							<li><a href="/aprobadase"><span class="lbl">Aprobadas</span></a></li>	
+							<li><a href="/rechazadase"><span class="lbl">Rechazadas</span></a></li> 
+						</ul>
+					</li>
+					<li class="grey with-sub">
+						<span>
+							<i class="glyphicon glyphicon-file"></i>
+							<span class="lbl">Reportes BI</span>
+						</span>
+						<ul style="">
+							<li><a href="/listarepe"><span class="lbl">Ver</span></a></li>
+						</ul>
+					</li>
+					{{/ifEquals}}
+					{{#ifEquals user.Id_Perfil "4"}}
+					<li class="grey with-sub">
+						<span>
+							<i class="glyphicon glyphicon-tasks"></i>
+							<span class="lbl">Tareas</span>
+						</span>
+						<ul style="">
+							<li><a href="/aprobacionesa"><span class="lbl">Para aprobar</span></a></li>
+							<li><a href="/aprobadasa"><span class="lbl">Aprobadas</span></a></li>
+							<li><a href="/rechazadasa"><span class="lbl">Rechazadas</span></a></li>
+						</ul>
+					</li>	
+					<li class="grey with-sub">	
+						<span>
+							<i class="glyphicon glyphicon-file"></i>
+							<span class="lbl">Reportes BI</span>
+						</span>
+						<ul style="">
+							<li><a href="/listarepa"><span class="lbl">Ver</span></a></li>
+						</ul>
+					</li>
+					{{/ifEquals}}
+					{{#ifEquals user.Id_Perfil "5"}}
+					<li class="grey with-sub">
+						<span>
+							<i class="glyphicon glyphicon-tasks"></i>
+							<span class="lbl">Tareas</span>
+						</span>
+						<ul style="">
+							<li><a href="/aprobacionesb"><span class="lbl">Para aprobar</span></a></li>
+							<li><a href="/aprobadasb"><span class="lbl">Aprobadas</span></a></li>
+							<li><a href="/rechazadasb"><span class="lbl">Rechazadas</span></a></li>
+						</ul>
+					</li>	
+					<li class="grey with-sub">	
+						<span>
+							<i class="glyphicon glyphicon-file"></i>
+							<span class="lbl">Reportes BI</span>
+						</span>
+						<ul style="">
+							<li><a href="/listarepb"><span class="lbl">Ver</span></a></li>
+						</ul>
+					</li>
+					{{/ifEquals}}
+					{{#ifEquals user.Id_Perfil "10"}}
+					<li class="grey with-sub">
+						<span>
+							<i class="glyphicon glyphicon-tasks"></i>
+							<span class="lbl">Tareas</span>
+						</span>
+						<ul style="">
+							<li><a href="/aprobacionesb"><span class="lbl">Para aprobar</span></a></li>
+							<li><a href="/aprobadasb"><span class="lbl">Aprobadas</span></a></li>
+							<li><a href="/rechazadasb"><span class="lbl">Rechazadas</span></a></li>
+						</ul>
+					</li>	
+					<li class="grey with-sub">	
+						<span>
+							<i class="glyphicon glyphicon-file"></i>
+							<span class="lbl">Reportes BI</span>
+						</span>
+						<ul style="">
+							<li><a href="/listarepb"><span class="lbl">Ver</span></a></li>
+						</ul>
+					</li>
+					{{/ifEquals}}
+					{{#ifEquals user.Id_Perfil "6"}}
+					<li class="grey">
+						<a href="/usersc">
+							<span class="glyphicon glyphicon-user"></span>
+							<span class="lbl">Usuarios</span>
+						</a>
+					</li>
+					<li class="grey with-sub">
+						<span>
+							<i class="glyphicon glyphicon-tasks"></i>
+							<span class="lbl">Tareas</span>
+						</span>
+						<ul style="">
+							<li><a href="/aprobaciones"><span class="lbl">Para aprobar</span></a></li>
+							<li><a href="/aprobadas"><span class="lbl">Aprobadas</span></a></li>
+							<li><a href="/rechazadas"><span class="lbl">Rechazadas</span></a></li>
+						</ul>
+					</li>
+					<li class="grey with-sub">
+						<span>
+							<i class="glyphicon glyphicon-file"></i>
+							<span class="lbl">Reportes BI</span>
+						</span>
+						<ul style="">
+							<li><a href="/listarepc"><span class="lbl">Ver</span></a></li>
+						</ul>
+					</li>					
+					{{/ifEquals}}
+					{{#ifEquals user.Id_Perfil "1"}}
+							<li class="grey">
+								<a href="/users">
+									<span class="glyphicon glyphicon-user"></span>
+									<span class="lbl">Usuarios</span>
+								</a>
+							</li>
+					{{/ifEquals}}
+					{{#ifEquals user.Id_Perfil "2"}}
+					<li class="grey with-sub">
+						<span>
+							<i class="glyphicon glyphicon-tasks"></i>
+							<span class="lbl">Tareas</span>
+						</span>
+						<ul style="">
+							<li><a href="/tgenerales"><span class="lbl">Tareas generales</span></a></li>
+							<li><a href="/protocolos"><span class="lbl">Para validar</span></a></li>
+							<li><a href="/aprobacionesplan"><span class="lbl">Para aprobar</span></a></li>
+							<li><a href="/aprobadasp"><span class="lbl">Aprobadas</span></a></li>							
+							<li><a href="/rechazadasp"><span class="lbl">Rechazadas</span></a></li>
+						</ul>
+					</li>
+					<li class="grey with-sub">		
+						<span>
+							<i class="glyphicon glyphicon-file"></i>
+							<span class="lbl">Reportes BI</span>
+						</span>
+						<ul style="">
+							<li><a href="/reportes"><span class="lbl">Agregar</span></a></li>
+							<li><a href="/listarep"><span class="lbl">Ver</span></a></li>
+						</ul>
+					</li>
+					<li class="grey with-sub">
+						<span>
+							<i class="glyphicon glyphicon-user"></i>
+							<span class="lbl">Usuarios</span>
+						</span>
+						<ul style="">
+							<li><a href="/users"><span class="lbl">Ver</span></a></li>
+						</ul>
+					</li>	
+					<li class="grey with-sub">
+						<span>
+							<i class="glyphicon glyphicon-fire"></i>
+							<span class="lbl">Equipos</span>
+						</span>
+						<ul style="">
+							<li><a href="/equipos"><span class="lbl">Ver</span></a></li>
+							<li><a href="/equiposnew"><span class="lbl">Nuevo</span></a></li>
+							<li><a href="/dinamicos"><span class="lbl">Dinámicos</span></a></li>
+						</ul>
+					</li>	
+					<li class="grey with-sub">
+						<span>
+							<i class="glyphicon glyphicon-folder-open"></i>
+							<span class="lbl">Administración</span>
+						</span>
+						<ul style="">
+							<li><a href="/ger"><span class="lbl">Gerencias</span></a></li>
+							<li><a href="/are"><span class="lbl">Areas</span></a></li>
+							<li><a href="/sec"><span class="lbl">Sectores</span></a></li>
+							<li><a href="/tipo"><span class="lbl">Tipo de equipo</span></a></li>
+							<li><a href="/mm"><span class="lbl">Marca - Modelo</span></a></li>
+							<li><a href="/agente"><span class="lbl">Agente</span></a></li>
+						</ul>
+					</li>	
+					<li class="grey with-sub">
+						<span>
+							<i class="glyphicon glyphicon-th-large"></i>
+							<span class="lbl">Protocolos</span>
+						</span>
+						<ul style="">
+							<li><a href="/new_prot"><span class="lbl">Nuevo</span></a></li>
+							<li><a href="/ver_protocolos"><span class="lbl">Ver / Editar</span></a></li>
+						</ul>
+					</li>
+					{{!-- <li class="grey with-sub">
+						<span>
+							<i class="glyphicon glyphicon-calendar"></i>
+							<span class="lbl">Planificación</span>
+						</span>
+						<ul style="">
+							<li><a href="/new_plan"><span class="lbl">Planificar</span></a></li>
+						</ul>
+					</li> --}}
+					{{/ifEquals}}
+					{{#ifEquals user.Id_Perfil "9"}}
+					<li class="grey with-sub">
+						<span>
+							<i class="glyphicon glyphicon-tasks"></i>
+							<span class="lbl">Tareas</span>
+						</span>
+						<ul style="">
+							<li><a href="/tgenerales"><span class="lbl">Tareas generales</span></a></li>
+							<li><a href="/protocolos"><span class="lbl">Para validar</span></a></li>
+							<li><a href="/aprobacionesplan"><span class="lbl">Para aprobar</span></a></li>
+							<li><a href="/aprobadasp"><span class="lbl">Aprobadas</span></a></li>							
+							<li><a href="/rechazadasp"><span class="lbl">Rechazadas</span></a></li>
+						</ul>
+					</li>
+					<li class="grey with-sub">		
+						<span>
+							<i class="glyphicon glyphicon-file"></i>
+							<span class="lbl">Reportes BI</span>
+						</span>
+						<ul style="">
+							<li><a href="/reportes"><span class="lbl">Agregar</span></a></li>
+							<li><a href="/listarep"><span class="lbl">Ver</span></a></li>
+						</ul>
+					</li>
+					<li class="grey with-sub">
+						<span>
+							<i class="glyphicon glyphicon-user"></i>
+							<span class="lbl">Usuarios</span>
+						</span>
+						<ul style="">
+							<li><a href="/usert"><span class="lbl">Ver</span></a></li>
+							{{!-- <li><a href="#"><span class="lbl">Administrar</span></a></li> --}}
+						</ul>
+					</li>	
+					<li class="grey with-sub">
+						<span>
+							<i class="glyphicon glyphicon-fire"></i>
+							<span class="lbl">Equipos</span>
+						</span>
+						<ul style="">
+							<li><a href="/equipos"><span class="lbl">Ver</span></a></li>
+							<li><a href="/equiposnew"><span class="lbl">Nuevo</span></a></li>
+							<li><a href="/dinamicos"><span class="lbl">Dinámicos</span></a></li>
+						</ul>
+					</li>	
+					<li class="grey with-sub">
+						<span>
+							<i class="glyphicon glyphicon-folder-open"></i>
+							<span class="lbl">Administración</span>
+						</span>
+						<ul style="">
+							<li><a href="/ger"><span class="lbl">Gerencias</span></a></li>
+							<li><a href="/are"><span class="lbl">Areas</span></a></li>
+							<li><a href="/sec"><span class="lbl">Sectores</span></a></li>
+							<li><a href="/tipo"><span class="lbl">Tipo de equipo</span></a></li>
+							<li><a href="/mm"><span class="lbl">Marca - Modelo</span></a></li>
+							<li><a href="/agente"><span class="lbl">Agente</span></a></li>
+						</ul>
+					</li>	
+					<li class="grey with-sub">
+						<span>
+							<i class="glyphicon glyphicon-th-large"></i>
+							<span class="lbl">Protocolos</span>
+						</span>
+						<ul style="">
+							<li><a href="/new_prot"><span class="lbl">Nuevo</span></a></li>
+							<li><a href="/ver_protocolos"><span class="lbl">Ver / Editar</span></a></li>
+						</ul>
+					</li>
+					<li class="grey with-sub">
+						<span>
+							<i class="glyphicon glyphicon-calendar"></i>
+							<span class="lbl">Planificación</span>
+						</span>
+						<ul style="">
+							<li><a href="/ciclos"><span class="lbl">Ciclos</span></a></li>
+							<li><a href="/plan"><span class="lbl">Planificar</span></a></li>
+						</ul>
+					</li>
+					{{/ifEquals}}
+				</ul>
+				<div>
+					<img src="/img/Or_Logo_Sercoing_bco.png" alt="">   
+					<p>© 2023 Innovación y Desarrollo</p>
+				</div>
+			</nav>
+			

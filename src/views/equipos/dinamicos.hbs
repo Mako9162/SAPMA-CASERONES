@@ -1,0 +1,181 @@
+<body class="with-side-menu">
+	{{> navbar }}
+	<div class="mobile-menu-left-overlay-"></div>
+	{{> nav }}
+	<div class="page-content">
+		<div class="container-fluid">
+			<header class="section-header">
+				<div class="tbl">
+					<div class="tbl-row">
+						<div class="tbl-cell">
+							<h3>Dinámicos</h3>
+							<ol class="breadcrumb breadcrumb-simple">
+								<li><a href="/home">Inicio</a></li>
+								<li class="active">Dinámicos</li>
+							</ol>
+						</div>
+						<div class="form-group float-right">
+                            <a href="/equiposnew" type="button" class="btn btn-inline btn-primary-outline">Nuevo</a>
+                        </div>
+					</div>
+				</div>
+				<style>
+						.miClase {
+							font-family: Verdana, Geneva, Tahoma, sans-serif;
+							font-size: 12px; /* Cambia el tamaño de la fuente a 14px */
+						}
+						.dataTables_filter {
+							float: left;
+						}
+						.dt-buttons {
+							float: right;
+						}
+					</style>
+			</header>
+			<div class="box-typical box-typical-padding">
+				<div class="row">
+					</div>
+					<form action="" method="post" return="false">					
+					{{#if title }}
+						<div class="alert alert-danger" role="alert">
+							{{ title }}
+						</div>
+					{{/if}}
+					<div class="col-md-3">
+						<label class="form-label" id="equipos">Buscar Equipo</label>
+						<input class="form-control" id="equipo" name="equipo" placeholder="Ingrese un Serie o Certificación">
+					</div>
+					<div class="col-md-3">
+						<label class="form-label" id="buscar" style="color: aliceblue;">.</label>
+						<button type="submit" name="buscar1" id="buscar1" class="btn btn-rounded btn-primary ">Buscar</button>
+					</div>
+					<div class="col-md-12 col-xs-12" >
+						<h5 class="m-t-lg with-border"><strong></strong></h5>
+					</div>
+				<br>		
+					<table id="tabla_prot" class="table table-bordered table-striped table-vcenter js-dataTable-full">
+						<thead>
+							<tr>
+								<th>Id</th>
+								<th>Critico</th>
+								<th>Serie</th>
+								<th>Certificación</th>
+								<th>Tipo de equipo</th>
+								<th>Marca</th>
+								<th>Modelo</th>
+								<th>Agente</th>
+								<th>Peso</th>
+								<th>Ver</th>
+							</tr>
+						</thead>
+						{{#each DIN}}
+							<tr>
+								<td>{{ID}}</td>
+								<td>{{CRITICO}}</td>
+								<td>{{SERIE}}</td>
+								<td>{{CER}}</td>
+								<td>{{TIPO}}</td>
+								<td>{{MARCA}}</td>
+								<td>{{MODELO}}</td>
+								<td>{{AGENTE}}</td>
+								<td>{{PESO}}</td>
+								<td class="text-center"><a href="/editdina/{{ID}}" type="button" id="btneditar" class="btn btn-inline btn-warning btn-sm ladda-button"><i class="fa fa-eye"></i></a></td>
+							</tr>
+							</tr>
+						{{/each}}	
+						<tbody>
+						</tbody>
+					</table>
+					</form>
+                    <br>
+			</div>
+		</div>	
+	</div>
+	<script src="/js/lib/jquery/jquery.min.js"></script>
+	<script src="/js/lib/tether/tether.min.js"></script>
+	<script src="/js/lib/bootstrap/bootstrap.min.js"></script>
+	<script src="/js/plugins.js"></script>
+	<script src="/js/app.js"></script>
+	<script src="/js/lib/datatables-net/datatables.min.js"></script>
+	<script src="/js/lib/bootstrap-sweetalert/sweetalert.min.js"></script>
+	<script src="/js/lib/summernote/summernote.min.js"></script>
+	<script src="/js/lib/fancybox/jquery.fancybox.pack.js"></script>
+	<script src="/js/summernote-ES.js"></script>
+	<script src="/js/lib/select2/select2.full.min.js"></script>
+		<script>
+		var table;
+		$(document).ready(function () {
+			
+				table = $('#tabla_prot').DataTable({
+				'columnDefs': [
+					{
+						'targets': 0,
+						'checkboxes': {
+							'selectRow': true
+						}
+					}
+				],
+				'select': {
+					'style': 'multi'
+				},
+				'order': [[0, 'asc']],
+				"dom": 'Bfrtip',
+				"searching": true,
+				"lengthChange": false,
+				"colReorder": true,
+				"buttons": [
+				{
+					"extend": 'excelHtml5',
+					"text": '<i class="fa fa-file-excel-o"></i>',
+					"title": 'Dinámicos',
+					"titleAttr": 'Exportar a Excel',
+					"className": 'btn btn-rounded btn-success',
+					"exportOptions": {
+					"columns": [0, 1, 2, 3, 4, 6, 7, 8]
+					},
+					customize: function(xlsx) {
+					const sheet = xlsx.xl.worksheets['sheet1.xml'];
+						$('row:first c', sheet).attr('s', '47');
+            		}
+				}],
+				"bDestroy": true, 	
+				"scrollX": true,
+				"bInfo": true,
+				"iDisplayLength": 20,
+				"autoWidth": false,
+				"language": {
+					"sProcessing": "Procesando...",
+					"sLengthMenu": "Mostrar _MENU_ registros",
+					"sZeroRecords": "No se encontraron resultados",
+					"sEmptyTable": "Ningún dato disponible en esta tabla",
+					"sInfo": "Mostrando un total de _TOTAL_ registros",
+					"sInfoEmpty": "Mostrando un total de 0 registros",
+					"sInfoFiltered": "(filtrado de un total de _MAX_ registros)",
+					"sInfoPostFix": "",
+					"sSearch": "Buscar:",
+					"sUrl": "",
+					"sInfoThousands": ".",
+					"sLoadingRecords": "Cargando...",
+					"oPaginate": {
+						"sFirst": "Primero",
+						"sLast": "Último",
+						"sNext": "Siguiente",
+						"sPrevious": "Anterior"
+					},
+					"oAria": {
+						"sSortAscending": ": Activar para ordenar la columna de manera ascendente",
+						"sSortDescending": ": Activar para ordenar la columna de manera descendente"
+					},
+					"select" : {
+						"rows" : {
+							"_" : "Has seleccionado %d filas",
+							"0" : "Click en una fila para seleccionar",
+							"1" : "Has seleccionado 1 fila"
+						}
+					}
+				},
+			}).columns.adjust();
+				
+		});
+	</script>
+</body>

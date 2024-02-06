@@ -1,0 +1,139 @@
+<body class="with-side-menu">
+    {{> navbar }}
+    <div class="mobile-menu-left-overlay-"></div>
+    {{> nav }}
+    <div class="page-content">
+        <div class="container-fluid">
+            <header class="section-header">
+                <div class="tbl">
+                    <div class="tbl-row">
+                        <div class="tbl-cell">
+                            <h3>Baterías</h3>
+                            <ol class="breadcrumb breadcrumb-simple">
+                                <li><a href="/home">Inicio</a></li>
+                                <li class="active">Baterías</li>
+                            </ol>
+                        </div>
+                    </div>
+                </div>
+            </header>
+            <div class="col-md-5">
+                <div class="box-typical box-typical-padding">
+                    <div class="card-block">
+                        <div class="row">
+                            <h5 class="m-t-lg with-border">Agregar batería</h5>
+                            <br>
+                                <div class="col-md-12">
+                                    <label class="form-label" for="marca">Marca</label>
+                                    <input type="text" class="form-control inputClass" id="marca" name="marca" required>
+                                </div>
+                                <div class="col-md-12" style="color: aliceblue;">.</div>
+                                <div class="col-md-12">
+                                    <label class="form-label" for="modelo">Modelo</label>
+                                    <input type="text" class="form-control inputClass" id="modelo" name="modelo" required>
+                                </div>
+                                <div class="col-md-12" style="color: aliceblue;">.</div>
+                                <div class="col-md-6">
+                                    <label class="form-label" for="capacidad_v">Capacidad V</label>
+                                    <input type="text" class="form-control inputClass inputClass1" id="capacidad_v" name="capacidad_v" required>
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="form-label" for="capacidad_ah">Capacidad Ah</label>
+                                    <input type="text" class="form-control inputClass inputClass1" id="capacidad_ah" name="capacidad_ah" required>
+                                </div>
+                                <div class="col-md-12" style="color: aliceblue;">.</div>
+                                <div class="col-md-4">
+                                    <label class="form-label" for="impedancia_dsh">Impedancia Dsh</label>
+                                    <input type="text" class="form-control inputClass inputClass1" id="impedancia_dsh" name="impedancia_dsh" required>
+                                </div>
+                                <div class="col-md-4">
+                                    <label class="form-label" for="tolerancia_g">Tolerancia Good %</label>
+                                    <input type="text" class="form-control inputClass integerInput" id="tolerancia_g" name="tolerancia_g" required>
+                                </div>
+                                <div class="col-md-4">
+                                    <label class="form-label" for="tolerancia_f">Tolerancia Fail %</label>
+                                    <input type="text" class="form-control inputClass integerInput" id="tolerancia_f" name="tolerancia_f" required>
+                                </div>
+                                <div class="col-md-12" style="color: aliceblue;">.</div>
+                                <div class="col-md-12">
+                                    <br>
+                                    <button class="btn btn-primary float-right" id="agregar" name="agregar">Agregar</button>
+                                </div>   
+                        </div>
+                    </div>
+                </div>
+            </div>  
+            <style>
+                .gris-claro {
+                    color: #dddddd; /* Color gris claro */
+                }
+                #edit_act_desc:checked + label::before {
+					background-color: rgb(14, 228, 18);
+					border-color: rgb(14, 228, 18);
+				}
+            </style>
+            <div class="col-md-7">
+                <div class="box-typical box-typical-padding">
+                    <div class="card-block">
+                        <div class="row">
+                            <h5 class="m-t-lg with-border">Baterías</h5>
+                            <br>
+                            <table id="tabla_bat" class="table table-bordered table-striped table-vcenter js-dataTable-full">
+                                <thead>
+                                    <tr>
+                                        <th>Id</th>
+                                        <th>Marca</th>
+                                        <th>Modelo</th>
+                                        <th>Capacidad V</th>
+                                        <th>Capacidad Ah</th>
+                                        <th>Impedancia Dsh</th>
+                                        <th>Tolerancia G</th>
+                                        <th>Tolerancia F</th>
+                                        <th>Estado</th>
+                                    </tr>
+                                </thead>
+                                    {{#each result}}
+                                    <tr>
+                                        <td>{{ID}}</td>
+                                        <td>{{MARCA}}</td>
+                                        <td>{{MODELO}}</td>
+                                        <td>{{CAPV}}</td>
+                                        <td>{{CAPAH}}</td>
+                                        <td>{{IMP}}</td>
+                                        <td>{{TOLG}}</td>
+                                        <td>{{TOLF}}</td>
+                                        <td>
+                                        {{#if (eq ESTADO 1)}}
+                                            Activo
+                                        {{else}}
+                                            Inactivo
+                                        {{/if}}
+                                    </td>
+                                    </tr>
+                                    {{/each}}    
+                                <tbody>
+                                </tbody>
+                            </table>
+                            <br>  
+                        </div>
+                    </div>
+                </div>
+            </div> 
+        </div>
+    </div>
+    {{> edit_bat}}
+    </div>
+    <script src="/js/lib/jquery/jquery.min.js"></script>
+    <script src="/js/lib/tether/tether.min.js"></script>
+    <script src="/js/lib/bootstrap/bootstrap.min.js"></script>
+    <script src="/js/plugins.js"></script>
+    <script src="/js/app.js"></script>
+    <script src="/js/lib/datatables-net/datatables.min.js"></script>
+    <script src="/js/lib/bootstrap-sweetalert/sweetalert.min.js"></script>
+    <script src="/js/lib/summernote/summernote.min.js"></script>
+    <script src="/js/lib/fancybox/jquery.fancybox.pack.js"></script>
+    <script src="/js/summernote-ES.js"></script>
+    <script src="/js/lib/select2/select2.full.min.js"></script>
+    <script type="text/javascript" src="https://gyrocode.github.io/jquery-datatables-checkboxes/1.2.12/js/dataTables.checkboxes.min.js"></script>
+    <script src="/baterias.js"></script>
+</body>

@@ -1,0 +1,70 @@
+<div class="modal fade bd-example-modal-lg" id="edit_bat" tabindex="-1" role="dialog"
+    aria-labelledby="myLargeModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="modal-close" data-dismiss="modal" aria-label="Close">
+                    <i class="font-icon-close-2"></i>
+                </button>
+                <h4 class="modal-title" id="titulo_bat">Editar batería</h4>
+            </div>
+            <div class="modal-body">
+                <div class="form-group">
+                    <div class="card-block">
+                        <div class="row">
+                            <div class="col-md-12">
+                                <input type="text" hidden="true" id="edit_bat_id" name="edit_bat_id">
+                                <label class="form-label" for="edit_marca">Marca</label>
+                                <input type="text" class="form-control inputClass" id="edit_marca" name="edit_marca"
+                                    required>
+                            </div>
+                            <div class="col-md-12" style="color: aliceblue;">.</div>
+                            <div class="col-md-12">
+                                <label class="form-label" for="edit_modelo">Modelo</label>
+                                <input type="text" class="form-control inputClass" id="edit_modelo" name="edit_modelo"
+                                    required>
+                            </div>
+                            <div class="col-md-12" style="color: aliceblue;">.</div>
+                            <div class="col-md-6">
+                                <label class="form-label" for="edit_capacidad_v">Capacidad V</label>
+                                <input type="text" class="form-control inputClass inputClass1" id="edit_capacidad_v"
+                                    name="edit_capacidad_v" required>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label" for="edit_capacidad_ah">Capacidad Ah</label>
+                                <input type="text" class="form-control inputClass inputClass1" id="edit_capacidad_ah"
+                                    name="edit_capacidad_ah" required>
+                            </div>
+                            <div class="col-md-12" style="color: aliceblue;">.</div>
+                            <div class="col-md-4">
+                                <label class="form-label" for="edit_impedancia_dsh">Impedancia Dsh</label>
+                                <input type="text" class="form-control inputClass inputClass1" id="edit_impedancia_dsh"
+                                    name="iedit_mpedancia_dsh" required>
+                            </div>
+                            <div class="col-md-4">
+                                <label class="form-label" for="edit_tolerancia_g">Tolerancia Good %</label>
+                                <input type="text" class="form-control inputClass integerInput" id="edit_tolerancia_g"
+                                    name="edit_tolerancia_g" required>
+                            </div>
+                            <div class="col-md-4">
+                                <label class="form-label" for="edit_tolerancia_f">Tolerancia Fail %</label>
+                                <input type="text" class="form-control inputClass integerInput" id="edit_tolerancia_f"
+                                    name="edit_tolerancia_f" required>
+                            </div>
+                            <div class="col-md-12" style="color: aliceblue;">.</div>
+                            <div class="col-md-12">
+                                <br>
+                                <div class="checkbox-toggle float-left">
+                                    <input type="checkbox" id="edit_act_desc" name="edit_act_desc">
+                                    <label for="edit_act_desc">Activar / Desactivar</label>
+                                </div>
+                                <button class="btn btn-primary float-right" id="actualizar"
+                                    name="actualizar">Actualizar</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

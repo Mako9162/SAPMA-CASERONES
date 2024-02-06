@@ -688,6 +688,77 @@ router.get('/autocomplete_utec', isLoggedIn, authRole(['Plan', 'Admincli']), asy
     res.json(results);
     console.log(results)
 });
-  
+
+router.get('/baterias', isLoggedIn, authRole(['Plan', 'Admincli']), async (req, res) => {
+    try {
+    
+        await pool.query("SELECT\n" +
+        "	bat_id AS ID,\n" +
+        "	bat_marca AS MARCA,\n" +
+        "	bat_modelo AS MODELO,\n" +
+        "	bat_capacidad_V AS CAPV,\n" +
+        "	bat_capacidad_Ah AS CAPAH,\n" +
+        "	bat_impedancia_Dsh AS IMP,\n" +
+        "	bat_toleranciaG AS TOLG,\n" +
+        "	bat_toleranciaF AS TOLF,\n" +
+        "   bat_activo AS ESTADO\n" +
+        "FROM\n" +
+        "	Baterias_UPS;", async (err, result) => {
+            if(err){
+                console.log(err)
+            }else{
+                res.render('admin/baterias', {result:result});
+            }
+        });
+
+    } catch (error) {
+
+        console.log(error);
+    
+    }
+
+});
+
+router.post('/guardar_bat', isLoggedIn, authRole(['Plan', 'Admincli']), async (req, res) => {
+    
+    try {
+        
+        const { marca, modelo, capacidad_v, capacidad_ah, impedancia_dsh, tolerancia_g, tolerancia_f } = req.body;
+
+        const guardar = await pool.query("INSERT INTO Baterias_UPS (bat_marca, bat_modelo, bat_capacidad_V, bat_capacidad_Ah, bat_impedancia_Dsh, bat_toleranciaG, bat_toleranciaF) VALUES (?, ?, ?, ?, ?, ?, ?);", [marca, modelo, capacidad_v, capacidad_ah, impedancia_dsh, tolerancia_g, tolerancia_f]);
+
+        res.status(200).send("La batería se ha agregado correctamente.");
+    
+    } catch (err) {
+    
+        console.log(err);
+
+        res.status(500).send("Ha ocurrido un error al intentar guardar la batería. Por favor, inténtelo de nuevo más tarde.");
+    
+    }
+
+});
+
+router.post('/act_bat', isLoggedIn, authRole(['Plan', 'Admincli']), async (req, res) => {
+    console.log(req.body);
+    try {
+        
+        const { id, marca, modelo, capv, capah, imp, tolg, tolf, act } = req.body;
+
+        const guardar = await pool.query("UPDATE Baterias_UPS SET bat_marca = ?, bat_modelo = ?, bat_capacidad_V = ?, bat_capacidad_Ah = ?, bat_impedancia_Dsh = ?, bat_toleranciaG = ?, bat_toleranciaF = ?, bat_activo = ? WHERE bat_id = ?", 
+        [marca, modelo, capv, capah, imp, tolg, tolf, act, id]);
+
+        res.status(200).send("La actualizo correctamente.");
+    
+    } catch (err) {
+    
+        console.log(err);
+
+        res.status(500).send("Ha ocurrido un error al intentar guardar la batería. Por favor, inténtelo de nuevo más tarde.");
+    
+    }
+
+});
 
 module.exports = router;
+

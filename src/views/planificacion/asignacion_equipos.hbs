@@ -1,0 +1,103 @@
+<body class="with-side-menu">
+	{{> navbar }}
+	<div class="mobile-menu-left-overlay-"></div>
+	{{> nav }}
+	<div class="page-content">
+		<div class="container-fluid">
+			<header class="section-header">
+				<div class="tbl">
+					<div class="tbl-row">
+						<div class="tbl-cell">
+							<h3>Asignación de equipos</h3>
+							<ol class="breadcrumb breadcrumb-simple">
+								<li><a href="/home">Inicio</a></li>
+								<li class="active">Asignación de equipos</li>
+							</ol>
+						</div>
+						<div class="form-group float-right">
+                            <button type="button" class="btn btn-success" id="asignar" name="asignar">Asignar ciclos</button>
+						</div>
+                    </div>    
+				</div>
+				<style>
+					#asigna_equipo .modal-content {
+						max-height: calc(100vh - 210px);
+						overflow-y: auto;
+					}
+					.detalle-ciclo {
+						text-align: center;
+					}
+				</style>
+			</header>
+            <div class="box-typical box-typical-padding">
+                <div class="row">
+                    <div class="col-md-3 col-sm-6">
+						<label class="form-label" >Gerencia:</label>
+						<select class="select2" name="gerencia" id="gerencia">
+							<option value="">Seleccione una gerencia</option>
+							{{#each gerencias}}
+							<option value="{{vcgas_idGerencia}}">{{vcgas_gerenciaN}}</option>
+							{{/each}}
+						</select>
+					</div>
+                    <div class="col-md-3 col-sm-6">
+						<label class="form-label" >Area:</label>
+						<select class="select2" name="area" id="area">
+							<option value="">Seleccione un área</option>
+						</select>
+					</div>
+					<div class="col-md-3 col-sm-6">
+						<label class="form-label" >Sector:</label>
+							<select class="select2" name="sector" id="sector">
+							<option value="">Seleccione un sector</option>
+						</select>
+					</div>
+					<div class="col-md-3 col-sm-6">
+						<label class="form-label" >Equipo:</label>
+							<select class="select2" name="equipo" id="equipo">
+							<option value="">Seleccione un equipo</option>
+						</select>
+					</div>
+					<div class="col-md-12 col-sm-6">
+						<label class="form-label" id="" style="color: aliceblue;">.</label>
+						<button type="button" class="btn btn-primary float-right" id="filtrar" name="filtrar">Filtrar</button>
+					</div>
+				</div>	
+				<br>
+				<table id="tabla_plan" class="table table-bordered table-striped">
+					<thead>
+						<tr>
+							<th>Id</th>
+							<th>Tag</th>
+							<th hidden="true">Idtp</th>
+							<th>Tipo de equipo</th>
+							<th>Gerencia</th>
+							<th>Area</th>
+							<th>Sector</th>
+							<th>Ciclo</th>
+						</tr>
+					</thead>
+					<tbody>
+					</tbody>
+				</table>
+				{{> asigna_equipo}}
+				{{> detalle_ciclo}}
+				{{!-- <button type="button" class="btn btn-inline btn-success-outline" id="planificar" name="planificar">Planificar</button> --}}
+            </div>
+		</div>	
+	</div>
+	<script src="/js/lib/jquery/jquery.min.js"></script>
+	<script src="/js/lib/tether/tether.min.js"></script>
+	<script src="/js/lib/bootstrap/bootstrap.min.js"></script>
+	<script src="/js/plugins.js"></script>
+	<script src="/js/app.js"></script>
+	<script src="/js/lib/datatables-net/datatables.min.js"></script>
+	<script src="/js/lib/bootstrap-sweetalert/sweetalert.min.js"></script>
+	<script src="/js/lib/summernote/summernote.min.js"></script>
+	<script src="/js/lib/fancybox/jquery.fancybox.pack.js"></script>
+	<script src="/js/summernote-ES.js"></script>
+	<script src="/js/lib/select2/select2.full.min.js"></script>
+	<script src="/asignacion.js"></script>
+	<script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.29.1/moment.min.js"></script>
+
+</body>	

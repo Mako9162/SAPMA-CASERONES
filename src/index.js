@@ -9,6 +9,9 @@ const MySQLStore = require('express-mysql-session');
 const passport = require('passport');
 const {database} = require('./keys.js');
 const cors = require('cors');
+const fs = require('fs');
+
+const max = path.resolve(__dirname, "./maximo.txt")
 
 require('./routes/cronJobs');
 require('./routes/cronJobs1');
@@ -18,7 +21,7 @@ const app = express();
 require('./lib/passport');
 
 //Configuraciones
-app.set('port', 3000 || 3001 || 4000 || 4001);
+app.set('port', 3000);
 app.set('views', path.join(__dirname, 'views'));
 app.engine('.hbs', exphbs.engine({
     defaultLayout: 'main',
@@ -58,17 +61,18 @@ app.use((req, res, next) => {
 app.use(flash());
 app.use(morgan('dev'));
 // app.use(express.urlencoded({extended: false, parameterLimit: 100000}));
-app.use(express.urlencoded({ extended: true, limit: '50mb', parameterLimit: 1000000 }));
+app.use(express.urlencoded({ extended: true, limit: '500mb', parameterLimit: 2000000 }));
 app.use(express.json());
 app.use(passport.initialize());
 app.use(passport.session());
 
 //Variables globales
 app.use((req, res, next) => {
-    app.locals.success = req.flash('success');
-    app.locals.message = req.flash('message');
-    app.locals.user = req.user;
-    next();
+  app.locals.success = req.flash('success');
+  app.locals.message = req.flash('message');
+  app.locals.user = req.user;
+  app.locals.maximo = parseInt(fs.readFileSync(max, 'utf8'));; 
+  next();
 });
 
 //Rutas
@@ -89,9 +93,9 @@ app.use(require('./routes/planificacion'));
 app.use(express.static(path.join(__dirname, 'public')));
 
 //Inicio de servidor
-app.listen(app.get('port'), () => {
-    console.log('Servidor en línea. Puerto:', app.get('port'));
+// Inicio de servidor
+var server = app.listen(app.get('port'), () => {
+  console.log('Servidor en línea. Puerto:', app.get('port'));
 });
 
-
-
+server.timeout = 1000000; // Tiempo de espera en milisegundos

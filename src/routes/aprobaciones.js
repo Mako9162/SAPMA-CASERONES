@@ -845,7 +845,6 @@ router.post('/aprobadase', isLoggedIn, authRole(['Cli_E']), async (req, res)=>{
 
 
 
-
 router.get('/aprobaciones', isLoggedIn, authRole(['Cli_C']), async (req, res)=>{
 
     const {Id_Cliente} = req.user;

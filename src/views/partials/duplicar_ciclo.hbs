@@ -1,0 +1,60 @@
+<div class="modal fade bd-example-modal-lg" id="duplicar_ciclo" tabindex="-1" role="dialog" aria-labelledby="myLargeModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="modal-close" data-dismiss="modal" aria-label="Close">
+                    <i class="font-icon-close-2"></i>
+                </button>
+                <h4 class="modal-title" id="titulo_duplicar"></h4>
+            </div>
+            <form action="" id="form_ciclo">
+                <div class="modal-body">
+                    <div class="form-group">
+                        <div class="card-block">
+                            <div class="row">
+                                <div class="form-group col-md-6 col-sm-6">
+                                    <input type="text" id="id_duplicar" hidden="true">
+                                    <label class="form-label" for="nombre_duplicar">Nombre</label>
+                                    <input class="form-control" type="text" id="nombre_duplicar" name="nombre_duplicar" disabled>
+                                </div>
+                                <div class="form-group col-md-6 col-sm-6">
+                                    <label class="form-label" for="tipo_equipo_duplicar">Tipo de equipo</label>
+                                    <input class="form-control" type="text" id="tipo_equipo_duplicar" name="tipo_equipo_duplicar" disabled>   
+                                </div>
+                                <div class="col-md-12">
+                                    <div class="box-typical box-typical-padding">
+                                        <table id="tabla_duplicar" class="table table-bordered table-striped table-vcenter js-dataTable-full">
+                                            <thead>
+                                                <tr>
+                                                    <th>Tipo de protocolo</th>
+                                                    <th>Periodicidad</th>
+                                                    <th>Periodo</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                </div>
+                                <h5 class="m-t-lg with-border">Información del nuevo ciclo</h5>
+                                <div class="form-group col-md-6 col-sm-6">
+                                    <label class="form-label" for="new_nombre_duplicar">Nombre</label>
+                                    <input class="form-control" type="text" id="new_nombre_duplicar" name="new_nombre_duplicar" placeholder="Asigne un nuevo nombre al ciclo">
+                                </div>
+                                <div class="form-group col-md-6 col-sm-6">
+                                    <label class="form-label" for="new_tipo_equipo_duplicar">Tipo de equipo</label>
+                                    <select class="form-control select2" type="text" id="new_tipo_equipo_duplicar" name="new_tipo_equipo_duplicar">  
+                                    </select>     
+                                </div>
+                                <br><br><br>
+                                <div class="col-md-12 col-sm-6">
+                                    <button type="button"  name="new_duplicar" id="new_duplicar" class="btn btn-rounded btn-success float-right">Duplicar</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>  

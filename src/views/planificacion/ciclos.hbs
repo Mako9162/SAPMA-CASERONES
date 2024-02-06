@@ -8,80 +8,154 @@
 				<div class="tbl">
 					<div class="tbl-row">
 						<div class="tbl-cell">
-							<h3>Ciclos</h3>
+							<h3>Nuevo ciclo</h3>
 							<ol class="breadcrumb breadcrumb-simple">
 								<li><a href="/home">Inicio</a></li>
-								<li class="active">Ciclos</li>
+								<li class="active">Nuevo ciclo</li>
 							</ol>
 						</div>
                     </div>    
 				</div>
+				<style>
+					.add-margin {
+						margin-right: 10px; 
+					}
+					input[type="number"] {
+						width: 50px; 
+						height: 20px; 
+						visibility: visible !important; 
+					}
+					.icon-primary {
+						color: #00bfffbc;
+					}
+				</style>
 			</header>
-			<div class="row">
-				<div class="col-md-4">
-					<div class="box-typical box-typical-padding">
-						<h5 class="m-t-lg with-border">Patrón de repetición</h5>
-						<form id="ciclo_form" action="" method="post">
-							<div class="form-group">
-								<label for="nombre">Asigne un nombre</label>
-								<input type="text" class="form-control" id="nombre" name="nombre">
-								<br>
-								<div class="checkbox-bird green col-md-6">
-									<input type="checkbox" name="radio-1" id="radio-1" value="1">
-									<label for="radio-1">Diario</label>
-								</div>
-								<div class="checkbox-bird green col-md-6">
-									<input type="checkbox" name="radio-2" id="radio-2" value="2">
-									<label for="radio-2">Semanal</label>
-								</div>
-								<div class="checkbox-bird green col-md-6">
-									<input type="checkbox" name="radio-3" id="radio-3" value="3">
-									<label for="radio-3">Mensual</label>
-								</div>
-								<div class="checkbox-bird green col-md-6">
-									<input type="checkbox" name="radio-4" id="radio-4" value="4">
-									<label for="radio-4">Anual</label>	
-								</div>
-								<br>
-								<h5 class="m-t-lg with-border" id="borde" style="display: none;"></h5>
-								<div class="checkbox col-md-6" id="TD" style="display: none;">
-									<input type="checkbox" name="radio_td" id="radio_td" value="TD">
-									<label for="radio_td">Todos los días</label>
-								</div>
-								<div class="checkbox col-md-6" id="TDN" style="display: none;">
-									<input type="checkbox" name="radio_tdn" id="radio_tdn" value="TDn">
-									<input class="form-control" type="number" name="dias" id="dias" min="1">
-								</div>
-							</div>
-							<br>
-							<button type="submit" class="btn btn-rounded btn-success" id="crear" name="crear">Crear</button>
-						</form>
+			<div class="box-typical box-typical-padding">
+				<button class="btn btn-success float-right" id="crear" disabled>Crear</button>
+				<button class="btn btn-danger float-right add-margin" id="borrar">Limpiar</button>
+				<h5 class="m-t-lg with-border">Nuevo ciclo</h5>
+				<br>
+				<div class="row">
+					<div class="form-group col-md-6 col-sm-6" id="nomciclo">
+						<label class="form-label" for="nombre">Nombre de ciclo:</label>
+						<br>
+						<input type="text" class="form-control" id="nombre" placeholder="Asigne un nombre al ciclo">
+					</div>
+					<div class="form-group col-md-6 col-sm-6" id="tequipo">
+						<label class="form-label" for="tipo_equipo">Seleccione el tipo de equipo:</label>
+						<br>
+						<select name="tipo_equipo"  id="tipo_equipo" class="select2">
+							<option value="">Seleccione una opción</option>
+                            {{#each tequipo }}
+                                <option value= "{{Id}}">{{Descripcion}}</option>
+                            {{/each}}
+                        </select>
+					</div>
+				</div>	
+				<h5 class="m-t-lg with-border">Ciclo de panificación</h5>
+				<br>
+				<div class="row">	
+					<div class="form-group col-md-4 col-sm-6" id="ttarea">
+						<label class="form-label" for="tipo_tarea">Seleccione el tipo de protocolo:</label>
+						<select name="tipo_tarea"  id="tipo_tarea" class="select2" disabled>
+							<option value="">Seleccione una opción</option>
+                            {{#each tareas }}
+                                <option value= "{{Id}}">{{Descripcion}} - {{Abreviacion}}</option>
+                            {{/each}}
+                        </select>
+					</div>
+					<div class="form-group col-md-4 col-sm-6" id="periodicidad">
+						<label class="form-label" for="periodo">Seleccione perdiodicidad:</label>
+						<select name="periodo"  id="periodo" class="select2" disabled>
+							<option value="">Seleccione una opción</option>
+							<option value="Diario">Diario</option>
+							<option value="Semanal">Semanal</option>
+							<option value="Mensual">Mensual</option>
+							<option value="Anual">Anual</option>                                   
+                        </select>
+					</div>
+					<div class="form-group col-md-4 col-sm-6" id="tipo_periodo_d" style="display: none;">
+						<label class="form-label">Seleccione un ciclo:</label>
+						<div class="radio">
+							<input type="radio" name="optionsRadios" id="todos_los_dias" value="TLD">
+							<label for="todos_los_dias">Todos los días</label>
+						</div>
+						<div class="radio">
+							<input type="radio" name="optionsRadios" id="cdn" value="CND">
+							<label for="cdn">Cada&nbsp;
+							<input class="form-control" min="1" style="width: 60px; display: inline-block; z-index: 1;" type="number" name="d" id="d">
+							&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;días</label>
+						</div>
+					</div>
+					<div class="form-group col-md-4 col-sm-6" id="tipo_periodo_s" style="display: none;">
+						<label class="form-label">Seleccione un ciclo:</label>
+						<div class="radio">
+							<input type="radio" name="optionsRadios" id="todas_las_semanas" value="TLS">
+							<label for="todas_las_semanas">Todas las semanas</label>
+						</div>
+						<div class="radio">
+							<input type="radio" name="optionsRadios" id="cns" value="CNS">
+							<label for="cns">Cada&nbsp;
+							<input class="form-control" min="1" style="width: 60px; display: inline-block; z-index: 1;" type="number" name="s" id="s">
+							&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;semanas</label>
+						</div>
+					</div>
+					<div class="form-group col-md-4 col-sm-6" id="tipo_periodo_m" style="display: none;">
+						<label class="form-label">Seleccione un ciclo:</label>
+						<div class="radio">
+							<input type="radio" name="optionsRadios" id="todos_los_meses" value="TLM">
+							<label for="todos_los_meses">Todos los meses</label>
+						</div>
+						<div class="radio">
+							<input type="radio" name="optionsRadios" id="cnm" value="CNM">
+							<label for="cnm">Cada&nbsp;
+							<input class="form-control" min="1" style="width: 60px; display: inline-block; z-index: 1;" type="number" name="m" id="m">
+							&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;meses</label>
+						</div>
+					</div>
+					<div class="form-group col-md-4 col-sm-6" id="tipo_periodo_a" style="display: none;">
+						<label class="form-label">Seleccione un ciclo:</label>
+						<div class="radio">
+							<input type="radio" name="optionsRadios" id="todos_los_anos" value="TLA">
+							<label for="todos_los_anos">Todos los años</label>
+						</div>
+						<div class="radio">
+							<input type="radio" name="optionsRadios" id="cna" value="CNA">
+							<label for="cna">Cada&nbsp;
+							<input class="form-control" min="1" style="width: 60px; display: inline-block; z-index: 1;" type="number" name="a" id="a">
+							&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;años</label>
+						</div>
 					</div>
 				</div>
-				<div class="col-md-8">
-					<div class="box-typical box-typical-padding">
-						<table id="tabla_prot" class="table table-bordered table-striped table-vcenter js-dataTable-full">
-							<thead>
-								<tr>
-									<th>Id</th>
-									<th>Nombre</th>
-									<th>Ciclo</th>
-									<th>Mantención</th>
-								</tr>
-							</thead>
-							<tbody>
-								{{#each tipo}}
-								<tr>
-									<td>{{ID}}</td>
-									<td>{{TIPO}}</td>
-									<td>{{TIPO}}</td>
-									<td>{{TIPO}}</td>
-								</tr>    
-								{{/each}}
-							</tbody>
-						</table>
-					</div>
-				</div>
+				<br>
+				<div id="contenedor-ciclos"></div>
+				<button class="btn btn-primary" id="a_ciclo" disabled>Agregar Ciclo</button>
+			</div>
+			<div class="box-typical box-typical-padding" style="display: none;">
+				<table id="tabla_prot" class="table table-bordered table-striped table-vcenter js-dataTable-full">
+					<thead>
+						<tr>
+							<th>Id</th>
+							<th>Nombre</th>
+							<th>Tipo de Tarea</th>
+							<th>Tipo de Periodo</th>
+							<th>Periodo</th>
+							<th>Mantención</th>
+						</tr>
+					</thead>
+					<tbody>
+						{{#each ciclo_table}}
+						<tr>
+							<td>{{ID}}</td>
+							<td>{{NOMBRE}}</td>
+							<td>{{TTAREA}}</td>
+							<td>{{TPERIODO}}</td>
+							<td>{{PERIODO}}</td>
+							<td>{{MANTENCION}}</td>
+						</tr>	
+						{{/each}}
+					</tbody>
+				</table>
 			</div>
 		</div>	
 	</div>

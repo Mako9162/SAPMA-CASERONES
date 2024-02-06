@@ -26,7 +26,7 @@
 							<input type="text" name="idid" id="idid" hidden="true">
 							<div class="form-group">
 								<label for="gerencia">Gerencia</label>
-								<input type="text" class="form-control" id="gerencia" name="gerencia" oninput="this.value = this.value.trim()" required >
+								<input type="text" class="form-control" id="gerencia" name="gerencia" required >
 							</div>
 							<div class="form-group">
 								<label for="descripcion">Descripción</label>
@@ -91,6 +91,13 @@
 	<script>
 		var table;
 		$(document).ready(function () {
+
+			$('#gerencia').on('blur', function () {
+				var valor = $(this).val();
+				var valorSinEspacios = valor.replace(/\s+$/, '');
+				$(this).val(valorSinEspacios);
+			});
+
 			table = $('#tabla_prot').DataTable({
 				"dom": 'f<"toolbar">rtip',
 				'select': {

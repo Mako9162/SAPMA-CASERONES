@@ -26,7 +26,7 @@
 							<input type="text" name="idid" id="idid" hidden="true">
 							<div class="form-group">
 								<label for="sup">Descripción</label>
-								<input type="text" class="form-control" id="sup" name="sup" oninput="this.value = this.value.toUpperCase().trim()">
+								<input type="text" class="form-control" id="sup" name="sup">
 							</div>
 							<button type="submit" class="btn btn-primary" id="boton-master" name="boton-master">Agregar</button>
 						</form>
@@ -67,6 +67,14 @@
 	<script>
 		var table;
 		$(document).ready(function () {
+
+			
+			$('#sup').on('blur', function () {
+				var valor = $(this).val();
+				var valorSinEspacios = valor.replace(/\s+$/, '');
+				$(this).val(valorSinEspacios);
+			});
+
 			table = $('#tabla_prot').DataTable({
 				"dom": 'f<"toolbar">rtip',
 				'select': {

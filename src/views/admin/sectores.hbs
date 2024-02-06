@@ -41,7 +41,7 @@
 							<input type="text" name="ids" id="ids" hidden="true">
 							<div class="form-group">
 								<label for="sector">Sector</label>
-								<input type="text" class="form-control" id="sector" name="sector"  oninput="this.value = this.value.trim()" required placeholder="Asigne un nombre al sector" >
+								<input type="text" class="form-control" id="sector" name="sector" required placeholder="Asigne un nombre al sector" >
 							</div>
 							<button type="submit" class="btn btn-primary" id="boton-master" name="boton-master">Agregar</button>
 						</form>
@@ -115,7 +115,14 @@
 				fetch_data(_('gerencia'), _('area'), 'load_areass');
 				$('#area').prop('disabled', false);
         	};
-		
+
+			
+			$('#sector').on('blur', function () {
+				var valor = $(this).val();
+				var valorSinEspacios = valor.replace(/\s+$/, '');
+				$(this).val(valorSinEspacios);
+			});
+
 			table = $('#tabla_prot').DataTable({
 				"dom": 'f<"toolbar">rtip',
 				'select': {
@@ -157,6 +164,7 @@
 			});
 			$("div.toolbar").html('<button id="boton-editar" class="btn btn-inline btn-warning btn-sm ladda-button"><i class="fa fa-edit"></i></button>');
 			var editMode = false;
+			
 			$('#boton-editar').on('click', function() {
 				var selectedRows = table.rows({selected: true});
 				if (selectedRows.count() != 1) {
@@ -169,6 +177,7 @@
 					editMode = true;
 				}
 			});
+			
 			$('#agregar-sector-form').on('submit', function(event) {
 				event.preventDefault();
 				if (editMode){
@@ -286,6 +295,7 @@
 					}
 				}
 			});	
+			
 			$('#boton-eliminar').on('click', function() {
 				var selectedRows = table.rows({selected: true});
 				if (selectedRows.count() === 0) {

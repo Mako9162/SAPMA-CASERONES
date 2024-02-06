@@ -1,0 +1,90 @@
+<div class="modal fade bd-example-modal-lg" id="new_fila" tabindex="-1" role="dialog" aria-labelledby="myLargeModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="modal-close" data-dismiss="modal" aria-label="Close">
+                    <i class="font-icon-close-2"></i>
+                </button>
+                <h4 class="modal-title" id="titulo_ciclo_i"></h4>
+            </div>
+            <form action="" id="form_ciclo">
+                <div class="modal-body">
+                    <div class="form-group">
+                        <div class="card-block">
+                            <div class="row">
+                                <div class="form-group col-md-4 col-sm-6">
+                                    <input type="text" hidden="true" id="id_fila_i">
+                                    <label class="form-label" for="tipo_protocolo_i">Tipo de protocolo</label>
+                                    <select class="form-control" id="tipo_protocolo_i" name="tipo_protocolo_i">
+                                    </select>
+                                </div>
+                                <div class="form-group col-md-4 col-sm-6">
+                                    <label class="form-label" for="periodicidad_i">Periodicidad</label>
+                                    <select class="form-control" id="periodicidad_i" name="periodicidad_i">
+                                    </select>
+                                </div>
+                                <div class="form-group col-md-4 col-sm-6" id="tipo_periodo_d_i" style="display: none;">
+                                    <label class="form-label">Seleccione un ciclo:</label>
+                                    <div class="radio">
+                                        <input type="radio" name="optionsRadio_i" id="todos_los_dias_i" value="TLD">
+                                        <label for="todos_los_dias_i">Todos los días</label>
+                                    </div>
+                                    <div class="radio">
+                                        <input type="radio" name="optionsRadio_i" id="cnd_i" value="CND">
+                                        <label for="cnd_i">Cada&nbsp;
+                                        <input class="form-control" min="1" style="width: 60px; display: inline-block; z-index: 1;" type="number" name="d_i" id="d_i">
+                                        &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;días</label>
+                                    </div>
+                                </div>
+                                <div class="form-group col-md-4 col-sm-6" id="tipo_periodo_s_i" style="display: none;">
+                                    <label class="form-label">Seleccione un ciclo:</label>
+                                    <div class="radio">
+                                        <input type="radio" name="optionsRadio_i" id="todas_las_semanas_i" value="TLS">
+                                        <label for="todas_las_semanas_i">Todas las semanas</label>
+                                    </div>
+                                    <div class="radio">
+                                        <input type="radio" name="optionsRadio_i" id="cns_i" value="CNS">
+                                        <label for="cns_i">Cada&nbsp;
+                                        <input class="form-control" min="1" style="width: 60px; display: inline-block; z-index: 1;" type="number" name="s_i" id="s_i">
+                                        &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;semanas</label>
+                                    </div>
+                                </div>
+                                <div class="form-group col-md-4 col-sm-6" id="tipo_periodo_m_i" style="display: none;">
+                                    <label class="form-label">Seleccione un ciclo:</label>
+                                    <div class="radio">
+                                        <input type="radio" name="optionsRadio_i" id="todos_los_meses_i" value="TLM">
+                                        <label for="todos_los_meses_i">Todos los meses</label>
+                                    </div>
+                                    <div class="radio">
+                                        <input type="radio" name="optionsRadio_i" id="cnm_i" value="CNM">
+                                        <label for="cnm_i">Cada&nbsp;
+                                        <input class="form-control" min="1" style="width: 60px; display: inline-block; z-index: 1;" type="number" name="m_i" id="m_i">
+                                        &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;meses</label>
+                                    </div>
+                                </div>
+                                <div class="form-group col-md-4 col-sm-6" id="tipo_periodo_a_i" style="display: none;">
+                                    <label class="form-label">Seleccione un ciclo:</label>
+                                    <div class="radio">
+                                        <input type="radio" name="optionsRadio_i" id="todos_los_anos_i" value="TLA">
+                                        <label for="todos_los_anos_i">Todos los años</label>
+                                    </div>
+                                    <div class="radio">
+                                        <input type="radio" name="optionsRadio_i" id="cna_i" value="CNA">
+                                        <label for="cna_i">Cada&nbsp;
+                                        <input class="form-control" min="1" style="width: 60px; display: inline-block; z-index: 1;" type="number" name="a_i" id="a_i">
+                                        &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;años</label>
+                                    </div>
+                                </div>
+                                <br>
+                                <br>
+                                <div class="col-md-12 col-sm-6">
+                                    <button type="button"  name="inserta_fila" id="inserta_fila" class="btn btn-rounded btn-success float-right">Agregar</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>  

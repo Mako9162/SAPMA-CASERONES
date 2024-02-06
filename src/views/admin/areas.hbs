@@ -35,7 +35,7 @@
 							<input type="text" name="ida" id="ida" hidden="true">
 							<div class="form-group">
 								<label for="area">Area</label>
-								<input type="text" class="form-control" id="area" name="area" required oninput="this.value = this.value.trim()" placeholder="Asigne un nombre al area" >
+								<input type="text" class="form-control" id="area" name="area" required placeholder="Asigne un nombre al area" >
 							</div>
 							<button type="submit" class="btn btn-primary" id="boton-master" name="boton-master">Agregar</button>
 						</form>
@@ -80,6 +80,13 @@
 	<script>
 		var table;
 		$(document).ready(function () {
+
+			$('#area').on('blur', function () {
+				var valor = $(this).val();
+				var valorSinEspacios = valor.replace(/\s+$/, '');
+				$(this).val(valorSinEspacios);
+			});
+
 			table = $('#tabla_prot').DataTable({
 				"dom": 'f<"toolbar">rtip',
 				'select': {
@@ -133,6 +140,7 @@
 					editMode = true;
 				}
 			});
+			
 			$('#agregar-area-form').on('submit', function(event) {
 				event.preventDefault();
 				if (editMode){

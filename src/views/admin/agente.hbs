@@ -26,7 +26,7 @@
 							<input type="text" name="idid" id="idid" hidden="true">
 							<div class="form-group">
 								<label for="descripcion">Descripción</label>
-								<input type="text" class="form-control" id="descripcion" name="descripcion" oninput="this.value = this.value.toUpperCase().trim()">
+								<input type="text" class="form-control" id="descripcion" name="descripcion">
 							</div>
 							<button type="submit" class="btn btn-primary" id="boton-master" name="boton-master">Agregar</button>
 						</form>
@@ -67,6 +67,13 @@
 	<script>
 		var table;
 		$(document).ready(function () {
+
+			$('#descripcion').on('blur', function () {
+				var valor = $(this).val();
+				var valorSinEspacios = valor.replace(/\s+$/, '');
+				$(this).val(valorSinEspacios);
+			});
+			
 			table = $('#tabla_prot').DataTable({
 				"dom": 'f<"toolbar">rtip',
 				'select': {
@@ -106,8 +113,10 @@
 					}
 				}
 			});
+			
 			$("div.toolbar").html('<button id="boton-editar" class="btn btn-inline btn-warning btn-sm ladda-button"><i class="fa fa-edit"></i></button>');
 			var editMode = false;
+
 			$('#boton-eliminar').on('click', function() {
 				var selectedRows = table.rows({selected: true});
 				if (selectedRows.count() === 0) {
@@ -146,6 +155,7 @@
 					});		
 				}
 			});
+			
 			$('#boton-editar').on('click', function() {
 				var selectedRows = table.rows({selected: true});
 				if (selectedRows.count() != 1) {
@@ -158,6 +168,7 @@
 					editMode = true;
 				}
 			});
+			
 			$('#agregar-agente-form').on('submit', function(event) {
 				event.preventDefault();
 				if (editMode){

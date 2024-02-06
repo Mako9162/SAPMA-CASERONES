@@ -1,0 +1,98 @@
+<div class="modal fade bd-example-modal-lg" id="planificacion" tabindex="-1" role="dialog" aria-labelledby="myLargeModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="modal-close" data-dismiss="modal" aria-label="Close">
+                    <i class="font-icon-close-2"></i>
+                </button>
+                <h4 class="modal-title" id="titulo_planificar">Planificación de tareas</h4>
+            </div>
+            <form action="" id="form_ciclo">
+                <div class="modal-body">
+                    <div class="form-group">
+                        <div class="card-block">
+                            <div class="row">
+                                <div class="col-md-12">
+                                    <div class="form-group">
+                                        <label for="date1">Desde:</label>
+                                        <div class="row">
+                                            <div class="col-md-6">
+                                                <select class="select2" id="date1">
+                                                    <option value="" selected disabled>Seleccione un mes</option>
+                                                    <option value="jan">Enero</option>
+                                                    <option value="feb">Febrero</option>
+                                                    <option value="mar">Marzo</option>
+                                                    <option value="apr">Abril</option>
+                                                    <option value="may">Mayo</option>
+                                                    <option value="jun">Junio</option>
+                                                    <option value="jul">Julio</option>
+                                                    <option value="aug">Agosto</option>
+                                                    <option value="sep">Septiembre</option>
+                                                    <option value="oct">Octubre</option>
+                                                    <option value="nov">Noviembre</option>
+                                                    <option value="dec">Diciembre</option>
+                                                </select>
+                                            </div>
+                                            <div class="col-md-6">
+                                                <select class="select2" id="ano1">
+                                                    <option value="" selected disabled>Seleccione un año</option>
+                                                </select>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-md-4">
+                                </div>
+                                <div class="col-md-12">
+                                    <div class="form-group">
+                                        <label for="date2">Hasta:</label>
+                                        <div class="row">
+                                            <div class="col-md-6">
+                                                <select class="select2" id="date2">
+                                                    <option value="" selected disabled>Seleccione un mes</option>
+                                                    <option value="jan">Enero</option>
+                                                    <option value="feb">Febrero</option>
+                                                    <option value="mar">Marzo</option>
+                                                    <option value="apr">Abril</option>
+                                                    <option value="may">Mayo</option>
+                                                    <option value="jun">Junio</option>
+                                                    <option value="jul">Julio</option>
+                                                    <option value="aug">Agosto</option>
+                                                    <option value="sep">Septiembre</option>
+                                                    <option value="oct">Octubre</option>
+                                                    <option value="nov">Noviembre</option>
+                                                    <option value="dec">Diciembre</option>
+                                                </select>
+                                            </div>
+                                            <div class="col-md-6">
+                                                <select class="select2" id="ano2">
+                                                    <option value="" selected disabled>Seleccione un año</option>
+                                                </select>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-md-4">
+                                </div>
+                                <div class="form-group col-md-12 col-sm-6" id="div_tecnico">
+                                    <label class="form-label" for="tecnico">Asigne un técnico</label>
+                                    <select class="select2" name="tecnico" id="tecnico">
+                                        <option value="" selected disabled>Seleccione una opción</option>
+                                        {{#each tecnicos}}
+                                        <option value="{{ID}}">{{LOGIN}}</option>
+                                        {{/each}}
+                                    </select>
+                                </div>
+                                <div class="col-md-12 col-sm-6">
+                                    <br>
+                                    <button type="button"  name="crear_plan" id="crear_plan" class="btn btn-success btn-sm float-right">Planificar</button>
+                                    {{!-- <button type="button" name="verificar" id="verificar" class="btn btn-warning btn-sm float-right" style="margin-right: 10px;">Verificar</button> --}}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>  

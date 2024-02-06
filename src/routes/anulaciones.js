@@ -44,7 +44,7 @@ router.post("/tgenerales", isLoggedIn, authRole(['Plan', 'Admincli']), async (re
   const {date3, date4, tarea} = req.body;
   const {Id_Cliente} = req.user;
 
-  if (tarea > 0) {
+  if (tarea > 0 & date3 === '' & date4 === '') {
     await pool.query("SELECT\n" +
     "	P.*,\n" +
     "IF\n" +
@@ -162,7 +162,7 @@ router.post("/tgenerales", isLoggedIn, authRole(['Plan', 'Admincli']), async (re
         }
       }
     );
-  } else {
+  } else if (date3 > 0 & date4 > 0 & tarea === ''){
           const firstDay = new Date(date3, date4 - 1, 1);
           const lastDay = new Date(date3, date4, 0);
           const firstDayString = firstDay.toISOString().slice(0,10);
@@ -287,6 +287,130 @@ router.post("/tgenerales", isLoggedIn, authRole(['Plan', 'Admincli']), async (re
           );
   
        
+  } else if (date3 > 0 & date4 === '' & tarea === '') {
+    const year = parseInt(date3, 10);
+      const startDate = new Date(year, 0, 1);
+      const endDate = new Date(year, 11, 31);
+      const firstDayString = startDate.toISOString().slice(0,10);
+      const lastDayString = endDate.toISOString().slice(0,10);
+    await pool.query("SELECT\n" +
+    "	P.*,\n" +
+    "IF\n" +
+    "	(\n" +
+    "		TD.tdet_Estado_Equipo = 'SC',\n" +
+    "		'No aplica',\n" +
+    "	IF\n" +
+    "		(\n" +
+    "			TD.tdet_Estado_Equipo = 'SSR',\n" +
+    "			'Sistema sin revisar.',\n" +
+    "		IF\n" +
+    "			(\n" +
+    "				TD.tdet_Estado_Equipo = 'SOP',\n" +
+    "				'Sistema operativo',\n" +
+    "			IF\n" +
+    "				(\n" +
+    "					TD.tdet_Estado_Equipo = 'SOCO',\n" +
+    "					'Sist. operativo con obs.',\n" +
+    "				IF\n" +
+    "					(\n" +
+    "						TD.tdet_Estado_Equipo = 'SFS',\n" +
+    "						'Sist. fuera de serv.',\n" +
+    "					IF\n" +
+    "					( TD.tdet_Estado_Equipo = 'SNO', 'Sist. no operativo', TD.tdet_Estado_Equipo )))))) AS ESTADO_EQUIPO,\n" +
+    "IF\n" +
+    "	(\n" +
+    "		TD.tdet_Observaciones_Estado = 'SC',\n" +
+    "		'',\n" +
+    "		CONVERT (\n" +
+    "			CAST(\n" +
+    "				CONVERT ( CONCAT( UPPER( LEFT ( TD.tdet_Observaciones_Estado, 1 )), SUBSTRING( TD.tdet_Observaciones_Estado FROM 2 )) USING latin1 ) AS BINARY \n" +
+    "			) USING UTF8 \n" +
+    "		)) AS OBSERVACION_ESTADO,\n" +
+    "	TD.tdet_Repuestos AS REPUESTOS \n" +
+    "FROM\n" +
+    "	(\n" +
+    "	SELECT\n" +
+    "		* \n" +
+    "	FROM\n" +
+    "		(\n" +
+    "		SELECT\n" +
+    "			T.Id AS IDT,\n" +
+    "			date_format( T.Fecha, '%d-%m-%Y' ) AS FECHA,\n" +
+    "			VE.vce_codigo AS CODIGO,\n" +
+    "			VE.vcgas_gerenciaN AS GERENCIA,\n" +
+    "			VE.vcgas_areaN AS AREA,\n" +
+    "			VE.vcgas_sectorN AS SECTOR,\n" +
+    "			TP.Descripcion AS SERVICIO,\n" +
+    "			U.Descripcion AS TECNICO,\n" +
+    "			E.Descripcion AS ESTADO,\n" +
+    "			COUNT(*) OVER ( PARTITION BY VE.vce_codigo ) AS CuentaCodigo \n" +
+    "		FROM\n" +
+    "			VIEW_tareaCliente V\n" +
+    "			INNER JOIN Tareas T ON T.Id = V.vtc_tareaId\n" +
+    "			INNER JOIN Usuarios U ON U.Id = T.Id_Tecnico\n" +
+    "			INNER JOIN VIEW_equiposCteGerAreSec VE ON VE.vce_idEquipo = T.Id_Equipo\n" +
+    "			INNER JOIN Protocolos P ON P.Id = T.Id_Protocolo\n" +
+    "			INNER JOIN TipoProtocolo TP ON TP.Id = P.Id_TipoProtocolo\n" +
+    "			INNER JOIN Estados E ON E.Id = T.Id_Estado \n" +
+    "		WHERE\n" +
+    "			V.vtc_idCliente = "+Id_Cliente+" \n" +
+    "			AND T.Id_Estado IN ( 5, 1, 2, 4, 6 ) \n" +
+    "     AND T.Fecha BETWEEN \""+firstDayString+"\" AND \""+lastDayString+"\" \n" +
+    "			AND U.Descripcion NOT LIKE '%TEST%' \n" +
+    "		ORDER BY\n" +
+    "			CuentaCodigo DESC,\n" +
+    "			VE.vcgas_gerenciaN,\n" +
+    "			VE.vcgas_areaN,\n" +
+    "			VE.vcgas_sectorN,\n" +
+    "			T.Id_Equipo ASC \n" +
+    "		) AS R UNION\n" +
+    "	SELECT\n" +
+    "		* \n" +
+    "	FROM\n" +
+    "		(\n" +
+    "		SELECT\n" +
+    "			T.Id AS IDT,\n" +
+    "			date_format( T.Fecha, '%d-%m-%Y' ) AS FECHA,\n" +
+    "			VE.vce_codigo AS CODIGO,\n" +
+    "			VE.vcgas_gerenciaN AS GERENCIA,\n" +
+    "			VE.vcgas_areaN AS AREA,\n" +
+    "			VE.vcgas_sectorN AS SECTOR,\n" +
+    "			TP.Descripcion AS SERVICIO,\n" +
+    "			U.Descripcion AS TECNICO,\n" +
+    "			E.Descripcion AS ESTADO,\n" +
+    "			'CuentaCodigo' \n" +
+    "		FROM\n" +
+    "			VIEW_tareaCliente V\n" +
+    "			INNER JOIN Tareas T ON T.Id = V.vtc_tareaId\n" +
+    "			INNER JOIN Usuarios U ON U.Id = T.Id_Tecnico\n" +
+    "			INNER JOIN VIEW_equiposCteGerAreSec VE ON VE.vce_idEquipo = T.Id_Equipo\n" +
+    "			INNER JOIN Protocolos P ON P.Id = T.Id_Protocolo\n" +
+    "			INNER JOIN TipoProtocolo TP ON TP.Id = P.Id_TipoProtocolo\n" +
+    "			INNER JOIN Estados E ON E.Id = T.Id_Estado \n" +
+    "		WHERE\n" +
+    "			V.vtc_idCliente = "+Id_Cliente+" \n" +
+    "			AND T.Id_Estado IN ( 3 ) \n" +
+    "     AND T.Fecha BETWEEN \""+firstDayString+"\" AND \""+lastDayString+"\" \n" +
+    "			AND U.Descripcion NOT LIKE '%TEST%' \n" +
+    "		ORDER BY\n" +
+    "			CuentaCodigo DESC,\n" +
+    "			VE.vcgas_gerenciaN,\n" +
+    "			VE.vcgas_areaN,\n" +
+    "			VE.vcgas_sectorN,\n" +
+    "			T.Id_Equipo ASC \n" +
+    "		) AS X \n" +
+    "	) AS P\n" +
+    "	LEFT JOIN Tareas_Detalle TD ON P.IDT = TD.tdet_Id_Tarea;",
+      (err, result) => {
+        if (!result.length) {
+          console.log(result);
+          res.render("generales/generales", { title: "No se encuentran tareas en el rango seleccionado!!!" });
+        } else {
+          enviar(req, res, result);
+          prot.push(result);
+        }
+      }
+    );
   }
 
 });

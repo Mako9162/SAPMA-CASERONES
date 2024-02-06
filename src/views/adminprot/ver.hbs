@@ -340,9 +340,9 @@
                 container.append(capturaElement);
             }
 
-            function agregarCapitulo(nombreCapitulo, capturas, tipos) {
+            function agregarCapitulo(nombreCapituloFormateado,nombreCapitulo, capturas, tipos) {
             // Crear la pestaña con título editable
-            var tab = $('<li class="nav-item"><a class="nav-link" data-toggle="tab" href="#tab' + nombreCapitulo + '"><span contenteditable="true">' + nombreCapitulo + '</span>&nbsp;</a></li>');
+            var tab = $('<li class="nav-item"><a class="nav-link" data-toggle="tab" href="#tab' + nombreCapituloFormateado + '"><span contenteditable="true">' + nombreCapitulo + '</span>&nbsp;</a></li>');
             tab.append('<button type="button" class="close custom-close" title="Eliminar capitulo"><span class="fa fa-minus-circle"></span></button>'); // Agregar el botón de cierre
             $('#tabs').append(tab);
 
@@ -368,7 +368,7 @@
             });
             tab.append(closeButton);
 
-            var tabContent = $('<div class="tab-pane" id="tab' + nombreCapitulo + '"></div>');
+            var tabContent = $('<div class="tab-pane" id="tab' + nombreCapituloFormateado + '"></div>');
             $('#tab-content').append(tabContent);
 
             for (var i = 0; i < capturas.length; i++) {
@@ -398,8 +398,12 @@
                 actualizarContenido(contenidoId, newTitle);
             });
             }
+
             $('#guardarCapitulo').on('click', function () {
                 var nombreCapitulo = $('#nombreCapitulo').val();
+                // Reemplazar espacios y puntos con guiones bajos
+                var nombreCapituloFormateado = nombreCapitulo.replace(/[\s\.]/g, '_');
+
                 if (nombreCapitulo === '') {
                 swal('SAPMA!', 'Por favor, ingrese un nombre para el capítulo.', 'error');
                 return;
@@ -437,7 +441,7 @@
                 return; // Detener el proceso de guardado
                 }
 
-                agregarCapitulo(nombreCapitulo, capturas, tipos);
+                agregarCapitulo(nombreCapituloFormateado, nombreCapitulo, capturas, tipos);
                 
 
                 // Reiniciar el modal

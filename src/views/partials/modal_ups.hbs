@@ -1,0 +1,182 @@
+<div class="modal fade bd-example-modal-lg" id="modal_protocolo" tabindex="-1" role="dialog"
+    aria-labelledby="myLargeModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="modal-close" data-dismiss="modal" aria-label="Close">
+                    <i class="font-icon-close-2"></i>
+                </button>
+                <h4 class="modal-title" id="titu_protocolo">Asignación de protocolos</h4>
+            </div>
+            <form action="" id="form_protocolo">
+                <div class="modal-body">
+                    <cdiv class="form-group">
+                        <div class="card-block">
+                            <div class="row">
+                                <cdiv class="form-group">
+                                    <label class="form-label" for="protocolo">Tipo de protocolo:</label>
+                                    <select name="protocolo" id="protocolo" class="select2">
+                                        <option value="">Seleccione un tipo de protocolo</option>
+                                        {{#each tipo_protocolo }}
+                                        <option value="{{Id}}">{{Descripcion}} {{Abreviacion}}</option>
+                                        {{/each}}
+                                    </select>
+                                </cdiv>
+                                <br>
+                                <br>
+                                <cdiv class="form-group">
+                                    <label class="form-label" for="protocolo-correspondiente">Protocolo:</label>
+                                    <select class="select2" id="protocolo-correspondiente">
+                                        <option value="">Seleccione un protocolo</option>
+                                    </select>
+                                </cdiv>
+                                <br>
+                                <br>
+                                <div>
+                                    <button type="button" name="asignar" id="asignar"
+                                        class="btn btn-rounded btn-primary float-right">Asignar</button>
+                                </div>
+                            </div>
+                        </div>
+                    </cdiv>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+<div class="modal fade bd-example-modal-lg" id="modal_tipoequipo" tabindex="-1" role="dialog"
+    aria-labelledby="myLargeModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="modal-close" data-dismiss="modal" aria-label="Close">
+                    <i class="font-icon-close-2"></i>
+                </button>
+                <h4 class="modal-title" id="titu_tipoequipo">Agregar tipo de equipo</h4>
+            </div>
+            <form action="" id="form_tipoequipo">
+                <div class="modal-body">
+                    <cdiv class="form-group">
+                        <div class="card-block">
+                            <div class="row">
+                                <cdiv class="form-group">
+                                    <label for="atp">Descripción</label>
+                                    <input type="text" class="form-control" id="atp" name="atp"
+                                        onblur="formatInput(this)">
+                                </cdiv>
+                                <br>
+                                <div>
+                                    <button type="button" name="action" id="guardar_tipoequipo"
+                                        class="btn btn-rounded btn-primary float-right">Guardar</button>
+                                </div>
+                            </div>
+                        </div>
+                    </cdiv>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+<div class="modal fade bd-example-modal-lg" id="modal_marcamodelo" tabindex="-1" role="dialog"
+    aria-labelledby="myLargeModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="modal-close" data-dismiss="modal" aria-label="Close">
+                    <i class="font-icon-close-2"></i>
+                </button>
+                <h4 class="modal-title" id="titu_marcamodelo">Agregar marca y modelo</h4>
+            </div>
+            <form action="" id="form_marcamodelo">
+                <div class="modal-body">
+                    <cdiv class="form-group">
+                        <div class="card-block">
+                            <div class="row">
+                                <div class="form-group">
+                                    <label for="descripcion">Marca</label>
+                                    <input type="text" class="form-control" id="marca" name="marca" required
+                                        onblur="formatInput(this)">
+                                </div>
+                                <div class="form-group">
+                                    <label for="descripcion">Modelo</label>
+                                    <input type="text" class="form-control" id="modelo" name="modelo" required
+                                        onblur="formatInput(this)">
+                                </div>
+                                <br>
+                                <div>
+                                    <button type="button" name="action" id="guardar_marcamodelo"
+                                        class="btn btn-rounded btn-primary float-right">Guardar</button>
+                                </div>
+                            </div>
+                        </div>
+                    </cdiv>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+<div class="modal fade bd-example-modal-lg" id="agrega_bateria" tabindex="-1" role="dialog"
+    aria-labelledby="myLargeModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="modal-close" data-dismiss="modal" aria-label="Close">
+                    <i class="font-icon-close-2"></i>
+                </button>
+                <h4 class="modal-title" id="titulo_bat">Editar batería</h4>
+            </div>
+            <div class="modal-body">
+                <div class="form-group">
+                    <div class="card-block">
+                        <div class="row">
+                            <div class="col-md-12">
+                                <label class="form-label" for="marca_bat">Marca</label>
+                                <input type="text" class="form-control inputClass" id="marca_bat" name="marca_bat"
+                                    required>
+                            </div>
+                            <div class="col-md-12" style="color: aliceblue;">.</div>
+                            <div class="col-md-12">
+                                <label class="form-label" for="modelo_bat">Modelo</label>
+                                <input type="text" class="form-control inputClass" id="modelo_bat" name="modelo_bat"
+                                    required>
+                            </div>
+                            <div class="col-md-12" style="color: aliceblue;">.</div>
+                            <div class="col-md-6">
+                                <label class="form-label" for="capacidad_v">Capacidad V</label>
+                                <input type="text" class="form-control inputClass inputClass1" id="capacidad_v"
+                                    name="capacidad_v" required>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label" for="capacidad_ah">Capacidad Ah</label>
+                                <input type="text" class="form-control inputClass inputClass1" id="capacidad_ah"
+                                    name="capacidad_ah" required>
+                            </div>
+                            <div class="col-md-12" style="color: aliceblue;">.</div>
+                            <div class="col-md-4">
+                                <label class="form-label" for="impedancia_dsh">Impedancia Dsh</label>
+                                <input type="text" class="form-control inputClass inputClass1" id="impedancia_dsh"
+                                    name="impedancia_dsh" required>
+                            </div>
+                            <div class="col-md-4">
+                                <label class="form-label" for="tolerancia_g">Tolerancia Good %</label>
+                                <input type="text" class="form-control inputClass integerInput" id="tolerancia_g"
+                                    name="tolerancia_g" required>
+                            </div>
+                            <div class="col-md-4">
+                                <label class="form-label" for="tolerancia_f">Tolerancia Fail %</label>
+                                <input type="text" class="form-control inputClass integerInput" id="tolerancia_f"
+                                    name="tolerancia_f" required>
+                            </div>
+                            <div class="col-md-12" style="color: aliceblue;">.</div>
+                            <div class="col-md-12">
+                                <br>
+                                <button class="btn btn-primary float-right" id="agregar"
+                                    name="actualizar">Agregar</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

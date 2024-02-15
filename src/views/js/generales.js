@@ -211,7 +211,7 @@ for (let year = endYear; year >= startYear; year--) {
         table.on('select', function(e, dt, type, indexes) {
             if (type === 'row' && !rowsSelectable) {
                 var data = table.rows(indexes).data().toArray();
-                if (data[0][8] === 'Descargada' || data[0][8] === 'Anulada' || data[0][8] === 'Planificada' || data[0][8] === 'No Realizada' || data[0][8] === 'Archivada') {
+                if (data[0][9] === 'Descargada' || data[0][9] === 'Anulada' || data[0][9] === 'Planificada' || data[0][9] === 'No Realizada' || data[0][9] === 'Archivada') {
                     table.rows(indexes).deselect();
                 }
             }
@@ -292,7 +292,7 @@ for (let year = endYear; year >= startYear; year--) {
             state2 = !state2;
         });
         
-        var parentValues = table.column(4).data().unique();
+        var parentValues = table.column(5).data().unique();
         parentValues.sort();
         $('#parentFilter select').append('<option value="">Seleccione una gerencia</option>');
         parentValues.each(function(value) {
@@ -309,14 +309,14 @@ for (let year = endYear; year >= startYear; year--) {
                 $('#subInfoFilter select').empty();
                 return;
             }
-            table.column(4).search(selectedParent).draw();
+            table.column(5).search(selectedParent).draw();
             $('#infoFilter select').empty();
             $('#subInfoFilter select').empty();
             var infoValues = table
-                .column(5)
+                .column(6)
                 .data()
                 .filter(function(value, index) {
-                    return table.column(4).data()[index] === selectedParent;
+                    return table.column(5).data()[index] === selectedParent;
                 })
                 .unique();
             infoValues.sort();
@@ -331,19 +331,19 @@ for (let year = endYear; year >= startYear; year--) {
         $('#infoFilter select').on('change', function() {
             var selectedInfo = $(this).val();
             if (!selectedInfo) {
-                table.column(4).search($('#parentFilter select').val()).draw();
+                table.column(5).search($('#parentFilter select').val()).draw();
                 $('#subInfoFilter select').empty();
                 return;
             }
-            table.column(5).search(selectedInfo).draw();
+            table.column(6).search(selectedInfo).draw();
             $('#subInfoFilter select').empty();
             var subInfoValues = table
-                .column(6)
+                .column(7)
                 .data()
                 .filter(function(value, index) {
                     return (
-                        table.column(4).data()[index] === $('#parentFilter select').val() &&
-                        table.column(5).data()[index] === selectedInfo
+                        table.column(5).data()[index] === $('#parentFilter select').val() &&
+                        table.column(6).data()[index] === selectedInfo
                     );
                 })
                 .unique();
@@ -358,10 +358,10 @@ for (let year = endYear; year >= startYear; year--) {
         $('#subInfoFilter select').on('change', function() {
             var selectedSubInfo = $(this).val();
             if (!selectedSubInfo) {
-                table.column(5).search($('#infoFilter select').val()).draw();
+                table.column(6).search($('#infoFilter select').val()).draw();
                 return;
             }
-            table.column(6).search(selectedSubInfo).draw();
+            table.column(7).search(selectedSubInfo).draw();
             table.on('draw.dt', function() {
                 table.rows().deselect();
             });

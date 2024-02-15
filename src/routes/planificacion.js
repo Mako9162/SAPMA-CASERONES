@@ -13,8 +13,8 @@ const upload = multer();
 const hbs = require("handlebars");
 const nodemailer = require('nodemailer');
 
-const correo = "sapmadand@sercoing.cl";
-const pass = "FL918,VoHvwE=za.";
+const correo = "sapmamlcc@sercoing.cl";
+const pass = "y_ret@9'23tJ$.`N";
 
 const transporter = nodemailer.createTransport({
     host: "mail.sercoing.cl",
@@ -450,7 +450,7 @@ router.post('/buscar_plan', isLoggedIn, authRole(['Plan', 'Admincli']), async (r
                 "	INNER JOIN Ciclo_equipos CE ON CE.equipo_id = E.Id\n" +
                 "	LEFT JOIN Ciclos C ON C.ciclo_id = CE.equipo_ciclo\n" +
                 "WHERE\n" +
-                "	G.Id = ? AND G.Id_Cliente = 28", [gerencia]);
+                "	G.Id = ? AND G.Id_Cliente = 1", [gerencia]);
 
             if (!ger_equi) {
                 res.json({ title: "Sin Información." });
@@ -478,7 +478,7 @@ router.post('/buscar_plan', isLoggedIn, authRole(['Plan', 'Admincli']), async (r
                 "	INNER JOIN Ciclo_equipos CE ON CE.equipo_id = E.Id\n" +
                 "	LEFT JOIN Ciclos C ON C.ciclo_id = CE.equipo_ciclo\n" +
                 "WHERE\n" +
-                "	A.Id = ? AND G.Id_Cliente = 28", [area]);
+                "	A.Id = ? AND G.Id_Cliente = 1", [area]);
 
             if (!area_equi) {
                 res.json({ title: "Sin Información." });
@@ -506,7 +506,7 @@ router.post('/buscar_plan', isLoggedIn, authRole(['Plan', 'Admincli']), async (r
                 "	INNER JOIN Ciclo_equipos CE ON CE.equipo_id = E.Id\n" +
                 "	LEFT JOIN Ciclos C ON C.ciclo_id = CE.equipo_ciclo\n" +
                 "WHERE\n" +
-                "	E.Id_Sector = ? AND G.Id_Cliente = 28", [sector]);
+                "	E.Id_Sector = ? AND G.Id_Cliente = 1", [sector]);
 
             if (!sec_equi) {
                 res.json({ title: "Sin Información." });
@@ -534,7 +534,7 @@ router.post('/buscar_plan', isLoggedIn, authRole(['Plan', 'Admincli']), async (r
                 "	INNER JOIN Ciclo_equipos CE ON CE.equipo_id = E.Id\n" +
                 "	LEFT JOIN Ciclos C ON C.ciclo_id = CE.equipo_ciclo\n" +
                 "WHERE\n" +
-                "	E.Id = ? AND G.Id_Cliente = 28", [equipo]);
+                "	E.Id = ? AND G.Id_Cliente = 1", [equipo]);
 
             if (!equi_equi) {
                 res.json({ title: "Sin Información." });
@@ -562,7 +562,7 @@ router.post('/buscar_plan', isLoggedIn, authRole(['Plan', 'Admincli']), async (r
                 "	INNER JOIN Ciclo_equipos CE ON CE.equipo_id = E.Id\n" +
                 "	LEFT JOIN Ciclos C ON C.ciclo_id = CE.equipo_ciclo\n" +
                 "WHERE\n" +
-                "	G.Id_Cliente = 28");
+                "	G.Id_Cliente = 1");
 
 
             if (!equi_equi) {
@@ -636,7 +636,7 @@ router.get('/planificacion_equipos', isLoggedIn, authRole(['Plan', 'Admincli']),
         "	Usuarios U\n" +
         "	INNER JOIN Perfiles P ON P.Id = U.Id_Perfil\n" +
         "WHERE\n" +
-        "	U.Id_Perfil=3 AND U.Id_Cliente = 28 AND NOT Login LIKE '%test%';");
+        "	U.Id_Perfil=3 AND U.Id_Cliente = 1 AND NOT Login LIKE '%test%';");
 
     const tipo_tareas = await pool.query("SELECT\n" +
         "	Descripcion AS DESCRIPCION,\n" +
@@ -899,23 +899,25 @@ router.post('/verificar_tareas2', isLoggedIn, authRole(['Plan', 'Admincli']), as
         });
 
         const ids = [valores];
-        const verificacion = await pool.query(`
-SELECT
-EP.ep_id_equipo AS ID_EQUIPO,
-EP.ep_id_tipo_protocolo AS TIPO_PROTOCOLO,
-EP.ep_id_protocolo AS PROTOCOLO,
-CD.c_detalle_id AS ID_CICLO,
-CD.c_detalle_periodicidad AS PERIODICIDAD,
-CD.c_detalle_periodo AS PERIODO,
-TP.Indice AS INDICE
-FROM
-EquipoProtocolo EP
-JOIN Ciclo_equipos CE ON CE.equipo_id = EP.ep_id_equipo
-JOIN Ciclos_detalle CD ON CD.c_detalle_id = CE.equipo_ciclo
-AND CD.c_detalle_ttarea = EP.ep_id_tipo_protocolo
-JOIN TipoProtocolo TP ON TP.Id = EP.ep_id_tipo_protocolo
-WHERE
-EP.ep_id_equipo IN ? ORDER BY TP.Indice ASC;`, [ids]);
+
+        const verificacion = await pool.query("SELECT\n" +
+        "	EP.ep_id_equipo AS ID_EQUIPO,\n" +
+        "	EP.ep_id_tipo_protocolo AS TIPO_PROTOCOLO,\n" +
+        "	EP.ep_id_protocolo AS PROTOCOLO,\n" +
+        "	CD.c_detalle_id AS ID_CICLO,\n" +
+        "	CD.c_detalle_periodicidad AS PERIODICIDAD,\n" +
+        "	CD.c_detalle_periodo AS PERIODO,\n" +
+        "	TP.Indice AS INDICE \n" +
+        "FROM\n" +
+        "	EquipoProtocolo EP\n" +
+        "	JOIN Ciclo_equipos CE ON CE.equipo_id = EP.ep_id_equipo\n" +
+        "	JOIN Ciclos_detalle CD ON CD.c_detalle_id = CE.equipo_ciclo \n" +
+        "	AND CD.c_detalle_ttarea = EP.ep_id_tipo_protocolo\n" +
+        "	JOIN TipoProtocolo TP ON TP.Id = EP.ep_id_tipo_protocolo \n" +
+        "WHERE\n" +
+        "	EP.ep_id_equipo IN ? \n" +
+        "ORDER BY\n" +
+        "	TP.Indice ASC;", [ids]);
 
         const resultadoConTecnico = verificacion.map(item => ({ ...item, tecnico }));
 
@@ -1023,23 +1025,24 @@ router.post('/crear_plan', isLoggedIn, authRole(['Plan', 'Admincli']), async (re
         });
 
         const ids = [valores];
-        const verificacion = await pool.query(`
-SELECT
-EP.ep_id_equipo AS ID_EQUIPO,
-EP.ep_id_tipo_protocolo AS TIPO_PROTOCOLO,
-EP.ep_id_protocolo AS PROTOCOLO,
-CD.c_detalle_id AS ID_CICLO,
-CD.c_detalle_periodicidad AS PERIODICIDAD,
-CD.c_detalle_periodo AS PERIODO,
-TP.Indice AS INDICE
-FROM
-EquipoProtocolo EP
-JOIN Ciclo_equipos CE ON CE.equipo_id = EP.ep_id_equipo
-JOIN Ciclos_detalle CD ON CD.c_detalle_id = CE.equipo_ciclo
-AND CD.c_detalle_ttarea = EP.ep_id_tipo_protocolo
-JOIN TipoProtocolo TP ON TP.Id = EP.ep_id_tipo_protocolo
-WHERE
-EP.ep_id_equipo IN ? ORDER BY TP.Indice ASC;`, [ids]);
+        const verificacion = await pool.query("SELECT\n" +
+        "	EP.ep_id_equipo AS ID_EQUIPO,\n" +
+        "	EP.ep_id_tipo_protocolo AS TIPO_PROTOCOLO,\n" +
+        "	EP.ep_id_protocolo AS PROTOCOLO,\n" +
+        "	CD.c_detalle_id AS ID_CICLO,\n" +
+        "	CD.c_detalle_periodicidad AS PERIODICIDAD,\n" +
+        "	CD.c_detalle_periodo AS PERIODO,\n" +
+        "	TP.Indice AS INDICE \n" +
+        "FROM\n" +
+        "	EquipoProtocolo EP\n" +
+        "	JOIN Ciclo_equipos CE ON CE.equipo_id = EP.ep_id_equipo\n" +
+        "	JOIN Ciclos_detalle CD ON CD.c_detalle_id = CE.equipo_ciclo \n" +
+        "	AND CD.c_detalle_ttarea = EP.ep_id_tipo_protocolo\n" +
+        "	JOIN TipoProtocolo TP ON TP.Id = EP.ep_id_tipo_protocolo \n" +
+        "WHERE\n" +
+        "	EP.ep_id_equipo IN ? \n" +
+        "ORDER BY\n" +
+        "	TP.Indice ASC;", [ids]);
 
         const resultadoConTecnico = verificacion.map(item => ({ ...item, tecnico }));
 
@@ -1107,7 +1110,7 @@ EP.ep_id_equipo IN ? ORDER BY TP.Indice ASC;`, [ids]);
         }
 
         try {
-            const updateTareas = await pool.query("UPDATE Tareas_Validacion SET Tv_usuario = ?, Tv_metodo = ? WHERE Tv_Id_Tarea IN (?);", [usuario, "C", insertIds]);
+            const updateTareas = await pool.query("UPDATE Tareas_Estado SET te_usuario = ?, te_metodo = ? WHERE te_Id_Tarea IN (?);", [usuario, "C", insertIds]);
         } catch (error) {
             console.error(`Error al actualizar Tareas_Estado: ${error}`);
         }
@@ -1209,10 +1212,10 @@ EP.ep_id_equipo IN ? ORDER BY TP.Indice ASC;`, [ids]);
             );
             const { Email } = req.user;
             await transporter.sendMail({
-                from: "SAPMA <sapmadandd@sercoing.cl>",
+                from: "SAPMA <sapmamlcc@sercoing.cl>",
                 // to: "marancibia@sercoing.cl",
                 to: [email_plan, Email],
-                bcc: "sapmadand@sercoing.cl",
+                bcc: "SAPMA <sapmamlcc@sercoing.cl>",
                 subject: "SAPMA - Tareas Creadas",
                 html,
                 attachments: [
@@ -1350,10 +1353,10 @@ EP.ep_id_equipo IN ? ORDER BY TP.Indice ASC;`, [ids]);
             );
             const { Email } = req.user;
             await transporter.sendMail({
-                from: "SAPMA <sapmadandd@sercoing.cl>",
+                from: "SAPMA <sapmamlcc@sercoing.cl>",
                 // to: "marancibia@sercoing.cl",
                 to: [email_plan, Email],
-                bcc: "sapmadand@sercoing.cl",
+                bcc: "sapmamlcc@sercoing.cl",
                 subject: "SAPMA - Tareas Creadas",
                 html,
                 attachments: [
@@ -1524,7 +1527,7 @@ router.post('/genera_plan', isLoggedIn, authRole(['Plan', 'Admincli']), async (r
             }
         }
 
-        const usuarios = await pool.query("SELECT Id AS ID, Login AS USUARIO FROM Usuarios WHERE Id_Cliente = 28 AND Id_Perfil = 3 AND NOT Login LIKE '%test%';");
+        const usuarios = await pool.query("SELECT Id AS ID, Login AS USUARIO FROM Usuarios WHERE Id_Cliente = 1 AND Id_Perfil = 3 AND NOT Login LIKE '%test%';");
 
         const tipo_protocolo = await pool.query("SELECT Id AS ID, Descripcion AS DESCRIPCION FROM TipoProtocolo;");
 
@@ -1638,7 +1641,7 @@ router.post('/verificacion_tareas', isLoggedIn, upload.single('file'), authRole(
             throw new Error('La hoja "CARGA" no está presente en el archivo.');
         }
 
-        const columnsToExtract = [0, 2, 4];
+        const columnsToExtract = [0, 2, 5];
 
         const data = [];
 
@@ -1660,8 +1663,6 @@ router.post('/verificacion_tareas', isLoggedIn, upload.single('file'), authRole(
         }
 
         const resultadosCiclo = [];
-
-        console.log(data);
 
         const diasEnRango = moment(fechaFinal).diff(fechaInicial, 'days') + 1;
 
@@ -1725,7 +1726,6 @@ router.post('/verificacion_tareas', isLoggedIn, upload.single('file'), authRole(
             }
         }
 
-
         if (coincidenciasEncontradas > 0) {
             res.send("repetidos");
         } else {
@@ -1774,8 +1774,6 @@ router.post('/verificacion_tareas1', isLoggedIn, upload.single('file'), authRole
             rowIndex++;
         }
 
-        console.log(data);
-
         const valoresColumna2 = data.map((fila) => Object.values(fila)[0]);
 
         const verificacion = await pool.query("SELECT\n" +
@@ -1802,7 +1800,6 @@ router.post('/verificacion_tareas1', isLoggedIn, upload.single('file'), authRole
 router.post('/planificacion_archivo', isLoggedIn, upload.single('file'), authRole(['Plan', 'Admincli']), async (req, res) => {
 
     const { date1, ano1, date2, ano2 } = req.body;
-    console.log("plan");
     try {
 
         const fechaInicial = moment(`${ano1}-${date1}`, 'YYYY-MMM').startOf('month').format('YYYY-MM-DD');
@@ -1954,10 +1951,10 @@ router.post('/planificacion_archivo', isLoggedIn, upload.single('file'), authRol
         );
         const { Email } = req.user;
         await transporter.sendMail({
-            from: "SAPMA <sapmadand@sercoing.cl>",
+            from: "SAPMA <sapmamlcc@sercoing.cl>",
             // to: "marancibia@sercoing.cl",
             to: [email_plan, Email],
-            bcc: "sapmadand@sercoing.cl",
+            bcc: "sapmamlcc@sercoing.cl",
             subject: "SAPMA - Tareas Creadas",
             html,
             attachments: [
@@ -1976,7 +1973,7 @@ router.post('/planificacion_archivo', isLoggedIn, upload.single('file'), authRol
 
         const updatePromises = insertIds.map((taskId) => {
             return new Promise((resolve, reject) => {
-                const updateQuery = 'UPDATE Tareas_Validacion SET Tv_usuario = ?, Tv_metodo = ? WHERE Tv_Id_Tarea = ?';
+                const updateQuery = 'UPDATE Tareas_Estado SET te_usuario = ?, te_metodo = ? WHERE te_Id_Tarea = ?';
 
                 pool.query(updateQuery, [usuario, 'M', taskId], (updateError, updateResults, updateFields) => {
                     if (updateError) {

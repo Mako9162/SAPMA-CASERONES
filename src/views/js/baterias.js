@@ -1,4 +1,5 @@
 $(document).ready(function () {
+
   $(".inputClass").on("blur", function () {
     var valor = $(this).val();
     var valorSinEspacios = valor.replace(/\s+$/, "");
@@ -96,7 +97,7 @@ $(document).ready(function () {
     });
 
     $("div.botones").html(
-      '<button id="editar" class="btn btn-inline btn-warning btn-md">' +
+      '<button id="editar" class="btn btn-inline btn-warning btn-sm">' +
       '<i class="fa fa-edit"></i></button>'
     );
   }

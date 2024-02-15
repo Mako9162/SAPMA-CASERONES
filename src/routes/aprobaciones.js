@@ -9,8 +9,8 @@ const fs = require("fs");
 const path = require("path"); 
 const ExcelJS = require('exceljs');
 
-const correo = "sapmadand@sercoing.cl";
-const pass = "FL918,VoHvwE=za.";
+const correo = "sapmamlcc@sercoing.cl";
+const pass = "y_ret@9'23tJ$.`N";
 
 const transporter = nodemailer.createTransport({
                         host: "mail.sercoing.cl",
@@ -1605,7 +1605,7 @@ router.post('/aprobaciones', isLoggedIn, async (req, res)=>{
                               const html = template(context);
                     
                               await transporter.sendMail({
-                                from: "SAPMA <sapmadand@sercoing.cl>",
+                                from: "SAPMA <sapmamlcc@sercoing.cl>",
                                 // to: "marancibia@sercoing.cl",
                                 to: arremailp,
                                 cc: [arremail, arremailgen],
@@ -1845,7 +1845,7 @@ router.post('/aprobacionesb', isLoggedIn, authRole(['Cli_B', 'GerVer']), async (
                               const html = template(context);
                     
                               await transporter.sendMail({
-                                from: "SAPMA <sapmadand@sercoing.cl>",
+                                from: "SAPMA <sapmamlcc@sercoing.cl>",
                                 // to: "marancibia@sercoing.cl",
                                 to: arremailp,
                                 cc: [arremail, arremailgen],
@@ -2087,7 +2087,7 @@ router.post('/aprobacionesa', isLoggedIn, authRole(['Cli_A']), async (req, res)=
                               const html = template(context);
                     
                               await transporter.sendMail({
-                                from: "SAPMA <sapmadand@sercoing.cl>",
+                                from: "SAPMA <sapmamlcc@sercoing.cl>",
                                 // to: "marancibia@sercoing.cl",
                                 to: arremailp,
                                 cc: [arremail, arremailgen],
@@ -2329,7 +2329,7 @@ router.post('/aprobacionesd', isLoggedIn, authRole(['Cli_D']), async (req, res)=
                               const html = template(context);
                     
                               await transporter.sendMail({
-                                from: "SAPMA <sapmadand@sercoing.cl>",
+                                from: "SAPMA <sapmamlcc@sercoing.cl>",
                                 // to: "marancibia@sercoing.cl",
                                 to: arremailp,
                                 cc: [arremail, arremailgen],
@@ -2571,7 +2571,7 @@ router.post('/aprobacionese', isLoggedIn, authRole(['Cli_E']), async (req, res)=
                               const html = template(context);
                     
                               await transporter.sendMail({
-                                from: "SAPMA <sapmadand@sercoing.cl>",
+                                from: "SAPMA <sapmamlcc@sercoing.cl>",
                                 // to: "marancibia@sercoing.cl",
                                 to: arremailp,
                                 cc: [arremail, arremailgen],

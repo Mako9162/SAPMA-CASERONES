@@ -1,22 +1,23 @@
-$(document).ready(function () {
+$(document).ready(function() {
 
-    var currentYear = new Date().getFullYear();
+     var currentYear = new Date().getFullYear();
 
     for (var i = -10; i <= 10; i++) {
         var yearToAdd = currentYear + i;
-        var selectedAttribute = (i === 0) ? 'selected' : '';
+        var selectedAttribute = (i === 0) ? 'selected' : ''; 
         $('#ano1').append('<option value="' + yearToAdd + '" ' + selectedAttribute + '>' + yearToAdd + '</option>');
         $('#ano2').append('<option value="' + yearToAdd + '" ' + selectedAttribute + '>' + yearToAdd + '</option>');
-    }
+    }   
 
-    function _(element) {
-        return document.getElementById(element);
+    function _(element)
+    {
+        return document.getElementById(element); 
     }
 
     function fetch_data(parent_element, child_element, type) {
-        fetch('/get_datapla?type=' + type + '&parent_value=' + parent_element.value + '').then(function (response) {
+        fetch('/get_datapla?type=' + type + '&parent_value=' + parent_element.value + '').then(function(response) {
             return response.json();
-        }).then(function (responseData) {
+        }).then(function(responseData) {
             var html = '';
 
             if (type == 'load_areass') {
@@ -49,15 +50,15 @@ $(document).ready(function () {
         });
     }
 
-    _('gerencia').onchange = function () {
+    _('gerencia').onchange = function(){		
         fetch_data(_('gerencia'), _('area'), 'load_areass');
     };
 
-    _('area').onchange = function () {
+    _('area').onchange = function(){
         fetch_data(_('area'), _('sector'), 'load_sectoress');
     };
 
-    _('sector').onchange = function () {
+    _('sector').onchange = function(){
         fetch_data(_('sector'), _('equipo'), 'load_equiposs');
     };
 
@@ -115,15 +116,15 @@ $(document).ready(function () {
             confirmButtonText: "Si",
             cancelButtonText: "No",
             closeOnConfirm: true
-        }, function (isConfirm) {
-            if (isConfirm) {
+        },function(isConfirm){
+            if(isConfirm){
                 $.ajax({
                     url: '/verificacion_tareas1',
                     type: 'POST',
                     data: formData,
                     processData: false,
                     contentType: false,
-                    beforeSend: function () {
+                    beforeSend: function() {
                         swal({
                             title: "Verificando",
                             text: "Espere un momento por favor...",
@@ -131,9 +132,9 @@ $(document).ready(function () {
                             showConfirmButton: false,
                             allowOutsideClick: false
                         });
-                    }
-                }).done(function (response) {
-                    if (response === "tareas") {
+                    }  
+                }).done(function(response){
+                    if (response === "tareas"){
                         swal({
                             title: "Existen tareas asociadas a algunos equipos en el periodo ingresado",
                             text: "¿Desea continuar con la planificación?",
@@ -142,81 +143,81 @@ $(document).ready(function () {
                             confirmButtonClass: "btn-primary",
                             confirmButtonText: "Si",
                             cancelButtonText: "No",
-                            closeOnConfirm: false
-                        }, function (isConfirm) {
-                            if (isConfirm) {
-                                $.ajax({
-                                    url: '/verificacion_tareas',
-                                    type: 'POST',
-                                    data: formData,
-                                    processData: false,
-                                    contentType: false,
-                                    beforeSend: function () {
-                                        swal({
-                                            title: "Verificando",
-                                            text: "Espere un momento por favor...",
-                                            imageUrl: "/img/Spinner-1s-200px2.gif",
-                                            showConfirmButton: false,
-                                            allowOutsideClick: false
-                                        });
-                                    }
-                                }).done(function (response) {
-                                    if (response === "ok") {
-                                        $.ajax({
-                                            url: '/planificacion_archivo',
-                                            type: 'POST',
-                                            data: formData,
-                                            processData: false,
-                                            contentType: false,
-                                            beforeSend: function () {
-                                                swal({
-                                                    title: "Creando Tareas",
-                                                    text: "Espere un momento por favor...",
-                                                    imageUrl: "/img/Spinner-1s-200px2.gif",
-                                                    showConfirmButton: false,
-                                                    allowOutsideClick: false
-                                                });
-                                            }
-                                        }).done(function (response) {
-                                            if (response === "ok") {
-                                                swal({
-                                                    title: "Tareas Creadas",
-                                                    type: "success",
-                                                    confirmButtonText: "Aceptar",
-                                                    allowOutsideClick: false
-                                                }, function (isConfirm) {
-                                                    if (isConfirm) {
-                                                        location.reload();
-                                                    }
-                                                });
-                                            } else {
-                                                swal("Error", "No se pudo crear las tareas", "error");
-                                            }
-                                        }).fail(function (jqXHR, textStatus, errorThrown) {
-                                            console.error("Error en la llamada AJAX:", textStatus, errorThrown);
-                                            swal("Error", "Hubo un problema al comunicarse con el servidor", "error");
-                                        });
+                            closeOnConfirm: false      
+                            },function(isConfirm) {
+                                if(isConfirm){
+                                    $.ajax({
+                                        url: '/verificacion_tareas',
+                                        type: 'POST',
+                                        data: formData,
+                                        processData: false,
+                                        contentType: false,
+                                        beforeSend: function() {
+                                            swal({
+                                                title: "Verificando",
+                                                text: "Espere un momento por favor...",
+                                                imageUrl: "/img/Spinner-1s-200px2.gif",
+                                                showConfirmButton: false,
+                                                allowOutsideClick: false
+                                            });
+                                        }
+                                    }).done(function(response){
+                                        if(response === "ok"){
+                                            $.ajax({
+                                                url: '/planificacion_archivo',
+                                                type: 'POST',
+                                                data: formData,
+                                                processData: false,
+                                                contentType: false,
+                                                beforeSend: function() {
+                                                    swal({
+                                                        title: "Creando Tareas",
+                                                        text: "Espere un momento por favor...",
+                                                        imageUrl: "/img/Spinner-1s-200px2.gif",
+                                                        showConfirmButton: false,
+                                                        allowOutsideClick: false
+                                                    });
+                                                }
+                                            }).done(function (response) {
+                                                if (response === "ok") {
+                                                    swal({
+                                                        title: "Tareas Creadas",
+                                                        type: "success",
+                                                        confirmButtonText: "Aceptar",
+                                                        allowOutsideClick: false
+                                                    }, function (isConfirm) {
+                                                        if (isConfirm) {
+                                                            location.reload();
+                                                        }
+                                                    });
+                                                } else {
+                                                    swal("Error", "No se pudo crear las tareas", "error");
+                                                }
+                                            }).fail(function (jqXHR, textStatus, errorThrown) {
+                                                console.error("Error en la llamada AJAX:", textStatus, errorThrown);
+                                                swal("Error", "Hubo un problema al comunicarse con el servidor", "error");
+                                            });
 
-                                    } else if (response === "repetidos") {
-                                        swal({
-                                            title: "Error",
-                                            text: "No es posible crear tareas en este periodo para los equipos ingresados. Ya existen tareas con algunas de estas fechas. Por favor verifique la información.",
-                                            type: "error",
-                                            confirmButtonText: "Aceptar",
-                                            allowOutsideClick: false
-                                        });
-                                    }
-                                })
-                            }
-                        });
-                    } else if (response === "notareas") {
+                                        }else if(response === "repetidos"){
+                                            swal({
+                                                title: "Error",
+                                                text: "No es posible crear tareas en este periodo para los equipos ingresados. Ya existen tareas con algunas de estas fechas. Por favor verifique la información.",
+                                                type: "error",
+                                                confirmButtonText: "Aceptar",
+                                                allowOutsideClick: false
+                                            });	
+                                        }
+                                    })
+                                }
+                            });
+                    }else if (response === "notareas"){
                         $.ajax({
                             url: '/verificacion_tareas',
                             type: 'POST',
                             data: formData,
                             processData: false,
                             contentType: false,
-                            beforeSend: function () {
+                            beforeSend: function() {
                                 swal({
                                     title: "Verificando",
                                     text: "Espere un momento por favor...",
@@ -225,15 +226,15 @@ $(document).ready(function () {
                                     allowOutsideClick: false
                                 });
                             }
-                        }).done(function (response) {
-                            if (response === "ok") {
+                        }).done(function(response){
+                            if(response === "ok"){
                                 $.ajax({
                                     url: '/planificacion_archivo',
                                     type: 'POST',
                                     data: formData,
                                     processData: false,
                                     contentType: false,
-                                    beforeSend: function () {
+                                    beforeSend: function() {
                                         swal({
                                             title: "Creando Tareas",
                                             text: "Espere un momento por favor...",
@@ -261,22 +262,22 @@ $(document).ready(function () {
                                     console.error("Error en la llamada AJAX:", textStatus, errorThrown);
                                     swal("Error", "Hubo un problema al comunicarse con el servidor", "error");
                                 });
-                            } else if (response === "repetidos") {
+                            }else if(response === "repetidos"){
                                 swal({
                                     title: "Error",
                                     text: "No es posible crear tareas en este periodo para los equipos ingresados. Ya existen tareas con algunas de estas fechas. Por favor verifique la información.",
                                     type: "error",
                                     confirmButtonText: "Aceptar",
                                     allowOutsideClick: false
-                                });
-
+                                });	
+                                            
                             }
                         })
                     }
                 })
             }
         }
-        );
+        );     
 
 
         // $.ajax({
@@ -425,20 +426,20 @@ $(document).ready(function () {
         //         });	
         //     }
         // })
-
+        
     });
 
-    $("#crear_plantilla").on("click", function () {
+    $("#crear_plantilla").on("click", function() {
 
         const gerencia = $('#gerencia').val();
         const area = $('#area').val();
         const sector = $('#sector').val();
         const equipo = $('#equipo').val();
 
-        const data = {
+        const data ={
             gerencia,
             area,
-            sector,
+            sector, 
             equipo
         };
 
@@ -446,8 +447,8 @@ $(document).ready(function () {
             url: '/genera_plan',
             type: 'POST',
             data: data,
-            dataType: 'text',
-            beforeSend: function () {
+            dataType: 'text', 
+            beforeSend: function() {
                 swal({
                     title: "Generando plantilla",
                     text: "Espere un momento por favor...",

@@ -12,8 +12,8 @@ const path = require("path");
 const request = require('request');
 const hbs = require("handlebars");
 
-const correo = "sapmadand@sercoing.cl";
-const pass = "FL918,VoHvwE=za.";
+const correo = "sapmamlcc@sercoing.cl";
+const pass = "y_ret@9'23tJ$.`N";
 
 const transporter = nodemailer.createTransport({
   host: "mail.sercoing.cl",
@@ -559,7 +559,7 @@ router.post('/aprorech', isLoggedIn, authRole(['Cli_C']), async (req, res)=>{
                           const html = template(context);
                 
                           await transporter.sendMail({
-                            from: "SAPMA <sapmadand@sercoing.cl>",
+                            from: "SAPMA <sapmamlcc@sercoing.cl>",
                             to: arremailp,
                             cc: [arremail, arremailgen],
                             bcc: correo,
@@ -716,7 +716,7 @@ router.post('/aprorech', isLoggedIn, authRole(['Cli_C']), async (req, res)=>{
                                   const html = template(context);
                         
                                   await transporter.sendMail({
-                                    from: "SAPMA <sapmadand@sercoing.cl>",
+                                    from: "SAPMA <sapmamlcc@sercoing.cl>",
                                     to: arremailp,
                                     cc: [arremail, arremailgen],
                                     bcc: correo,
@@ -878,7 +878,7 @@ router.post('/aprorechb', isLoggedIn, authRole(['Cli_B', 'GerVer']), async (req,
                           const html = template(context);
                 
                           await transporter.sendMail({
-                            from: "SAPMA <sapmadand@sercoing.cl>",
+                            from: "SAPMA <sapmamlcc@sercoing.cl>",
                             to: arremailp,
                             cc: [arremail, arremailgen],
                             bcc: correo,
@@ -1036,7 +1036,7 @@ router.post('/aprorechb', isLoggedIn, authRole(['Cli_B', 'GerVer']), async (req,
                                   const html = template(context);
                         
                                   await transporter.sendMail({
-                                    from: "SAPMA <sapmadand@sercoing.cl>",
+                                    from: "SAPMA <sapmamlcc@sercoing.cl>",
                                     to: arremailp,
                                     cc: [arremail, arremailgen],
                                     bcc: correo,
@@ -1198,7 +1198,7 @@ router.post('/aprorecha', isLoggedIn, authRole(['Cli_A']), async (req, res)=>{
                           const html = template(context);
                 
                           await transporter.sendMail({
-                            from: "SAPMA <sapmadand@sercoing.cl>",
+                            from: "SAPMA <sapmamlcc@sercoing.cl>",
                             to: arremailp,
                             cc: [arremail, arremailgen],
                             bcc: correo,
@@ -1356,7 +1356,7 @@ router.post('/aprorecha', isLoggedIn, authRole(['Cli_A']), async (req, res)=>{
                                   const html = template(context);
                         
                                   await transporter.sendMail({
-                                    from: "SAPMA <sapmadand@sercoing.cl>",
+                                    from: "SAPMA <sapmamlcc@sercoing.cl>",
                                     to: arremailp,
                                     cc: [arremail, arremailgen],
                                     bcc: correo,
@@ -1518,7 +1518,7 @@ router.post('/aprorechd', isLoggedIn, authRole(['Cli_D']), async (req, res)=>{
                           const html = template(context);
                 
                           await transporter.sendMail({
-                            from: "SAPMA <sapmadand@sercoing.cl>",
+                            from: "SAPMA <sapmamlcc@sercoing.cl>",
                             to: arremailp,
                             cc: [arremail, arremailgen],
                             bcc: correo,
@@ -1676,7 +1676,7 @@ router.post('/aprorechd', isLoggedIn, authRole(['Cli_D']), async (req, res)=>{
                                   const html = template(context);
                         
                                   await transporter.sendMail({
-                                    from: "SAPMA <sapmadand@sercoing.cl>",
+                                    from: "SAPMA <sapmamlcc@sercoing.cl>",
                                     to: arremailp,
                                     cc: [arremail, arremailgen],
                                     bcc: correo,
@@ -1838,7 +1838,7 @@ router.post('/aproreche', isLoggedIn, authRole(['Cli_E']), async (req, res)=>{
                           const html = template(context);
                 
                           await transporter.sendMail({
-                            from: "SAPMA <sapmadand@sercoing.cl>",
+                            from: "SAPMA <sapmamlcc@sercoing.cl>",
                             to: arremailp,
                             cc: [arremail, arremailgen],
                             bcc: correo,
@@ -1996,7 +1996,7 @@ router.post('/aproreche', isLoggedIn, authRole(['Cli_E']), async (req, res)=>{
                                   const html = template(context);
                         
                                   await transporter.sendMail({
-                                    from: "SAPMA <sapmadand@sercoing.cl>",
+                                    from: "SAPMA <sapmamlcc@sercoing.cl>",
                                     to: arremailp,
                                     cc: [arremail, arremailgen],
                                     bcc: correo,
@@ -2078,7 +2078,7 @@ router.post('/rechazos', isLoggedIn, async (req, res)=>{
                         const html = template(context);
 
                         await transporter.sendMail({
-                            from: "SAPMA <sapmadand@sercoing.cl>",
+                            from: "SAPMA <sapmamlcc@sercoing.cl>",
                             to: arremailp,
                             cc: Email,
                             bcc: correo,
@@ -2156,7 +2156,7 @@ router.post('/rechazos', isLoggedIn, async (req, res)=>{
                                 const html = template(context);
         
                                 await transporter.sendMail({
-                                    from: "SAPMA <sapmadand@sercoing.cl>",
+                                    from: "SAPMA <sapmamlcc@sercoing.cl>",
                                     to: arremailp,
                                     cc: Email,
                                     bcc: correo,
@@ -2235,7 +2235,7 @@ router.post('/rechazosb', isLoggedIn, authRole(['Cli_B', 'GerVer']), async (req,
                         const html = template(context);
 
                         await transporter.sendMail({
-                            from: "SAPMA <sapmadand@sercoing.cl>",
+                            from: "SAPMA <sapmamlcc@sercoing.cl>",
                             to: arremailp,
                             cc: Email,
                             bcc: correo,
@@ -2312,7 +2312,7 @@ router.post('/rechazosb', isLoggedIn, authRole(['Cli_B', 'GerVer']), async (req,
                                 const html = template(context);
         
                                 await transporter.sendMail({
-                                    from: "SAPMA <sapmadand@sercoing.cl>",
+                                    from: "SAPMA <sapmamlcc@sercoing.cl>",
                                     to: arremailp,
                                     cc: Email,
                                     bcc: correo,
@@ -2390,7 +2390,7 @@ router.post('/rechazosa', isLoggedIn, authRole(['Cli_A']), async (req, res)=>{
                         const html = template(context);
 
                         await transporter.sendMail({
-                            from: "SAPMA <sapmadand@sercoing.cl>",
+                            from: "SAPMA <sapmamlcc@sercoing.cl>",
                             to: arremailp,
                             cc: Email,
                             bcc: correo,
@@ -2467,7 +2467,7 @@ router.post('/rechazosa', isLoggedIn, authRole(['Cli_A']), async (req, res)=>{
                                 const html = template(context);
         
                                 await transporter.sendMail({
-                                    from: "SAPMA <sapmadand@sercoing.cl>",
+                                    from: "SAPMA <sapmamlcc@sercoing.cl>",
                                     to: arremailp,
                                     cc: Email,
                                     bcc: correo,
@@ -2546,7 +2546,7 @@ router.post('/rechazosd', isLoggedIn, authRole(['Cli_D']), async (req, res)=>{
                         const html = template(context);
 
                         await transporter.sendMail({
-                            from: "SAPMA <sapmadand@sercoing.cl>",
+                            from: "SAPMA <sapmamlcc@sercoing.cl>",
                             to: arremailp,
                             cc: Email,
                             bcc: correo,
@@ -2623,7 +2623,7 @@ router.post('/rechazosd', isLoggedIn, authRole(['Cli_D']), async (req, res)=>{
                                 const html = template(context);
         
                                 await transporter.sendMail({
-                                    from: "SAPMA <sapmadand@sercoing.cl>",
+                                    from: "SAPMA <sapmamlcc@sercoing.cl>",
                                     to: arremailp,
                                     cc: Email,
                                     bcc: correo,
@@ -2702,7 +2702,7 @@ router.post('/rechazose', isLoggedIn, authRole(['Cli_E']), async (req, res)=>{
                         const html = template(context);
 
                         await transporter.sendMail({
-                            from: "SAPMA <sapmadand@sercoing.cl>",
+                            from: "SAPMA <sapmamlcc@sercoing.cl>",
                             to: arremailp,
                             cc: Email,
                             bcc: correo,
@@ -2779,7 +2779,7 @@ router.post('/rechazose', isLoggedIn, authRole(['Cli_E']), async (req, res)=>{
                                 const html = template(context);
         
                                 await transporter.sendMail({
-                                    from: "SAPMA <sapmadand@sercoing.cl>",
+                                    from: "SAPMA <sapmamlcc@sercoing.cl>",
                                     to: arremailp,
                                     cc: Email,
                                     bcc: correo,
@@ -2869,7 +2869,7 @@ router.post('/mensajerech', isLoggedIn, async (req, res)=>{
                     const html = template(context);
 
                     await transporter.sendMail({
-                        from: "SAPMA <sapmadand@sercoing.cl>",
+                        from: "SAPMA <sapmamlcc@sercoing.cl>",
                         to: arreEmail,
                         cc: arremailp,
                         bcc: correo,
@@ -2946,7 +2946,7 @@ router.post('/mensajerech', isLoggedIn, async (req, res)=>{
                     const html = template(context);
 
                     await transporter.sendMail({
-                        from: "SAPMA <sapmadand@sercoing.cl>",
+                        from: "SAPMA <sapmamlcc@sercoing.cl>",
                         to: arreEmail,
                         cc: arremailp,
                         subject: "SAPMA - Notificación de Comentarios en Tareas Rechazadas",

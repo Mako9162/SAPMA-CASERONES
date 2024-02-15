@@ -9,8 +9,8 @@ const fs = require("fs");
 const path = require("path");
 const nodemailer = require('nodemailer');
 
-const correo = "sapmadand@sercoing.cl";
-const pass = "FL918,VoHvwE=za.";
+const correo = "sapmamlcc@sercoing.cl";
+const pass = "y_ret@9'23tJ$.`N";
 
 const transporter = nodemailer.createTransport({
                         host: "mail.sercoing.cl",
@@ -77,7 +77,7 @@ router.post('/equipos', isLoggedIn, authRole(['Plan', 'Admincli']), async (req, 
                 "ORDER BY\n" +
                 "	EF.eg_id_equipo DESC", async (err, result) => {
                     if (!result.length) {
-                        res.render("equipos/equi", { title: "Error en la busqueda!!!" });
+                        res.render("equipos/equi", { title: "Sin Resultados!!!" });
                       } else {
                         data.push(result);
                         enviar(req, res, result);
@@ -383,9 +383,9 @@ router.post('/elimequi', isLoggedIn, authRole(['Plan', 'Admincli']), async (req,
                                       );
                                     
                                       await transporter.sendMail({
-                                        from: "SAPMA <sapmadand@sercoing.cl>",
+                                        from: "SAPMA <sapmamlcc@sercoing.cl>",
                                         to: [email_plan],
-                                        bcc: "sapmadand@sercoing.cl",
+                                        bcc: "sapmamlcc@sercoing.cl",
                                         subject: "SAPMA - Baja de Equipos",
                                         html,
                                         attachments: [
@@ -529,9 +529,9 @@ router.post('/elimequi', isLoggedIn, authRole(['Plan', 'Admincli']), async (req,
             const equipo3 = await pool.query("INSERT INTO Equipos_LOG (el_Id_equipo, el_Id_estado, el_Id_usuario, el_Fecha, el_Observacion) VALUES ?", [valores]);
             
             await transporter.sendMail({
-                from: "SAPMA <sapmadand@sercoing.cl>",
+                from: "SAPMA <sapmamlcc@sercoing.cl>",
                 to: [email_plan],
-                bcc: "sapmadand@sercoing.cl",
+                bcc: "sapmamlcc@sercoing.cl",
                 subject: "SAPMA - Baja de Equipos",
                 html,
                 attachments: [
@@ -662,9 +662,9 @@ router.post('/elimlista', isLoggedIn, authRole(['Plan', 'Admincli']), async (req
               );
                                     
               await transporter.sendMail({
-                from: "SAPMA <sapmadand@sercoing.cl>",
+                from: "SAPMA <sapmamlcc@sercoing.cl>",
                 to: [email_plan],
-                bcc: "sapmadand@sercoing.cl",
+                bcc: "sapmamlcc@sercoing.cl",
                 subject: "SAPMA - Baja de Equipos",
                 html,
                 attachments: [
@@ -804,9 +804,9 @@ router.post('/elimlista', isLoggedIn, authRole(['Plan', 'Admincli']), async (req
             const equipo3 = await pool.query("INSERT INTO Equipos_LOG (el_Id_equipo, el_Id_estado, el_Id_usuario, el_Fecha, el_Observacion) VALUES ?", [valores]);
             
             await transporter.sendMail({
-                from: "SAPMA <sapmadand@sercoing.cl>",
+                from: "SAPMA <sapmamlcc@sercoing.cl>",
                 to: [email_plan],
-                bcc: "sapmadand@sercoing.cl",
+                bcc: "sapmamlcc@sercoing.cl",
                 subject: "SAPMA - Baja de Equipos",
                 html,
                 attachments: [
@@ -1537,6 +1537,153 @@ router.post('/actualizar_dinamico', isLoggedIn, authRole(['Plan', 'Admincli']), 
     } catch (err) {
         console.log(err);
         res.json({ error: "Error en el servidor" });
+    }
+});
+
+router.get('/equiposnewups', isLoggedIn, authRole(['Plan', 'Admincli']), async (req, res) => {
+
+    try {
+
+        const {Id_Cliente} = req.user;
+        const tipo_equipo = await pool.query("SELECT Id, Descripcion FROM TipoEquipo ORDER BY Descripcion ASC;");
+        const marca_modelo = await pool.query("SELECT Id, Descripcion FROM MMEquipo ORDER BY Descripcion ASC;");
+        const gerencias = await pool.query('SELECT vcgas_idGerencia AS Id, vcgas_gerenciaN AS Descripcion FROM VIEW_ClienteGerAreSec WHERE vcgas_idCliente = '+Id_Cliente+' GROUP BY vcgas_idGerencia ');
+        const baterias = await pool.query("SELECT\n" +
+        "	bat_id AS ID,\n" +
+        "	bat_marca AS MARCA,\n" +
+        "	bat_modelo AS MODELO,\n" +
+        "	bat_capacidad_V AS CAPV,\n" +
+        "	bat_capacidad_Ah AS CAPAH,\n" +
+        "	bat_impedancia_Dsh AS IMP,\n" +
+        "	bat_toleranciaG AS TOLG,\n" +
+        "	bat_toleranciaF AS TOLF,\n" +
+        "	bat_activo AS ESTADO \n" +
+        "FROM\n" +
+        "	Baterias_UPS\n" +
+        "WHERE\n" +
+        "	bat_activo = 1;");
+        const tipo_protocolo = await pool.query("SELECT Id, Descripcion, Abreviacion FROM TipoProtocolo;");
+
+        res.render('equipos/ups', {
+            
+            tipo_equipo: tipo_equipo,
+            marca_modelo: marca_modelo,
+            gerencias: gerencias,
+            baterias: baterias,
+            tipo_protocolo: tipo_protocolo
+
+        });
+    
+    } catch (error) {
+    
+        console.log(error);
+    
+    }
+   
+});
+
+router.post('/consulta_bat', isLoggedIn, authRole(['Plan', 'Admincli']), async (req, res) => {
+    
+    try {
+        
+        const {bateriaId} = req.body;
+
+        const baterias = await pool.query("SELECT\n" +
+        "	bat_id AS ID,\n" +
+        "	bat_marca AS MARCA,\n" +
+        "	bat_modelo AS MODELO,\n" +
+        "	bat_capacidad_V AS CAPV,\n" +
+        "	bat_capacidad_Ah AS CAPAH,\n" +
+        "	bat_impedancia_Dsh AS IMP,\n" +
+        "	bat_toleranciaG AS TOLG,\n" +
+        "	bat_toleranciaF AS TOLF,\n" +
+        "	bat_activo AS ESTADO \n" +
+        "FROM\n" +
+        "	Baterias_UPS\n" +
+        "WHERE\n" +
+        "	bat_id = ?;", [bateriaId]);
+
+        if (baterias.length > 0) {
+            res.json({
+                CAPV: baterias[0].CAPV,
+                CAPAH: baterias[0].CAPAH,
+                IMP: baterias[0].IMP
+            });
+        } else {
+            res.status(404).json({ message: "Batería no encontrada" });
+        }
+
+
+    } catch (error) {
+        console.log(error)
+    }
+
+});
+
+router.post('/guardar_equipo_ups', isLoggedIn, authRole(['Plan', 'Admincli']), async (req, res) =>{
+
+    console.log(req.body);
+    
+    const {tag, tipoe, tipoe_text, mm, mm_text, bateria_select, n_bat, critico, sector, du, obs, tipoProtocoloIds, protocoloIds} = req.body;
+    const {Id} = req.user;
+    const {Login} = req.user;
+    let marca;
+    let modelo;
+
+    if (mm_text.includes('|')) {
+        let parts = mm_text.split('|');
+        marca = parts[0].trim();
+        modelo = parts[1].trim();
+    } else {
+        marca = mm_text;
+        modelo = '';
+    }
+
+    const descripcion = tipoe_text+" - "+n_bat;
+    const {Id_Cliente} = req.user;
+
+    const mapeo = {};
+
+    // Mapear por ubicación
+    for (let i = 0; i < tipoProtocoloIds.length; i++) {
+        const ubicacion = tipoProtocoloIds[i];
+        const protocoloId = protocoloIds[i];
+        mapeo[ubicacion] = protocoloId;
+    }
+
+    // Crear variables
+    const inspeccion = mapeo['1'];
+    const mantencion = mapeo['2'];
+    const prueba = mapeo['3'];
+
+    try {
+
+
+        const primera =  await pool.query("INSERT INTO Equipos (Codigo, Descripcion, Id_Tipo, Id_MM, Detalle, Id_Sector, Activo, Dinamico, eq_bat_id) VALUES (?,?,?,?,?,?,?,?,?);", [tag,
+        descripcion, tipoe, mm, du, sector, 1, 0, bateria_select ]);
+
+        const newId = primera.insertId;
+        var prot = tipoProtocoloIds.map(function(tipo, index) {
+            return [newId, tipo, protocoloIds[index], tipoe];
+        });
+
+        const segunda = await pool.query("INSERT INTO EquipoProtocolo (ep_id_equipo, ep_id_tipo_protocolo, ep_id_protocolo, ep_id_tipo_equipo) VALUES ?;", [prot]);
+
+        const tercera = await pool.query("INSERT INTO Equipos_General\n" +
+        "(eg_id_equipo, eg_codigo, eg_detalle_ubicacion, eg_marca, eg_modelo,\n" +
+        " eg_equipo_critico, eg_activo,  eg_dinamico, eg_tipo_equipo, eg_observacion) VALUES\n" +
+        "(?,?,?,?,?,?,?,?,?,?);", [newId, tag, du, marca, modelo, critico, 1, 0, tipoe, obs]);
+
+        const obs_1 = "REGISTRADO POR: "+Login;
+
+        const cuarta = await pool.query("INSERT INTO Equipos_LOG (el_Id_equipo, el_Id_estado, el_Id_usuario, el_Fecha, el_Observacion) VALUES (?,?,?, NOW(), ?);",
+        [newId, 1, Id, obs_1]);
+
+        res.json({message: "Equipo creado", newId: newId});
+      
+        
+    } catch (err) {
+        console.log(err);
     }
 });
 

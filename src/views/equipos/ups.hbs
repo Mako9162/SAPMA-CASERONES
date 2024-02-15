@@ -1,0 +1,193 @@
+<body class="with-side-menu">
+	{{> navbar }}
+	<div class="mobile-menu-left-overlay-"></div>
+	{{> nav }}
+	<div class="page-content">
+		<div class="container-fluid">
+			<header class="section-header">
+				<div class="tbl">
+					<div class="tbl-row">
+						<div class="tbl-cell">
+							<h3>UPS</h3>
+							<ol class="breadcrumb breadcrumb-simple">
+								<li><a href="/home">Inicio</a></li>
+								<li class="active">Equipos</li>
+                                <li class="active">UPS</li>
+							</ol>
+						</div>
+					</div>
+				</div>
+				<style>
+					.icon-primary {
+						color: #00bfffbc;
+					}
+					.fa-plus-circle {
+						cursor: pointer;
+					}
+					label.required:before {
+						content: "* ";
+						color: red;
+					}
+					h5.required:before {
+						content: "* ";
+						color: red;
+					}
+
+				</style>
+			</header>
+			<div class="box-typical box-typical-padding">
+				<form>
+					<h5 class="m-t-lg with-border">INFORMACIÓN DE EQUIPO</strong></h5>
+					<div class="row">
+						<div class="col-md-4 col-sm-6">
+							<fieldset class="form-group">
+								<label class="form-label required" for="tag">TAG de Equipo:</label>
+								<input type="text" class="form-control inputClass" id="tag" placeholder="Asigne un TAG de equipo único">
+							</fieldset>
+						</div>
+						<div class="col-md-4 col-sm-6">
+							<fieldset class="form-group">
+								<label class="form-label float-left required" for="tipoe">Tipo de equipo:</label>
+								<span class="fa fa-plus-circle float-right icon-primary" id="tipoequipo"></span>
+								<select name="tipoe" id="tipoe" class="select2" required>
+									<option value="">Seleccione un tipo de equipo</option>
+									{{#each tipo_equipo }}
+										<option value="{{Id}}">{{Descripcion}}</option>
+									{{/each}}
+								</select>
+							</fieldset>
+						</div>
+                        <div class="col-md-4 col-sm-6">
+							<fieldset class="form-group">
+								<label class="form-label float-left required" for="mm">Marca - Modelo:</label>
+								{{!-- <span class="fa fa-plus-circle float-right icon-primary" id="marcamodelo"></span> --}}
+								<select name="mm"  id="mm" class="select2" >
+									<option value="">Seleccione la marca y modelo</option>
+                                        {{#each marca_modelo }}
+                                            <option value= "{{Id}}">{{Descripcion}}</option>
+                                        {{/each}}
+                                </select>
+							</fieldset>
+						</div>
+                        <div class="col-md-3 col-sm-6">
+							<fieldset class="form-group">
+								<label class="form-label float-left required" for="bateria_select">Bateria:</label>
+								{{!-- <span class="fa fa-plus-circle float-right icon-primary" id="agrega_bateria_b"></span> --}}
+								<select name="bateria_select"  id="bateria_select" class="select2" >
+									<option value="">Seleccione bateria</option>
+                                        {{#each baterias }}
+                                            <option value= "{{ID}}">{{MARCA}} - {{MODELO}}</option>
+                                        {{/each}}
+                                </select>
+							</fieldset>
+						</div>
+                        <div class="col-md-3 col-sm-6">
+							<fieldset class="form-group">
+								<label class="form-label" for="c_bat">Caracteristicas de bateria:</label>
+								<input type="text" class="form-control" id="c_bat" name="c_bat" placeholder="" readonly>
+							</fieldset>
+						</div>
+                        <div class="col-md-3 col-sm-6">
+							<fieldset class="form-group">
+								<label class="form-label" for="c_imp">Impedancia Dsh:</label>
+								<input type="text" class="form-control" id="c_imp" name="c_imp" placeholder="" readonly>
+							</fieldset>
+						</div>
+                        <div class="col-md-3 col-sm-6">
+							<fieldset class="form-group">
+								<label class="form-label required " for="n_bat">Número de baterías:</label>
+								<input type="text" class="form-control inputClass inputClass1" id="n_bat" name="n_bat" placeholder="" required>
+							</fieldset>
+						</div>
+						<div class="col-md-3 col-sm-6">
+							<fieldset class="form-group">
+								<label class="form-label required" for="gerencia">Especialidad:</label>
+								<select name="gerencia" id="gerencia" class="select2" >
+									<option value="">Seleccione una especialidad</option>
+                                        {{#each gerencias }}
+                                            <option value= "{{Id}}">{{Descripcion}}</option>
+                                        {{/each}}
+                                </select>
+							</fieldset>
+						</div>
+						<div class="col-md-3 col-sm-6">
+							<fieldset class="form-group">
+								<label class="form-label required" for="area">Area:</label>
+								<select class="select2" name="area" id="area">
+									<option value="">Seleccione un área</option>
+								</select>
+							</fieldset>
+						</div>
+						<div class="col-md-3 col-sm-6">
+							<fieldset class="form-group">
+								<label class="form-label required" for="sector">Sala:</label>
+								<select class="select2" name="sector" id="sector">
+									<option value="">Seleccione una sala</option>
+								</select>
+							</fieldset>
+						</div>
+                        <div class="col-md-3 col-sm-6">
+							<fieldset class="form-group">
+								<label class="form-label " for="critico">Critico:</label>
+								<select name="critico"  id="critico" class="select2" >
+									<option value="0">No</option>
+									<option value="1">Si</option>
+                                </select>
+							</fieldset>
+						</div>
+						<div class="col-md-4 col-sm-6">
+							<fieldset class="form-group">
+								<label class="form-label required" for="du">Detalle de ubicación:</label>
+								<input type="text" class="form-control" id="du" placeholder="">
+							</fieldset>
+						</div>					
+						<div class="col-md-8 col-sm-6">
+							<fieldset class="form-group">
+								<label class="form-label" for="obs">Observaciones:</label>
+								<input type="text" class="form-control" id="obs" placeholder="">
+							</fieldset>
+						</div>
+						<div id="results-container"></div>
+					</div>
+					<h5 class="m-t-lg with-border required">ASIGNACION DE PROTOCOLOS&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="fa fa-plus-circle icon-primary" id="agrega_protocolos"></span></h5>
+					<br>
+					<style>
+						.protocolo-field {
+							display: none;
+						}
+
+					</style>
+					<table class="table protocolo-field">
+						<thead>
+							<tr>
+							<th>Id TP</th>	
+							<th>Tipo de Protocolo</th>
+							<th>Id P</th>
+							<th>Protocolo</th>
+							<th>Eliminar</th>
+							</tr>
+						</thead>
+						<tbody id="protocolos-seleccionados">
+						</tbody>
+					</table>
+					<br>
+					<br>
+					<button type="button" id="guardar" class="btn btn-outline-primary">Guardar equipo</button>
+				</form>
+            {{> modal_ups}}
+			</div>
+		</div>	
+	</div>
+	<script src="/js/lib/jquery/jquery.min.js"></script>
+	<script src="/js/lib/tether/tether.min.js"></script>
+	<script src="/js/lib/bootstrap/bootstrap.min.js"></script>
+	<script src="/js/plugins.js"></script>
+	<script src="/js/app.js"></script>
+	<script src="/js/lib/datatables-net/datatables.min.js"></script>
+	<script src="/js/lib/bootstrap-sweetalert/sweetalert.min.js"></script>
+	<script src="/js/lib/summernote/summernote.min.js"></script>
+	<script src="/js/lib/fancybox/jquery.fancybox.pack.js"></script>
+	<script src="/js/summernote-ES.js"></script>
+	<script src="/js/lib/select2/select2.full.min.js"></script>
+    <script src="/ups.js"></script>
+</body>        

@@ -5,8 +5,8 @@ const fs = require("fs");
 const path = require("path"); ;
 const hbs = require("handlebars");
 
-const correo = "sapmadand@sercoing.cl";
-const pass = "FL918,VoHvwE=za.";
+const correo = "sapmamlcc@sercoing.cl";
+const pass = "y_ret@9'23tJ$.`N";
 
 const transporter = nodemailer.createTransport({
   host: "mail.sercoing.cl",
@@ -158,7 +158,7 @@ const job = new cron.CronJob("0 0 0 * * *", function(req, res) {
               const html = template(context);
     
               await transporter.sendMail({
-                from: "SAPMA <sapmadand@sercoing.cl>",
+                from: "SAPMA <sapmamlcc@sercoing.cl>",
                 to: arremail, 
                 cc: [arremailp, arremailgen],
                 bcc: correo,

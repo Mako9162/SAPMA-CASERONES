@@ -766,6 +766,4 @@ $(document).ready(function() {
         
     });
 
-
-
 });

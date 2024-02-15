@@ -12,8 +12,8 @@ const request = require('request');
 const hbs = require("handlebars");
 
 
-const correo = "sapmadand@sercoing.cl";
-const pass = "FL918,VoHvwE=za.";
+const correo = "sapmamlcc@sercoing.cl";
+const pass = "y_ret@9'23tJ$.`N";
 
 const transporter = nodemailer.createTransport({
   host: "mail.sercoing.cl",
@@ -1083,7 +1083,7 @@ router.post("/protocolo/validar", isLoggedIn, async (req, res) => {
           const html = template(context);
 
           await transporter.sendMail({
-            from: "SAPMA <sapmadand@sercoing.cl>",
+            from: "SAPMA <sapmamlcc@sercoing.cl>",
             // to: 'marancibia@sercoing.cl',
             to: [arremailgen, arremail],
             cc: arremailp,

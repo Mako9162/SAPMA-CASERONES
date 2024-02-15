@@ -13,8 +13,8 @@ const multer = require('multer');
 const upload = multer();
 
 
-const correo = "sapmadand@sercoing.cl";
-const pass = "FL918,VoHvwE=za.";
+const correo = "sapmamlcc@sercoing.cl";
+const pass = "y_ret@9'23tJ$.`N";
 
 const transporter = nodemailer.createTransport({
                         host: "mail.sercoing.cl",
@@ -591,10 +591,10 @@ for (var i = 0; i < tareas_res.length; i++) {
               );     
               const {Email} = req.user;  
               await transporter.sendMail({
-                from: "SAPMA <sapmadand@sercoing.cl>",
+                from: "SAPMA <sapmamlcc@sercoing.cl>",
                 // to: "marancibia@sercoing.cl",
                 to: [email_plan, Email],
-                bcc: "sapmadand@sercoing.cl",
+                bcc: "sapmamlcc@sercoing.cl",
                 subject: "SAPMA - Tareas Anuladas",
                 html,
                 attachments: [
@@ -660,10 +660,10 @@ for (var i = 0; i < tareas_res.length; i++) {
               );     
               const {Email} = req.user;        
               await transporter.sendMail({
-                from: "SAPMA <sapmadand@sercoing.cl>",
+                from: "SAPMA <sapmamlcc@sercoing.cl>",
                 // to: "marancibia@sercoing.cl",
                 to: [email_plan, Email],
-                bcc: "sapmadand@sercoing.cl",
+                bcc: "sapmamlcc@sercoing.cl",
                 subject: "SAPMA - Tareas Anuladas",
                 html,
                 attachments: [
@@ -858,10 +858,10 @@ router.post("/anular_lista", isLoggedIn, authRole(['Plan', 'Admincli']), async (
                     };
               const html = template(context);        
               await transporter.sendMail({
-                from: "SAPMA <sapmadand@sercoing.cl>",
+                from: "SAPMA <sapmamlcc@sercoing.cl>",
                 // to: "marancibia@sercoing.cl",
                 to: [Email, email_plan],
-                bcc: "sapmadand@sercoing.cl",
+                bcc: "sapmamlcc@sercoing.cl",
                 subject: "SAPMA - Tareas Anuladas",
                 html,
                 attachments: [
@@ -1069,10 +1069,10 @@ const dates = new Date().toLocaleString('es-CL', options);
                     };
               const html = template(context);        
               await transporter.sendMail({
-                from: "SAPMA <sapmadand@sercoing.cl>",
+                from: "SAPMA <sapmamlcc@sercoing.cl>",
                 to: [Email, email_plan],
                 // to: "marancibia@sercoing.cl",
-                bcc: "sapmadand@sercoing.cl",
+                bcc: "sapmamlcc@sercoing.cl",
                 subject: "SAPMA - Tareas Anuladas",
                 html,
                 attachments: [

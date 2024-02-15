@@ -250,7 +250,7 @@
 					"titleAttr": 'Exportar a Excel',
 					"className": 'btn btn-rounded btn-success',
 					"exportOptions": {
-					"columns": [0, 1, 2, 3, 4, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16 , 17]
+					"columns": [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16 , 17]
 					},
 					customize: function(xlsx) {
 					const sheet = xlsx.xl.worksheets['sheet1.xml'];
@@ -365,7 +365,7 @@
 				},
 			}).columns.adjust();
 
-			var parentValues = table.column(3).data().unique();
+			var parentValues = table.column(4).data().unique();
 			parentValues.sort();
 			$('#parentFilter select').append('<option value="">Seleccione una gerencia</option>');
 			parentValues.each(function(value) {
@@ -382,14 +382,14 @@
 					$('#subInfoFilter select').empty();
 					return;
 				}
-				table.column(3).search(selectedParent).draw();
+				table.column(4).search(selectedParent).draw();
 				$('#infoFilter select').empty();
 				$('#subInfoFilter select').empty();
 				var infoValues = table
-					.column(4)
+					.column(5)
 					.data()
 					.filter(function(value, index) {
-						return table.column(3).data()[index] === selectedParent;
+						return table.column(4).data()[index] === selectedParent;
 					})
 					.unique();
 				infoValues.sort();
@@ -404,19 +404,19 @@
 			$('#infoFilter select').on('change', function() {
 				var selectedInfo = $(this).val();
 				if (!selectedInfo) {
-					table.column(3).search($('#parentFilter select').val()).draw();
+					table.column(4).search($('#parentFilter select').val()).draw();
 					$('#subInfoFilter select').empty();
 					return;
 				}
-				table.column(4).search(selectedInfo).draw();
+				table.column(5).search(selectedInfo).draw();
 				$('#subInfoFilter select').empty();
 				var subInfoValues = table
-					.column(6)
+					.column(7)
 					.data()
 					.filter(function(value, index) {
 						return (
-							table.column(3).data()[index] === $('#parentFilter select').val() &&
-							table.column(4).data()[index] === selectedInfo
+							table.column(4).data()[index] === $('#parentFilter select').val() &&
+							table.column(5).data()[index] === selectedInfo
 						);
 					})
 					.unique();
@@ -431,10 +431,10 @@
 			$('#subInfoFilter select').on('change', function() {
 				var selectedSubInfo = $(this).val();
 				if (!selectedSubInfo) {
-					table.column(4).search($('#infoFilter select').val()).draw();
+					table.column(5).search($('#infoFilter select').val()).draw();
 					return;
 				}
-				table.column(6).search(selectedSubInfo).draw();
+				table.column(7).search(selectedSubInfo).draw();
 				table.on('draw.dt', function() {
 					table.rows().deselect();
 				});

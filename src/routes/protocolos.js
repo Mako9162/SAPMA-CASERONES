@@ -2,10 +2,12 @@ const express = require("express");
 const router = express.Router();
 const pool = require("../database");
 const { isLoggedIn } = require("../lib/auth");
-const { authRole, roles } = require("../lib/rol");
+const { authRole } = require("../lib/rol");
 const fetch = require("node-fetch");
 const nodemailer = require("nodemailer");
 const pdf = require("dynamic-html-pdf");
+global.ReadableStream = require('web-streams-polyfill').ReadableStream;
+const puppeteer = require('puppeteer');
 const fs = require("fs");
 const path = require("path"); 
 const request = require('request');
@@ -16,31 +18,21 @@ const correo = "sapmamlcc@sercoing.cl";
 const pass = "y_ret@9'23tJ$.`N";
 
 const transporter = nodemailer.createTransport({
-  host: "mail.sercoing.cl",
-  port: 587,
-  secure: false,
-  auth: {
-    user: correo,
-    pass: pass,
-  },
-  tls: {
-    rejectUnauthorized: false,
-  },
+    host: "mail.sercoing.cl",
+    port: 587,
+    secure: false,
+    auth: {
+        user: correo,
+        pass: pass,
+    },
+    tls: {
+        rejectUnauthorized: false,
+    },
 });
 
-const prot = new Array();
-
-function enviar(req, res, result) {
-  res.render("protocolos/protocolos", { prot: result });
-}
-
 router.get("/protocolos", isLoggedIn,  async (req, res) => {
-    await enviar(req, res);
-    // await pool.query('Select * from Estados', (err, result) => {
-    // res.render('protocolos/protocolos', {estados:result} );
-    // });
-  }
-);
+  res.render("protocolos/protocolos");
+});
 
 router.post("/protocoloss", isLoggedIn,  async (req, res) => {
     const { tarea } = req.body;
@@ -50,7 +42,7 @@ router.post("/protocoloss", isLoggedIn,  async (req, res) => {
     const { date2 } = req.body;
 
     if (tarea > 0) {
-      await pool.query("SELECT\n" +
+      const data_prot = await pool.query("SELECT\n" +
       "	T.Id AS IDT,\n" +
       "	date_format( T.Fecha, '%d-%m-%Y' ) AS FECHA,\n" +
       "	VC.vce_codigo AS CODIGO,\n" +
@@ -79,18 +71,16 @@ router.post("/protocoloss", isLoggedIn,  async (req, res) => {
       "	AND T.Id_Estado IN (5, 6) \n" +
       "	AND TE.te_Id_aux_estado IN (5, 6) \n" +
       "	AND TE.te_Estado_val = 0 \n" +
-      " GROUP BY T.Id;",
-        (err, result) => {
-          if (!result.length) {
-            res.render("protocolos/protocolos", { title: "No se encuentran tareas en el rango seleccionado!!!" });
-          } else {
-            prot.push(result);
-            enviar(req, res, result);
-          }
-        }
-      );
+      " GROUP BY T.Id;");
+
+      if(!data_prot){
+        res.json({ title: "Sin Información." });
+      }else{
+        res.json(data_prot);
+      }
+
     } else {
-      await pool.query(
+      const data_prot = await pool.query(
         "SELECT\n" +
         "    T.Id AS IDT,\n" +
         "    DATE_FORMAT(T.Fecha, '%d-%m-%Y') AS FECHA,\n" +
@@ -123,23 +113,19 @@ router.post("/protocoloss", isLoggedIn,  async (req, res) => {
         "GROUP BY\n" +
         "    T.Id \n" +
         "ORDER BY\n" +
-        "    T.Fecha DESC;",
-        (err, result) => {
-          if (!result.length) {
-            res.render("protocolos/protocolos", { title: "No se encuentran tareas en el rango seleccionado!!!" });
-          } else {
-            enviar(req, res, result);
-            prot.push(result);
-          }
+        "    T.Fecha DESC;");
+
+        if(!data_prot){
+          res.json({ title: "Sin Información." });
+        }else{
+          res.json(data_prot);
         }
-      );
+    
     }
   }
 );
 
-
-
-router.get("/protocolo/:IDT", isLoggedIn, async (req, res) => {
+router.get("/protocolo/:IDT", isLoggedIn, authRole(['Cli_C', 'Cli_B', 'Cli_A', 'Cli_D', 'Cli_E', 'Plan', 'Admincli']), async (req, res) => {
 
     const { IDT } = req.params;
     const { Id_Cliente } = req.user;
@@ -155,11 +141,10 @@ router.get("/protocolo/:IDT", isLoggedIn, async (req, res) => {
         "&tarea=" +
         IDT,
       { headers }
-    )
-      .then((res) => res.json())
-      .then((data) => {
+    ).then((res) => res.json()).then((data) => {
         return data;
-      });
+    });
+    
     const imagen = Object.values(response);
     const imagenes = imagen[2];
 
@@ -172,784 +157,142 @@ router.get("/protocolo/:IDT", isLoggedIn, async (req, res) => {
       });
     });
 
+    // const info_prot = await pool.query("call sp_VerProtocoloTarea (?)", [IDT]);
 
-    await pool.query(
-      "SELECT\n" +
-      "        Tareas.Id AS TR_TAREA_ID,\n" +
-      "        date_format(Tareas.Fecha, '%d-%m-%Y') AS FECHA,\n" +
-      "        Protocolos.Id AS 'TR_PROT_ID',\n" +
-      "        	TipoProtocolo.Abreviacion AS 'TR_PROT_TAREATIPO',\n" +
-      "        	UPPER ( TipoProtocolo.Descripcion ) AS 'TR_PROT_DESC_TAREATIPO',\n" +
-      "        	Equipos.Codigo AS 'TR_EQUIPO_COD',\n" +
-      "        	Protocolos.Descripcion AS 'TR_PROT_DESC_PROT',\n" +
-      "        	Protocolo_Capitulo.Capitulo AS 'TR_PROT_CAPIT_ID',\n" +
-      "        	UPPER( Protocolo_Capitulo.Descripcion ) AS 'TR_PROT_DESC_CAPI',\n" +
-      "        	Protocolo_Capitulo.Es_Varios AS 'TR_PROT_ESVARIOS',\n" +
-      "        	Protocolo_Capturas.Correlativo AS 'TR_PROT_CAPTURA_ID',\n" +
-      "        	Protocolo_Capturas.Descripcion AS 'TR_PROT_CAPTURA',\n" +
-      "        	TipoRespuesta.Id AS 'TR_PROT_TRESP_ID',\n" +
-      "        	TipoRespuesta.Descripcion AS 'TR_PROT_TRESP_TIPO',\n" +
-      "        	Estados.Descripcion AS 'TR_ESTADO',\n" +
-      "					CONVERT(CAST(CONVERT(IF(Tarea_Respuesta.Respuesta = 'SC','No aplica',IF(Tarea_Respuesta.Respuesta = 'SSR','Sistema sin revisar.',IF\n" +
-      "        	(Tarea_Respuesta.Respuesta = 'SOP','Sistema operativo',IF(Tarea_Respuesta.Respuesta = 'SOCO','Sist. operativo con obs.',\n" +
-      "        	IF(Tarea_Respuesta.Respuesta = 'SFS','Sist. fuera de serv.',IF( Tarea_Respuesta.Respuesta = 'SNO', 'Sist. no operativo', Tarea_Respuesta.Respuesta )))))) USING latin1) AS BINARY) USING UTF8)\n" +
-      "        	 AS 'TR_RESPUESTA',\n" +
-      "        	Usuarios.Descripcion AS 'TR_TECNICO',\n" +
-      "        	UPPER( TE.Descripcion ) AS 'TR_TIPO_EQUIPO',\n" +
-      "        IF\n" +
-      "        	( TipoContingente.Id > 0, 'SI', 'NO' ) AS 'TR_CONTINGENTE_YN',\n" +
-      "        	TipoContingente.Id AS 'TR_CONTINGENTE_ID',\n" +
-      "        	TipoContingente.Descripcion AS 'TR_CONTINGENTE_DESC',\n" +
-      "       IF\n" +
-      "        	( Tareas_Motivos.Motivo IS NULL, 'NO', 'SI' ) AS 'TR_INCIDENCIA_YN',\n" +
-      "        	Tareas_Motivos.Motivo AS 'TR_INCIDENCIA',\n" +
-      "        	EQ.SecDESC AS 'TR_SECTOR',\n" +
-      "        	EQ.AreaDESC AS 'TR_AREA',\n" +
-      "        	EQ.GerDESC AS 'TR_GERENCIA' \n" +
-      "        FROM\n" +
-      "        	Protocolos\n" +
-      "        	INNER JOIN Clientes ON Protocolos.Id_Cliente = Clientes.Id\n" +
-      "        	INNER JOIN Protocolo_Capitulo ON Protocolos.Id = Protocolo_Capitulo.Id_Protocolo\n" +
-      "        INNER JOIN TipoProtocolo ON Protocolos.Id_TipoProtocolo = TipoProtocolo.Id\n" +
-      "        	INNER JOIN Protocolo_Capturas ON Protocolos.Id = Protocolo_Capturas.Id_Protocolo \n" +
-      "        	AND Protocolo_Capitulo.Capitulo = Protocolo_Capturas.Capitulo\n" +
-      "        	INNER JOIN TipoRespuesta ON Protocolo_Capturas.Id_TipoRespuesta = TipoRespuesta.Id\n" +
-      "        	INNER JOIN Tareas ON Protocolos.Id = Tareas.Id_Protocolo\n" +
-      "        	INNER JOIN Tarea_Respuesta ON Tareas.Id = Tarea_Respuesta.Id_Tarea \n" +
-      "        	AND Protocolo_Capitulo.Capitulo = Tarea_Respuesta.Capitulo \n" +
-      "        	AND Protocolo_Capturas.Correlativo = Tarea_Respuesta.Correlativo\n" +
-      "        	INNER JOIN Estados ON Tareas.Id_Estado = Estados.Id\n" +
-      "        	INNER JOIN Equipos ON Tareas.Id_Equipo = Equipos.Id\n" +
-      "        	INNER JOIN Usuarios ON Tareas.Id_Tecnico = Usuarios.Id\n" +
-      "        	LEFT JOIN TipoContingente ON Tareas.Contingente = TipoContingente.Id\n" +
-      "       	LEFT JOIN Tareas_Motivos ON Tareas.Id = Tareas_Motivos.Id_Tarea\n" +
-      "      	INNER JOIN TipoEquipo TE ON TE.Id = Equipos.Id_Tipo\n" +
-      "        	INNER JOIN Usuarios U ON U.Id = Tareas.Id_Tecnico\n" +
-      "        	INNER JOIN (\n" +
-      "        	SELECT\n" +
-      "        		E.Id 'EqID',\n" +
-      "        		S.Descripcion 'SecDESC',\n" +
-      "        	A.Descripcion 'AreaDESC',\n" +
-      "       		G.Descripcion 'GerDESC',\n" +
-      "        		C.Descripcion 'CteDESC' \n" +
-      "       	FROM\n" +
-      "        		Equipos E\n" +
-      "        		INNER JOIN Sectores S ON E.Id_Sector = S.Id\n" +
-      "        		INNER JOIN Areas A ON S.Id_Area = A.Id\n" +
-      "        		INNER JOIN Gerencias G ON A.Id_Gerencia = G.Id\n" +
-      "        		INNER JOIN Clientes C ON G.Id_Cliente = C.Id \n" +
-      "        	) AS EQ ON Tareas.Id_Equipo = EQ.EqID \n" +
-      "        WHERE \n" +
-      "   Tareas.Id =" +IDT +" ORDER BY TR_PROT_DESC_CAPI  ASC, FIELD(TR_PROT_CAPTURA,'Observaciones PV', 'Observación PV', 'Observaciones PV SA', 'Observacies PV SSA', 'Observaciones PV EP'),	TR_PROT_CAPTURA ASC",
-      (err, result) => {
-        if (err) {
-          console.log(err);
-        } else {
-          function onlyUnique(value, index, self) {
-            return self.indexOf(value) === index;
-          }
-          const cap = result.map((a) => a.TR_PROT_DESC_CAPI);
-          const cap1 = cap.filter(onlyUnique);
-
-          res.render("protocolos/protocolo", {
-            IDT: result[0].TR_TAREA_ID,
-            TR_GERENCIA: result[0].TR_GERENCIA,
-            TR_AREA: result[0].TR_AREA,
-            TR_SECTOR: result[0].TR_SECTOR,
-            FECHA: result[0].FECHA,
-            TAREATIPO: result[0].TR_PROT_TAREATIPO,
-            TR_PROT_DESC_TAREATIPO: result[0].TR_PROT_DESC_TAREATIPO,
-            TR_EQUIPO_COD: result[0].TR_EQUIPO_COD,
-            TR_PROT_ID: result[0].TR_PROT_ID,
-            TR_PROT_DESC_PROT: result[0].TR_PROT_DESC_PROT,
-            TR_ESTADO: result[0].TR_ESTADO,
-            cap1: cap1,
-            prot: result,
-            imagenes: imagenes,
-          });
-          
-
-        }
-      }
+    const info_prot = await pool.query(
+      " SELECT\n" +
+      "	Tareas.Id AS TR_TAREA_ID,\n" +
+      "	date_format( Tareas.Fecha, '%d-%m-%Y' ) AS FECHA,\n" +
+      "	Protocolos.Id AS 'TR_PROT_ID',\n" +
+      "	TipoProtocolo.Abreviacion AS 'TR_PROT_TAREATIPO',\n" +
+      "	UPPER ( TipoProtocolo.Descripcion ) AS 'TR_PROT_DESC_TAREATIPO',\n" +
+      "	Equipos.Codigo AS 'TR_EQUIPO_COD',\n" +
+      "	Protocolos.Descripcion AS 'TR_PROT_DESC_PROT',\n" +
+      "	Protocolo_Capitulo.Capitulo AS 'TR_PROT_CAPIT_ID',\n" +
+      "	UPPER( Protocolo_Capitulo.Descripcion ) AS 'TR_PROT_DESC_CAPI',\n" +
+      "	Protocolo_Capitulo.Es_Varios AS 'TR_PROT_ESVARIOS',\n" +
+      "	Protocolo_Capturas.Correlativo AS 'TR_PROT_CAPTURA_ID',\n" +
+      "	Protocolo_Capturas.Descripcion AS 'TR_PROT_CAPTURA',\n" +
+      "	TipoRespuesta.Id AS 'TR_PROT_TRESP_ID',\n" +
+      "	TipoRespuesta.Descripcion AS 'TR_PROT_TRESP_TIPO',\n" +
+      "	Estados.Descripcion AS 'TR_ESTADO',\n" +
+      "    CONVERT (\n" +
+      "        CAST(\n" +
+      "            CONVERT (\n" +
+      "            IF\n" +
+      "                (\n" +
+      "                    Tarea_Respuesta.Respuesta = 'SC',\n" +
+      "                    'No aplica',\n" +
+      "                IF\n" +
+      "                    (\n" +
+      "                        Tarea_Respuesta.Respuesta = 'SSR',\n" +
+      "                        'Sistema sin revisar.',\n" +
+      "                    IF\n" +
+      "                        (\n" +
+      "                            Tarea_Respuesta.Respuesta = 'SOP',\n" +
+      "                            'Sistema operativo',\n" +
+      "                        IF\n" +
+      "                            (\n" +
+      "                                Tarea_Respuesta.Respuesta = 'SOCO',\n" +
+      "                                'Sist. operativo con obs.',\n" +
+      "                            IF\n" +
+      "                                (\n" +
+      "                                    Tarea_Respuesta.Respuesta = 'SFS',\n" +
+      "                                    'Sist. fuera de serv.',\n" +
+      "                                IF\n" +
+      "                                ( Tarea_Respuesta.Respuesta = 'SNO', 'Sist. no operativo', Tarea_Respuesta.Respuesta )))))) USING UTF8 \n" +
+      "            ) AS BINARY \n" +
+      "        ) USING UTF8 \n" +
+      "    ) AS 'TR_RESPUESTA',\n" +
+      "	Usuarios.Descripcion AS 'TR_TECNICO',\n" +
+      "	UPPER( TE.Descripcion ) AS 'TR_TIPO_EQUIPO',\n" +
+      "IF\n" +
+      "	( TipoContingente.Id > 0, 'SI', 'NO' ) AS 'TR_CONTINGENTE_YN',\n" +
+      "	TipoContingente.Id AS 'TR_CONTINGENTE_ID',\n" +
+      "	TipoContingente.Descripcion AS 'TR_CONTINGENTE_DESC',\n" +
+      "IF\n" +
+      "	( Tareas_Motivos.Motivo IS NULL, 'NO', 'SI' ) AS 'TR_INCIDENCIA_YN',\n" +
+      "	Tareas_Motivos.Motivo AS 'TR_INCIDENCIA',\n" +
+      "	EQ.SecDESC AS 'TR_SECTOR',\n" +
+      "	EQ.AreaDESC AS 'TR_AREA',\n" +
+      "	EQ.GerDESC AS 'TR_GERENCIA' \n" +
+      "FROM\n" +
+      "	Protocolos\n" +
+      "	INNER JOIN Clientes ON Protocolos.Id_Cliente = Clientes.Id\n" +
+      "	INNER JOIN Protocolo_Capitulo ON Protocolos.Id = Protocolo_Capitulo.Id_Protocolo\n" +
+      "	INNER JOIN TipoProtocolo ON Protocolos.Id_TipoProtocolo = TipoProtocolo.Id\n" +
+      "	INNER JOIN Protocolo_Capturas ON Protocolos.Id = Protocolo_Capturas.Id_Protocolo \n" +
+      "	AND Protocolo_Capitulo.Capitulo = Protocolo_Capturas.Capitulo\n" +
+      "	INNER JOIN TipoRespuesta ON Protocolo_Capturas.Id_TipoRespuesta = TipoRespuesta.Id\n" +
+      "	INNER JOIN Tareas ON Protocolos.Id = Tareas.Id_Protocolo\n" +
+      "	INNER JOIN Tarea_Respuesta ON Tareas.Id = Tarea_Respuesta.Id_Tarea \n" +
+      "	AND Protocolo_Capitulo.Capitulo = Tarea_Respuesta.Capitulo \n" +
+      "	AND Protocolo_Capturas.Correlativo = Tarea_Respuesta.Correlativo\n" +
+      "	INNER JOIN Estados ON Tareas.Id_Estado = Estados.Id\n" +
+      "	INNER JOIN Equipos ON Tareas.Id_Equipo = Equipos.Id\n" +
+      "	INNER JOIN Usuarios ON Tareas.Id_Tecnico = Usuarios.Id\n" +
+      "	LEFT JOIN TipoContingente ON Tareas.Contingente = TipoContingente.Id\n" +
+      "	LEFT JOIN Tareas_Motivos ON Tareas.Id = Tareas_Motivos.Id_Tarea\n" +
+      "	INNER JOIN TipoEquipo TE ON TE.Id = Equipos.Id_Tipo\n" +
+      "	INNER JOIN Usuarios U ON U.Id = Tareas.Id_Tecnico\n" +
+      "	INNER JOIN (\n" +
+      "	SELECT\n" +
+      "		E.Id 'EqID',\n" +
+      "		S.Descripcion 'SecDESC',\n" +
+      "		A.Descripcion 'AreaDESC',\n" +
+      "		G.Descripcion 'GerDESC',\n" +
+      "		C.Descripcion 'CteDESC' \n" +
+      "	FROM\n" +
+      "		Equipos E\n" +
+      "		INNER JOIN Sectores S ON E.Id_Sector = S.Id\n" +
+      "		INNER JOIN Areas A ON S.Id_Area = A.Id\n" +
+      "		INNER JOIN Gerencias G ON A.Id_Gerencia = G.Id\n" +
+      "		INNER JOIN Clientes C ON G.Id_Cliente = C.Id \n" +
+      "	) AS EQ ON Tareas.Id_Equipo = EQ.EqID \n" +
+      "WHERE\n" +
+      "	Tareas.Id = 122\n" +
+      "ORDER BY\n" +
+      "	TR_PROT_DESC_CAPI ASC,\n" +
+      "	FIELD( TR_PROT_CAPTURA, 'Observaciones PV', 'Observación PV', 'Observaciones PV SA', 'Observaciones PV SSA', 'Observaciones PV EP' ),\n" +
+      "	TR_PROT_CAPTURA ASC", [IDT]
     );
+    
+    const codigo = info_prot[0].TR_EQUIPO_COD;
+    const id_bat = await pool.query("SELECT eq_bat_id FROM Equipos WHERE Codigo =?", [codigo]);
+    const bat_id = id_bat[0].eq_bat_id;
+    const bat = await pool.query("SELECT * FROM Baterias_UPS WHERE bat_id =?", [bat_id]);
+
+    const agregarDatosBateria = (info_prot, bat) => {
+
+      for (let i = 0; i < info_prot.length; i++) {
+
+        if (bat.length > 0) {
+          info_prot[i] = { ...info_prot[i], ...bat[0] };
+        }
+      }
+    };
+    
+    await agregarDatosBateria(info_prot, bat);
+
+
+    res.render("protocolos/protocolo",{
+      prot: info_prot,
+      IDT: info_prot[0].TR_TAREA_ID,
+      TR_GERENCIA: info_prot[0].TR_GERENCIA,
+      TR_AREA: info_prot[0].TR_AREA,
+      TR_SECTOR: info_prot[0].TR_SECTOR,
+      FECHA: info_prot[0].TR_RESPUESTA,
+      TAREATIPO: info_prot[0].TR_PROT_TAREATIPO,
+      TR_PROT_DESC_TAREATIPO: info_prot[0].TR_PROT_DESC_TAREATIPO,
+      TR_EQUIPO_COD: info_prot[0].TR_EQUIPO_COD,
+      TR_PROT_ID: info_prot[0].TR_PROT_ID,
+      TR_PROT_DESC_PROT: info_prot[0].TR_PROT_DESC_PROT,
+      TR_ESTADO: info_prot[0].TR_ESTADO,
+      BAT: info_prot[0].bat_marca,
+      imagenes: imagenes
+    });
   }
 );
-
-router.get("/protocoloc/:IDT", isLoggedIn, authRole(['Cli_C']), async (req, res) => {
-  const { IDT } = req.params;
-  const { Id_Cliente } = req.user;
-  const { Login } = req.user;
-
-  const headers = { "User-Agent": "node-fetch" };
-
-  const response = await fetch(
-    "https://sapma.sercoing.cl/svc/ver_tarea.py?login=" +
-      Login +
-      "&idCliente=" +
-      Id_Cliente +
-      "&tarea=" +
-      IDT,
-    { headers }
-  )
-    .then((res) => res.json())
-    .then((data) => {
-      return data;
-    });
-  const imagen = Object.values(response);
-  const imagenes = imagen[2];
-
-  const dir = "src/images/";
-
-  imagenes.forEach(function(url) {
-    var filename = dir + url.split("/").pop();
-    request.head(url, function(err, res, body){
-      request(url).pipe(fs.createWriteStream(filename));
-    });
-  });
-
-
-  await pool.query(
-    "SELECT\n" +
-    "        Tareas.Id AS TR_TAREA_ID,\n" +
-    "        date_format(Tareas.Fecha, '%d-%m-%Y') AS FECHA,\n" +
-    "        Protocolos.Id AS 'TR_PROT_ID',\n" +
-    "        	TipoProtocolo.Abreviacion AS 'TR_PROT_TAREATIPO',\n" +
-    "        	UPPER ( TipoProtocolo.Descripcion ) AS 'TR_PROT_DESC_TAREATIPO',\n" +
-    "        	Equipos.Codigo AS 'TR_EQUIPO_COD',\n" +
-    "        	Protocolos.Descripcion AS 'TR_PROT_DESC_PROT',\n" +
-    "        	Protocolo_Capitulo.Capitulo AS 'TR_PROT_CAPIT_ID',\n" +
-    "        	UPPER( Protocolo_Capitulo.Descripcion ) AS 'TR_PROT_DESC_CAPI',\n" +
-    "        	Protocolo_Capitulo.Es_Varios AS 'TR_PROT_ESVARIOS',\n" +
-    "        	Protocolo_Capturas.Correlativo AS 'TR_PROT_CAPTURA_ID',\n" +
-    "        	Protocolo_Capturas.Descripcion AS 'TR_PROT_CAPTURA',\n" +
-    "        	TipoRespuesta.Id AS 'TR_PROT_TRESP_ID',\n" +
-    "        	TipoRespuesta.Descripcion AS 'TR_PROT_TRESP_TIPO',\n" +
-    "        	Estados.Descripcion AS 'TR_ESTADO',\n" +
-    "					CONVERT(CAST(CONVERT(IF(Tarea_Respuesta.Respuesta = 'SC','No aplica',IF(Tarea_Respuesta.Respuesta = 'SSR','Sistema sin revisar.',IF\n" +
-    "        	(Tarea_Respuesta.Respuesta = 'SOP','Sistema operativo',IF(Tarea_Respuesta.Respuesta = 'SOCO','Sist. operativo con obs.',\n" +
-    "        	IF(Tarea_Respuesta.Respuesta = 'SFS','Sist. fuera de serv.',IF( Tarea_Respuesta.Respuesta = 'SNO', 'Sist. no operativo', Tarea_Respuesta.Respuesta )))))) USING latin1) AS BINARY) USING UTF8)\n" +
-    "        	 AS 'TR_RESPUESTA',\n" +
-    "        	Usuarios.Descripcion AS 'TR_TECNICO',\n" +
-    "        	UPPER( TE.Descripcion ) AS 'TR_TIPO_EQUIPO',\n" +
-    "        IF\n" +
-    "        	( TipoContingente.Id > 0, 'SI', 'NO' ) AS 'TR_CONTINGENTE_YN',\n" +
-    "        	TipoContingente.Id AS 'TR_CONTINGENTE_ID',\n" +
-    "        	TipoContingente.Descripcion AS 'TR_CONTINGENTE_DESC',\n" +
-    "       IF\n" +
-    "        	( Tareas_Motivos.Motivo IS NULL, 'NO', 'SI' ) AS 'TR_INCIDENCIA_YN',\n" +
-    "        	Tareas_Motivos.Motivo AS 'TR_INCIDENCIA',\n" +
-    "        	EQ.SecDESC AS 'TR_SECTOR',\n" +
-    "        	EQ.AreaDESC AS 'TR_AREA',\n" +
-    "        	EQ.GerDESC AS 'TR_GERENCIA' \n" +
-    "        FROM\n" +
-    "        	Protocolos\n" +
-    "        	INNER JOIN Clientes ON Protocolos.Id_Cliente = Clientes.Id\n" +
-    "        	INNER JOIN Protocolo_Capitulo ON Protocolos.Id = Protocolo_Capitulo.Id_Protocolo\n" +
-    "        INNER JOIN TipoProtocolo ON Protocolos.Id_TipoProtocolo = TipoProtocolo.Id\n" +
-    "        	INNER JOIN Protocolo_Capturas ON Protocolos.Id = Protocolo_Capturas.Id_Protocolo \n" +
-    "        	AND Protocolo_Capitulo.Capitulo = Protocolo_Capturas.Capitulo\n" +
-    "        	INNER JOIN TipoRespuesta ON Protocolo_Capturas.Id_TipoRespuesta = TipoRespuesta.Id\n" +
-    "        	INNER JOIN Tareas ON Protocolos.Id = Tareas.Id_Protocolo\n" +
-    "        	INNER JOIN Tarea_Respuesta ON Tareas.Id = Tarea_Respuesta.Id_Tarea \n" +
-    "        	AND Protocolo_Capitulo.Capitulo = Tarea_Respuesta.Capitulo \n" +
-    "        	AND Protocolo_Capturas.Correlativo = Tarea_Respuesta.Correlativo\n" +
-    "        	INNER JOIN Estados ON Tareas.Id_Estado = Estados.Id\n" +
-    "        	INNER JOIN Equipos ON Tareas.Id_Equipo = Equipos.Id\n" +
-    "        	INNER JOIN Usuarios ON Tareas.Id_Tecnico = Usuarios.Id\n" +
-    "        	LEFT JOIN TipoContingente ON Tareas.Contingente = TipoContingente.Id\n" +
-    "       	LEFT JOIN Tareas_Motivos ON Tareas.Id = Tareas_Motivos.Id_Tarea\n" +
-    "      	INNER JOIN TipoEquipo TE ON TE.Id = Equipos.Id_Tipo\n" +
-    "        	INNER JOIN Usuarios U ON U.Id = Tareas.Id_Tecnico\n" +
-    "        	INNER JOIN (\n" +
-    "        	SELECT\n" +
-    "        		E.Id 'EqID',\n" +
-    "        		S.Descripcion 'SecDESC',\n" +
-    "        	A.Descripcion 'AreaDESC',\n" +
-    "       		G.Descripcion 'GerDESC',\n" +
-    "        		C.Descripcion 'CteDESC' \n" +
-    "       	FROM\n" +
-    "        		Equipos E\n" +
-    "        		INNER JOIN Sectores S ON E.Id_Sector = S.Id\n" +
-    "        		INNER JOIN Areas A ON S.Id_Area = A.Id\n" +
-    "        		INNER JOIN Gerencias G ON A.Id_Gerencia = G.Id\n" +
-    "        		INNER JOIN Clientes C ON G.Id_Cliente = C.Id \n" +
-    "        	) AS EQ ON Tareas.Id_Equipo = EQ.EqID \n" +
-    "        WHERE \n" +
-    "   Tareas.Id =" +IDT +" ORDER BY TR_PROT_DESC_CAPI  ASC, FIELD(TR_PROT_CAPTURA,'Observaciones PV', 'Observación PV', 'Observaciones PV SA', 'Observacies PV SSA', 'Observaciones PV EP'),	TR_PROT_CAPTURA ASC",
-    (err, result) => {
-      if (err) {
-        console.log(err);
-      } else {
-        function onlyUnique(value, index, self) {
-          return self.indexOf(value) === index;
-        }
-        const cap = result.map((a) => a.TR_PROT_DESC_CAPI);
-        const cap1 = cap.filter(onlyUnique);
-
-        res.render("protocolos/protocolo", {
-          IDT: result[0].TR_TAREA_ID,
-          TR_GERENCIA: result[0].TR_GERENCIA,
-          TR_AREA: result[0].TR_AREA,
-          TR_SECTOR: result[0].TR_SECTOR,
-          FECHA: result[0].FECHA,
-          TAREATIPO: result[0].TR_PROT_TAREATIPO,
-          TR_PROT_DESC_TAREATIPO: result[0].TR_PROT_DESC_TAREATIPO,
-          TR_EQUIPO_COD: result[0].TR_EQUIPO_COD,
-          TR_PROT_ID: result[0].TR_PROT_ID,
-          TR_PROT_DESC_PROT: result[0].TR_PROT_DESC_PROT,
-          TR_ESTADO: result[0].TR_ESTADO,
-          cap1: cap1,
-          prot: result,
-          imagenes: imagenes,
-        });
-        
-
-      }
-    }
-  );
-});
-
-router.get("/protocolob/:IDT", isLoggedIn, authRole(['Cli_B']), async (req, res) => {
-  const { IDT } = req.params;
-  const { Id_Cliente } = req.user;
-  const { Login } = req.user;
-
-  const headers = { "User-Agent": "node-fetch" };
-
-  const response = await fetch(
-    "https://sapma.sercoing.cl/svc/ver_tarea.py?login=" +
-      Login +
-      "&idCliente=" +
-      Id_Cliente +
-      "&tarea=" +
-      IDT,
-    { headers }
-  )
-    .then((res) => res.json())
-    .then((data) => {
-      return data;
-    });
-  const imagen = Object.values(response);
-  const imagenes = imagen[2];
-
-  const dir = "src/images/";
-
-  imagenes.forEach(function(url) {
-    var filename = dir + url.split("/").pop();
-    request.head(url, function(err, res, body){
-      request(url).pipe(fs.createWriteStream(filename));
-    });
-  });
-
-
-  await pool.query(
-    "SELECT\n" +
-    "        Tareas.Id AS TR_TAREA_ID,\n" +
-    "        date_format(Tareas.Fecha, '%d-%m-%Y') AS FECHA,\n" +
-    "        Protocolos.Id AS 'TR_PROT_ID',\n" +
-    "        	TipoProtocolo.Abreviacion AS 'TR_PROT_TAREATIPO',\n" +
-    "        	UPPER ( TipoProtocolo.Descripcion ) AS 'TR_PROT_DESC_TAREATIPO',\n" +
-    "        	Equipos.Codigo AS 'TR_EQUIPO_COD',\n" +
-    "        	Protocolos.Descripcion AS 'TR_PROT_DESC_PROT',\n" +
-    "        	Protocolo_Capitulo.Capitulo AS 'TR_PROT_CAPIT_ID',\n" +
-    "        	UPPER( Protocolo_Capitulo.Descripcion ) AS 'TR_PROT_DESC_CAPI',\n" +
-    "        	Protocolo_Capitulo.Es_Varios AS 'TR_PROT_ESVARIOS',\n" +
-    "        	Protocolo_Capturas.Correlativo AS 'TR_PROT_CAPTURA_ID',\n" +
-    "        	Protocolo_Capturas.Descripcion AS 'TR_PROT_CAPTURA',\n" +
-    "        	TipoRespuesta.Id AS 'TR_PROT_TRESP_ID',\n" +
-    "        	TipoRespuesta.Descripcion AS 'TR_PROT_TRESP_TIPO',\n" +
-    "        	Estados.Descripcion AS 'TR_ESTADO',\n" +
-    "					CONVERT(CAST(CONVERT(IF(Tarea_Respuesta.Respuesta = 'SC','No aplica',IF(Tarea_Respuesta.Respuesta = 'SSR','Sistema sin revisar',IF\n" +
-    "        	(Tarea_Respuesta.Respuesta = 'SOP','Sistema operativo',IF(Tarea_Respuesta.Respuesta = 'SOCO','Sist. operativo con obs.',\n" +
-    "        	IF(Tarea_Respuesta.Respuesta = 'SFS','Sist. fuera de serv.',IF( Tarea_Respuesta.Respuesta = 'SNO', 'Sist. no operativo', Tarea_Respuesta.Respuesta )))))) USING latin1) AS BINARY) USING UTF8)\n" +
-    "        	 AS 'TR_RESPUESTA',\n" +
-    "        	Usuarios.Descripcion AS 'TR_TECNICO',\n" +
-    "        	UPPER( TE.Descripcion ) AS 'TR_TIPO_EQUIPO',\n" +
-    "        IF\n" +
-    "        	( TipoContingente.Id > 0, 'SI', 'NO' ) AS 'TR_CONTINGENTE_YN',\n" +
-    "        	TipoContingente.Id AS 'TR_CONTINGENTE_ID',\n" +
-    "        	TipoContingente.Descripcion AS 'TR_CONTINGENTE_DESC',\n" +
-    "       IF\n" +
-    "        	( Tareas_Motivos.Motivo IS NULL, 'NO', 'SI' ) AS 'TR_INCIDENCIA_YN',\n" +
-    "        	Tareas_Motivos.Motivo AS 'TR_INCIDENCIA',\n" +
-    "        	EQ.SecDESC AS 'TR_SECTOR',\n" +
-    "        	EQ.AreaDESC AS 'TR_AREA',\n" +
-    "        	EQ.GerDESC AS 'TR_GERENCIA' \n" +
-    "        FROM\n" +
-    "        	Protocolos\n" +
-    "        	INNER JOIN Clientes ON Protocolos.Id_Cliente = Clientes.Id\n" +
-    "        	INNER JOIN Protocolo_Capitulo ON Protocolos.Id = Protocolo_Capitulo.Id_Protocolo\n" +
-    "        INNER JOIN TipoProtocolo ON Protocolos.Id_TipoProtocolo = TipoProtocolo.Id\n" +
-    "        	INNER JOIN Protocolo_Capturas ON Protocolos.Id = Protocolo_Capturas.Id_Protocolo \n" +
-    "        	AND Protocolo_Capitulo.Capitulo = Protocolo_Capturas.Capitulo\n" +
-    "        	INNER JOIN TipoRespuesta ON Protocolo_Capturas.Id_TipoRespuesta = TipoRespuesta.Id\n" +
-    "        	INNER JOIN Tareas ON Protocolos.Id = Tareas.Id_Protocolo\n" +
-    "        	INNER JOIN Tarea_Respuesta ON Tareas.Id = Tarea_Respuesta.Id_Tarea \n" +
-    "        	AND Protocolo_Capitulo.Capitulo = Tarea_Respuesta.Capitulo \n" +
-    "        	AND Protocolo_Capturas.Correlativo = Tarea_Respuesta.Correlativo\n" +
-    "        	INNER JOIN Estados ON Tareas.Id_Estado = Estados.Id\n" +
-    "        	INNER JOIN Equipos ON Tareas.Id_Equipo = Equipos.Id\n" +
-    "        	INNER JOIN Usuarios ON Tareas.Id_Tecnico = Usuarios.Id\n" +
-    "        	LEFT JOIN TipoContingente ON Tareas.Contingente = TipoContingente.Id\n" +
-    "       	LEFT JOIN Tareas_Motivos ON Tareas.Id = Tareas_Motivos.Id_Tarea\n" +
-    "      	INNER JOIN TipoEquipo TE ON TE.Id = Equipos.Id_Tipo\n" +
-    "        	INNER JOIN Usuarios U ON U.Id = Tareas.Id_Tecnico\n" +
-    "        	INNER JOIN (\n" +
-    "        	SELECT\n" +
-    "        		E.Id 'EqID',\n" +
-    "        		S.Descripcion 'SecDESC',\n" +
-    "        	A.Descripcion 'AreaDESC',\n" +
-    "       		G.Descripcion 'GerDESC',\n" +
-    "        		C.Descripcion 'CteDESC' \n" +
-    "       	FROM\n" +
-    "        		Equipos E\n" +
-    "        		INNER JOIN Sectores S ON E.Id_Sector = S.Id\n" +
-    "        		INNER JOIN Areas A ON S.Id_Area = A.Id\n" +
-    "        		INNER JOIN Gerencias G ON A.Id_Gerencia = G.Id\n" +
-    "        		INNER JOIN Clientes C ON G.Id_Cliente = C.Id \n" +
-    "        	) AS EQ ON Tareas.Id_Equipo = EQ.EqID \n" +
-    "        WHERE \n" +
-    "   Tareas.Id =" +IDT +" ORDER BY TR_PROT_DESC_CAPI  ASC, FIELD(TR_PROT_CAPTURA,'Observaciones PV', 'Observación PV', 'Observaciones PV SA', 'Observacies PV SSA', 'Observaciones PV EP'),	TR_PROT_CAPTURA ASC",
-    (err, result) => {
-      if (err) {
-        console.log(err);
-      } else {
-        function onlyUnique(value, index, self) {
-          return self.indexOf(value) === index;
-        }
-        const cap = result.map((a) => a.TR_PROT_DESC_CAPI);
-        const cap1 = cap.filter(onlyUnique);
-
-        res.render("protocolos/protocolo", {
-          IDT: result[0].TR_TAREA_ID,
-          TR_GERENCIA: result[0].TR_GERENCIA,
-          TR_AREA: result[0].TR_AREA,
-          TR_SECTOR: result[0].TR_SECTOR,
-          FECHA: result[0].FECHA,
-          TAREATIPO: result[0].TR_PROT_TAREATIPO,
-          TR_PROT_DESC_TAREATIPO: result[0].TR_PROT_DESC_TAREATIPO,
-          TR_EQUIPO_COD: result[0].TR_EQUIPO_COD,
-          TR_PROT_ID: result[0].TR_PROT_ID,
-          TR_PROT_DESC_PROT: result[0].TR_PROT_DESC_PROT,
-          TR_ESTADO: result[0].TR_ESTADO,
-          cap1: cap1,
-          prot: result,
-          imagenes: imagenes,
-        });
-        
-
-      }
-    }
-  );
-  }
-);
-
-router.get("/protocoloa/:IDT", isLoggedIn, authRole(['Cli_A']), async (req, res) => {
-  const { IDT } = req.params;
-  const { Id_Cliente } = req.user;
-  const { Login } = req.user;
-
-  const headers = { "User-Agent": "node-fetch" };
-
-  const response = await fetch(
-    "https://sapma.sercoing.cl/svc/ver_tarea.py?login=" +
-      Login +
-      "&idCliente=" +
-      Id_Cliente +
-      "&tarea=" +
-      IDT,
-    { headers }
-  )
-    .then((res) => res.json())
-    .then((data) => {
-      return data;
-    });
-  const imagen = Object.values(response);
-  const imagenes = imagen[2];
-
-  const dir = "src/images/";
-
-  imagenes.forEach(function(url) {
-    var filename = dir + url.split("/").pop();
-    request.head(url, function(err, res, body){
-      request(url).pipe(fs.createWriteStream(filename));
-    });
-  });
-
-
-  await pool.query(
-    "SELECT\n" +
-    "        Tareas.Id AS TR_TAREA_ID,\n" +
-    "        date_format(Tareas.Fecha, '%d-%m-%Y') AS FECHA,\n" +
-    "        Protocolos.Id AS 'TR_PROT_ID',\n" +
-    "        	TipoProtocolo.Abreviacion AS 'TR_PROT_TAREATIPO',\n" +
-    "        	UPPER ( TipoProtocolo.Descripcion ) AS 'TR_PROT_DESC_TAREATIPO',\n" +
-    "        	Equipos.Codigo AS 'TR_EQUIPO_COD',\n" +
-    "        	Protocolos.Descripcion AS 'TR_PROT_DESC_PROT',\n" +
-    "        	Protocolo_Capitulo.Capitulo AS 'TR_PROT_CAPIT_ID',\n" +
-    "        	UPPER( Protocolo_Capitulo.Descripcion ) AS 'TR_PROT_DESC_CAPI',\n" +
-    "        	Protocolo_Capitulo.Es_Varios AS 'TR_PROT_ESVARIOS',\n" +
-    "        	Protocolo_Capturas.Correlativo AS 'TR_PROT_CAPTURA_ID',\n" +
-    "        	Protocolo_Capturas.Descripcion AS 'TR_PROT_CAPTURA',\n" +
-    "        	TipoRespuesta.Id AS 'TR_PROT_TRESP_ID',\n" +
-    "        	TipoRespuesta.Descripcion AS 'TR_PROT_TRESP_TIPO',\n" +
-    "        	Estados.Descripcion AS 'TR_ESTADO',\n" +
-    "					CONVERT(CAST(CONVERT(IF(Tarea_Respuesta.Respuesta = 'SC','No aplica',IF(Tarea_Respuesta.Respuesta = 'SSR','Sistema sin revisar.',IF\n" +
-    "        	(Tarea_Respuesta.Respuesta = 'SOP','Sistema operativo',IF(Tarea_Respuesta.Respuesta = 'SOCO','Sist. operativo con obs.',\n" +
-    "        	IF(Tarea_Respuesta.Respuesta = 'SFS','Sist. fuera de serv.',IF( Tarea_Respuesta.Respuesta = 'SNO', 'Sist. no operativo', Tarea_Respuesta.Respuesta )))))) USING latin1) AS BINARY) USING UTF8)\n" +
-    "        	 AS 'TR_RESPUESTA',\n" +
-    "        	Usuarios.Descripcion AS 'TR_TECNICO',\n" +
-    "        	UPPER( TE.Descripcion ) AS 'TR_TIPO_EQUIPO',\n" +
-    "        IF\n" +
-    "        	( TipoContingente.Id > 0, 'SI', 'NO' ) AS 'TR_CONTINGENTE_YN',\n" +
-    "        	TipoContingente.Id AS 'TR_CONTINGENTE_ID',\n" +
-    "        	TipoContingente.Descripcion AS 'TR_CONTINGENTE_DESC',\n" +
-    "       IF\n" +
-    "        	( Tareas_Motivos.Motivo IS NULL, 'NO', 'SI' ) AS 'TR_INCIDENCIA_YN',\n" +
-    "        	Tareas_Motivos.Motivo AS 'TR_INCIDENCIA',\n" +
-    "        	EQ.SecDESC AS 'TR_SECTOR',\n" +
-    "        	EQ.AreaDESC AS 'TR_AREA',\n" +
-    "        	EQ.GerDESC AS 'TR_GERENCIA' \n" +
-    "        FROM\n" +
-    "        	Protocolos\n" +
-    "        	INNER JOIN Clientes ON Protocolos.Id_Cliente = Clientes.Id\n" +
-    "        	INNER JOIN Protocolo_Capitulo ON Protocolos.Id = Protocolo_Capitulo.Id_Protocolo\n" +
-    "        INNER JOIN TipoProtocolo ON Protocolos.Id_TipoProtocolo = TipoProtocolo.Id\n" +
-    "        	INNER JOIN Protocolo_Capturas ON Protocolos.Id = Protocolo_Capturas.Id_Protocolo \n" +
-    "        	AND Protocolo_Capitulo.Capitulo = Protocolo_Capturas.Capitulo\n" +
-    "        	INNER JOIN TipoRespuesta ON Protocolo_Capturas.Id_TipoRespuesta = TipoRespuesta.Id\n" +
-    "        	INNER JOIN Tareas ON Protocolos.Id = Tareas.Id_Protocolo\n" +
-    "        	INNER JOIN Tarea_Respuesta ON Tareas.Id = Tarea_Respuesta.Id_Tarea \n" +
-    "        	AND Protocolo_Capitulo.Capitulo = Tarea_Respuesta.Capitulo \n" +
-    "        	AND Protocolo_Capturas.Correlativo = Tarea_Respuesta.Correlativo\n" +
-    "        	INNER JOIN Estados ON Tareas.Id_Estado = Estados.Id\n" +
-    "        	INNER JOIN Equipos ON Tareas.Id_Equipo = Equipos.Id\n" +
-    "        	INNER JOIN Usuarios ON Tareas.Id_Tecnico = Usuarios.Id\n" +
-    "        	LEFT JOIN TipoContingente ON Tareas.Contingente = TipoContingente.Id\n" +
-    "       	LEFT JOIN Tareas_Motivos ON Tareas.Id = Tareas_Motivos.Id_Tarea\n" +
-    "      	INNER JOIN TipoEquipo TE ON TE.Id = Equipos.Id_Tipo\n" +
-    "        	INNER JOIN Usuarios U ON U.Id = Tareas.Id_Tecnico\n" +
-    "        	INNER JOIN (\n" +
-    "        	SELECT\n" +
-    "        		E.Id 'EqID',\n" +
-    "        		S.Descripcion 'SecDESC',\n" +
-    "        	A.Descripcion 'AreaDESC',\n" +
-    "       		G.Descripcion 'GerDESC',\n" +
-    "        		C.Descripcion 'CteDESC' \n" +
-    "       	FROM\n" +
-    "        		Equipos E\n" +
-    "        		INNER JOIN Sectores S ON E.Id_Sector = S.Id\n" +
-    "        		INNER JOIN Areas A ON S.Id_Area = A.Id\n" +
-    "        		INNER JOIN Gerencias G ON A.Id_Gerencia = G.Id\n" +
-    "        		INNER JOIN Clientes C ON G.Id_Cliente = C.Id \n" +
-    "        	) AS EQ ON Tareas.Id_Equipo = EQ.EqID \n" +
-    "        WHERE \n" +
-    "   Tareas.Id =" +IDT +" ORDER BY TR_PROT_DESC_CAPI  ASC, FIELD(TR_PROT_CAPTURA,'Observaciones PV', 'Observación PV', 'Observaciones PV SA', 'Observacies PV SSA', 'Observaciones PV EP'),	TR_PROT_CAPTURA ASC",
-    (err, result) => {
-      if (err) {
-        console.log(err);
-      } else {
-        function onlyUnique(value, index, self) {
-          return self.indexOf(value) === index;
-        }
-        const cap = result.map((a) => a.TR_PROT_DESC_CAPI);
-        const cap1 = cap.filter(onlyUnique);
-
-        res.render("protocolos/protocolo", {
-          IDT: result[0].TR_TAREA_ID,
-          TR_GERENCIA: result[0].TR_GERENCIA,
-          TR_AREA: result[0].TR_AREA,
-          TR_SECTOR: result[0].TR_SECTOR,
-          FECHA: result[0].FECHA,
-          TAREATIPO: result[0].TR_PROT_TAREATIPO,
-          TR_PROT_DESC_TAREATIPO: result[0].TR_PROT_DESC_TAREATIPO,
-          TR_EQUIPO_COD: result[0].TR_EQUIPO_COD,
-          TR_PROT_ID: result[0].TR_PROT_ID,
-          TR_PROT_DESC_PROT: result[0].TR_PROT_DESC_PROT,
-          TR_ESTADO: result[0].TR_ESTADO,
-          cap1: cap1,
-          prot: result,
-          imagenes: imagenes,
-        });
-        
-
-      }
-    }
-  );
-  }
-);
-
-router.get("/protocolod/:IDT", isLoggedIn, authRole(['Cli_D']), async (req, res) => {
-  const { IDT } = req.params;
-  const { Id_Cliente } = req.user;
-  const { Login } = req.user;
-
-  const headers = { "User-Agent": "node-fetch" };
-
-  const response = await fetch(
-    "https://sapma.sercoing.cl/svc/ver_tarea.py?login=" +
-      Login +
-      "&idCliente=" +
-      Id_Cliente +
-      "&tarea=" +
-      IDT,
-    { headers }
-  )
-    .then((res) => res.json())
-    .then((data) => {
-      return data;
-    });
-  const imagen = Object.values(response);
-  const imagenes = imagen[2];
-
-  const dir = "src/images/";
-
-  imagenes.forEach(function(url) {
-    var filename = dir + url.split("/").pop();
-    request.head(url, function(err, res, body){
-      request(url).pipe(fs.createWriteStream(filename));
-    });
-  });
-
-
-  await pool.query(
-    "SELECT\n" +
-    "        Tareas.Id AS TR_TAREA_ID,\n" +
-    "        date_format(Tareas.Fecha, '%d-%m-%Y') AS FECHA,\n" +
-    "        Protocolos.Id AS 'TR_PROT_ID',\n" +
-    "        	TipoProtocolo.Abreviacion AS 'TR_PROT_TAREATIPO',\n" +
-    "        	UPPER ( TipoProtocolo.Descripcion ) AS 'TR_PROT_DESC_TAREATIPO',\n" +
-    "        	Equipos.Codigo AS 'TR_EQUIPO_COD',\n" +
-    "        	Protocolos.Descripcion AS 'TR_PROT_DESC_PROT',\n" +
-    "        	Protocolo_Capitulo.Capitulo AS 'TR_PROT_CAPIT_ID',\n" +
-    "        	UPPER( Protocolo_Capitulo.Descripcion ) AS 'TR_PROT_DESC_CAPI',\n" +
-    "        	Protocolo_Capitulo.Es_Varios AS 'TR_PROT_ESVARIOS',\n" +
-    "        	Protocolo_Capturas.Correlativo AS 'TR_PROT_CAPTURA_ID',\n" +
-    "        	Protocolo_Capturas.Descripcion AS 'TR_PROT_CAPTURA',\n" +
-    "        	TipoRespuesta.Id AS 'TR_PROT_TRESP_ID',\n" +
-    "        	TipoRespuesta.Descripcion AS 'TR_PROT_TRESP_TIPO',\n" +
-    "        	Estados.Descripcion AS 'TR_ESTADO',\n" +
-    "					CONVERT(CAST(CONVERT(IF(Tarea_Respuesta.Respuesta = 'SC','No aplica',IF(Tarea_Respuesta.Respuesta = 'SSR','Sistema sin revisar',IF\n" +
-    "        	(Tarea_Respuesta.Respuesta = 'SOP','Sistema operativo',IF(Tarea_Respuesta.Respuesta = 'SOCO','Sist. operativo con obs.',\n" +
-    "        	IF(Tarea_Respuesta.Respuesta = 'SFS','Sist. fuera de serv.',IF( Tarea_Respuesta.Respuesta = 'SNO', 'Sist. no operativo', Tarea_Respuesta.Respuesta )))))) USING latin1) AS BINARY) USING UTF8)\n" +
-    "        	 AS 'TR_RESPUESTA',\n" +
-    "        	Usuarios.Descripcion AS 'TR_TECNICO',\n" +
-    "        	UPPER( TE.Descripcion ) AS 'TR_TIPO_EQUIPO',\n" +
-    "        IF\n" +
-    "        	( TipoContingente.Id > 0, 'SI', 'NO' ) AS 'TR_CONTINGENTE_YN',\n" +
-    "        	TipoContingente.Id AS 'TR_CONTINGENTE_ID',\n" +
-    "        	TipoContingente.Descripcion AS 'TR_CONTINGENTE_DESC',\n" +
-    "       IF\n" +
-    "        	( Tareas_Motivos.Motivo IS NULL, 'NO', 'SI' ) AS 'TR_INCIDENCIA_YN',\n" +
-    "        	Tareas_Motivos.Motivo AS 'TR_INCIDENCIA',\n" +
-    "        	EQ.SecDESC AS 'TR_SECTOR',\n" +
-    "        	EQ.AreaDESC AS 'TR_AREA',\n" +
-    "        	EQ.GerDESC AS 'TR_GERENCIA' \n" +
-    "        FROM\n" +
-    "        	Protocolos\n" +
-    "        	INNER JOIN Clientes ON Protocolos.Id_Cliente = Clientes.Id\n" +
-    "        	INNER JOIN Protocolo_Capitulo ON Protocolos.Id = Protocolo_Capitulo.Id_Protocolo\n" +
-    "        INNER JOIN TipoProtocolo ON Protocolos.Id_TipoProtocolo = TipoProtocolo.Id\n" +
-    "        	INNER JOIN Protocolo_Capturas ON Protocolos.Id = Protocolo_Capturas.Id_Protocolo \n" +
-    "        	AND Protocolo_Capitulo.Capitulo = Protocolo_Capturas.Capitulo\n" +
-    "        	INNER JOIN TipoRespuesta ON Protocolo_Capturas.Id_TipoRespuesta = TipoRespuesta.Id\n" +
-    "        	INNER JOIN Tareas ON Protocolos.Id = Tareas.Id_Protocolo\n" +
-    "        	INNER JOIN Tarea_Respuesta ON Tareas.Id = Tarea_Respuesta.Id_Tarea \n" +
-    "        	AND Protocolo_Capitulo.Capitulo = Tarea_Respuesta.Capitulo \n" +
-    "        	AND Protocolo_Capturas.Correlativo = Tarea_Respuesta.Correlativo\n" +
-    "        	INNER JOIN Estados ON Tareas.Id_Estado = Estados.Id\n" +
-    "        	INNER JOIN Equipos ON Tareas.Id_Equipo = Equipos.Id\n" +
-    "        	INNER JOIN Usuarios ON Tareas.Id_Tecnico = Usuarios.Id\n" +
-    "        	LEFT JOIN TipoContingente ON Tareas.Contingente = TipoContingente.Id\n" +
-    "       	LEFT JOIN Tareas_Motivos ON Tareas.Id = Tareas_Motivos.Id_Tarea\n" +
-    "      	INNER JOIN TipoEquipo TE ON TE.Id = Equipos.Id_Tipo\n" +
-    "        	INNER JOIN Usuarios U ON U.Id = Tareas.Id_Tecnico\n" +
-    "        	INNER JOIN (\n" +
-    "        	SELECT\n" +
-    "        		E.Id 'EqID',\n" +
-    "        		S.Descripcion 'SecDESC',\n" +
-    "        	A.Descripcion 'AreaDESC',\n" +
-    "       		G.Descripcion 'GerDESC',\n" +
-    "        		C.Descripcion 'CteDESC' \n" +
-    "       	FROM\n" +
-    "        		Equipos E\n" +
-    "        		INNER JOIN Sectores S ON E.Id_Sector = S.Id\n" +
-    "        		INNER JOIN Areas A ON S.Id_Area = A.Id\n" +
-    "        		INNER JOIN Gerencias G ON A.Id_Gerencia = G.Id\n" +
-    "        		INNER JOIN Clientes C ON G.Id_Cliente = C.Id \n" +
-    "        	) AS EQ ON Tareas.Id_Equipo = EQ.EqID \n" +
-    "        WHERE \n" +
-    "   Tareas.Id =" +IDT +" ORDER BY TR_PROT_DESC_CAPI  ASC, FIELD(TR_PROT_CAPTURA,'Observaciones PV', 'Observación PV', 'Observaciones PV SA', 'Observacies PV SSA', 'Observaciones PV EP'),	TR_PROT_CAPTURA ASC",
-    (err, result) => {
-      if (err) {
-        console.log(err);
-      } else {
-        function onlyUnique(value, index, self) {
-          return self.indexOf(value) === index;
-        }
-        const cap = result.map((a) => a.TR_PROT_DESC_CAPI);
-        const cap1 = cap.filter(onlyUnique);
-
-        res.render("protocolos/protocolo", {
-          IDT: result[0].TR_TAREA_ID,
-          TR_GERENCIA: result[0].TR_GERENCIA,
-          TR_AREA: result[0].TR_AREA,
-          TR_SECTOR: result[0].TR_SECTOR,
-          FECHA: result[0].FECHA,
-          TAREATIPO: result[0].TR_PROT_TAREATIPO,
-          TR_PROT_DESC_TAREATIPO: result[0].TR_PROT_DESC_TAREATIPO,
-          TR_EQUIPO_COD: result[0].TR_EQUIPO_COD,
-          TR_PROT_ID: result[0].TR_PROT_ID,
-          TR_PROT_DESC_PROT: result[0].TR_PROT_DESC_PROT,
-          TR_ESTADO: result[0].TR_ESTADO,
-          cap1: cap1,
-          prot: result,
-          imagenes: imagenes,
-        });
-        
-
-      }
-    }
-  );
-}
-);
-
-router.get("/protocoloe/:IDT", isLoggedIn, authRole(['Cli_E']), async (req, res) => {
-  const { IDT } = req.params;
-  const { Id_Cliente } = req.user;
-  const { Login } = req.user;
-
-  const headers = { "User-Agent": "node-fetch" };
-
-  const response = await fetch(
-    "https://sapma.sercoing.cl/svc/ver_tarea.py?login=" +
-      Login +
-      "&idCliente=" +
-      Id_Cliente +
-      "&tarea=" +
-      IDT,
-    { headers }
-  )
-    .then((res) => res.json())
-    .then((data) => {
-      return data;
-    });
-  const imagen = Object.values(response);
-  const imagenes = imagen[2];
-
-  const dir = "src/images/";
-
-  imagenes.forEach(function(url) {
-    var filename = dir + url.split("/").pop();
-    request.head(url, function(err, res, body){
-      request(url).pipe(fs.createWriteStream(filename));
-    });
-  });
-
-
-  await pool.query(
-    "SELECT\n" +
-    "        Tareas.Id AS TR_TAREA_ID,\n" +
-    "        date_format(Tareas.Fecha, '%d-%m-%Y') AS FECHA,\n" +
-    "        Protocolos.Id AS 'TR_PROT_ID',\n" +
-    "        	TipoProtocolo.Abreviacion AS 'TR_PROT_TAREATIPO',\n" +
-    "        	UPPER ( TipoProtocolo.Descripcion ) AS 'TR_PROT_DESC_TAREATIPO',\n" +
-    "        	Equipos.Codigo AS 'TR_EQUIPO_COD',\n" +
-    "        	Protocolos.Descripcion AS 'TR_PROT_DESC_PROT',\n" +
-    "        	Protocolo_Capitulo.Capitulo AS 'TR_PROT_CAPIT_ID',\n" +
-    "        	UPPER( Protocolo_Capitulo.Descripcion ) AS 'TR_PROT_DESC_CAPI',\n" +
-    "        	Protocolo_Capitulo.Es_Varios AS 'TR_PROT_ESVARIOS',\n" +
-    "        	Protocolo_Capturas.Correlativo AS 'TR_PROT_CAPTURA_ID',\n" +
-    "        	Protocolo_Capturas.Descripcion AS 'TR_PROT_CAPTURA',\n" +
-    "        	TipoRespuesta.Id AS 'TR_PROT_TRESP_ID',\n" +
-    "        	TipoRespuesta.Descripcion AS 'TR_PROT_TRESP_TIPO',\n" +
-    "        	Estados.Descripcion AS 'TR_ESTADO',\n" +
-    "					CONVERT(CAST(CONVERT(IF(Tarea_Respuesta.Respuesta = 'SC','No aplica',IF(Tarea_Respuesta.Respuesta = 'SSR','Sistema sin revisar',IF\n" +
-    "        	(Tarea_Respuesta.Respuesta = 'SOP','Sistema operativo',IF(Tarea_Respuesta.Respuesta = 'SOCO','Sist. operativo con obs.',\n" +
-    "        	IF(Tarea_Respuesta.Respuesta = 'SFS','Sist. fuera de serv.',IF( Tarea_Respuesta.Respuesta = 'SNO', 'Sist. no operativo', Tarea_Respuesta.Respuesta )))))) USING latin1) AS BINARY) USING UTF8)\n" +
-    "        	 AS 'TR_RESPUESTA',\n" +
-    "        	Usuarios.Descripcion AS 'TR_TECNICO',\n" +
-    "        	UPPER( TE.Descripcion ) AS 'TR_TIPO_EQUIPO',\n" +
-    "        IF\n" +
-    "        	( TipoContingente.Id > 0, 'SI', 'NO' ) AS 'TR_CONTINGENTE_YN',\n" +
-    "        	TipoContingente.Id AS 'TR_CONTINGENTE_ID',\n" +
-    "        	TipoContingente.Descripcion AS 'TR_CONTINGENTE_DESC',\n" +
-    "       IF\n" +
-    "        	( Tareas_Motivos.Motivo IS NULL, 'NO', 'SI' ) AS 'TR_INCIDENCIA_YN',\n" +
-    "        	Tareas_Motivos.Motivo AS 'TR_INCIDENCIA',\n" +
-    "        	EQ.SecDESC AS 'TR_SECTOR',\n" +
-    "        	EQ.AreaDESC AS 'TR_AREA',\n" +
-    "        	EQ.GerDESC AS 'TR_GERENCIA' \n" +
-    "        FROM\n" +
-    "        	Protocolos\n" +
-    "        	INNER JOIN Clientes ON Protocolos.Id_Cliente = Clientes.Id\n" +
-    "        	INNER JOIN Protocolo_Capitulo ON Protocolos.Id = Protocolo_Capitulo.Id_Protocolo\n" +
-    "        INNER JOIN TipoProtocolo ON Protocolos.Id_TipoProtocolo = TipoProtocolo.Id\n" +
-    "        	INNER JOIN Protocolo_Capturas ON Protocolos.Id = Protocolo_Capturas.Id_Protocolo \n" +
-    "        	AND Protocolo_Capitulo.Capitulo = Protocolo_Capturas.Capitulo\n" +
-    "        	INNER JOIN TipoRespuesta ON Protocolo_Capturas.Id_TipoRespuesta = TipoRespuesta.Id\n" +
-    "        	INNER JOIN Tareas ON Protocolos.Id = Tareas.Id_Protocolo\n" +
-    "        	INNER JOIN Tarea_Respuesta ON Tareas.Id = Tarea_Respuesta.Id_Tarea \n" +
-    "        	AND Protocolo_Capitulo.Capitulo = Tarea_Respuesta.Capitulo \n" +
-    "        	AND Protocolo_Capturas.Correlativo = Tarea_Respuesta.Correlativo\n" +
-    "        	INNER JOIN Estados ON Tareas.Id_Estado = Estados.Id\n" +
-    "        	INNER JOIN Equipos ON Tareas.Id_Equipo = Equipos.Id\n" +
-    "        	INNER JOIN Usuarios ON Tareas.Id_Tecnico = Usuarios.Id\n" +
-    "        	LEFT JOIN TipoContingente ON Tareas.Contingente = TipoContingente.Id\n" +
-    "       	LEFT JOIN Tareas_Motivos ON Tareas.Id = Tareas_Motivos.Id_Tarea\n" +
-    "      	INNER JOIN TipoEquipo TE ON TE.Id = Equipos.Id_Tipo\n" +
-    "        	INNER JOIN Usuarios U ON U.Id = Tareas.Id_Tecnico\n" +
-    "        	INNER JOIN (\n" +
-    "        	SELECT\n" +
-    "        		E.Id 'EqID',\n" +
-    "        		S.Descripcion 'SecDESC',\n" +
-    "        	A.Descripcion 'AreaDESC',\n" +
-    "       		G.Descripcion 'GerDESC',\n" +
-    "        		C.Descripcion 'CteDESC' \n" +
-    "       	FROM\n" +
-    "        		Equipos E\n" +
-    "        		INNER JOIN Sectores S ON E.Id_Sector = S.Id\n" +
-    "        		INNER JOIN Areas A ON S.Id_Area = A.Id\n" +
-    "        		INNER JOIN Gerencias G ON A.Id_Gerencia = G.Id\n" +
-    "        		INNER JOIN Clientes C ON G.Id_Cliente = C.Id \n" +
-    "        	) AS EQ ON Tareas.Id_Equipo = EQ.EqID \n" +
-    "        WHERE \n" +
-    "   Tareas.Id =" +IDT +" ORDER BY TR_PROT_DESC_CAPI  ASC, FIELD(TR_PROT_CAPTURA,'Observaciones PV', 'Observación PV', 'Observaciones PV SA', 'Observacies PV SSA', 'Observaciones PV EP'),	TR_PROT_CAPTURA ASC",
-    (err, result) => {
-      if (err) {
-        console.log(err);
-      } else {
-        function onlyUnique(value, index, self) {
-          return self.indexOf(value) === index;
-        }
-        const cap = result.map((a) => a.TR_PROT_DESC_CAPI);
-        const cap1 = cap.filter(onlyUnique);
-
-        res.render("protocolos/protocolo", {
-          IDT: result[0].TR_TAREA_ID,
-          TR_GERENCIA: result[0].TR_GERENCIA,
-          TR_AREA: result[0].TR_AREA,
-          TR_SECTOR: result[0].TR_SECTOR,
-          FECHA: result[0].FECHA,
-          TAREATIPO: result[0].TR_PROT_TAREATIPO,
-          TR_PROT_DESC_TAREATIPO: result[0].TR_PROT_DESC_TAREATIPO,
-          TR_EQUIPO_COD: result[0].TR_EQUIPO_COD,
-          TR_PROT_ID: result[0].TR_PROT_ID,
-          TR_PROT_DESC_PROT: result[0].TR_PROT_DESC_PROT,
-          TR_ESTADO: result[0].TR_ESTADO,
-          cap1: cap1,
-          prot: result,
-          imagenes: imagenes,
-        });
-        
-
-      }
-    }
-  );
-}
-);
-
-
 
 router.post("/protocolo/validar", isLoggedIn, async (req, res) => {
     const usuario = req.user.usuario;
@@ -1098,6 +441,7 @@ router.post("/protocolo/validar", isLoggedIn, async (req, res) => {
               },
             ],
           });
+          
           await pool.query("INSERT INTO Validacion_Tareas (Val_tarea_id, Val_id_estado, Val_id_estado_old, Val_respsapma, Val_fechaval_inf, Val_rechazo) Values ?",
             [arreglo5],
             async (err, result) => {
@@ -1296,1224 +640,2412 @@ router.post("/protocolo/validar", isLoggedIn, async (req, res) => {
     });
 });
 
+router.get("/pdf/:IDT/:CODIGO", isLoggedIn, authRole(['Cli_C', 'Cli_B', 'Cli_A', 'Cli_D', 'Cli_E', 'Plan', 'Admincli']), async (req, res) => {
 
+  try {
 
-router.get("/pdf/:IDT/:CODIGO", isLoggedIn, async (req, res) => {
-  const { IDT } = req.params;
-  const { CODIGO } = req.params;
-  const ruta =  path.resolve(__dirname ,"../pdf/" + IDT + "_"+CODIGO+".pdf");
+    const { IDT, CODIGO } = req.params;
 
-  await pool.query(
-    "SELECT\n" +
-    "        Tareas.Id AS TR_TAREA_ID,\n" +
-    "        date_format(Tareas.Fecha, '%d-%m-%Y') AS FECHA,\n" +
-    "        Protocolos.Id AS 'TR_PROT_ID',\n" +
-    "        	TipoProtocolo.Abreviacion AS 'TR_PROT_TAREATIPO',\n" +
-    "        	UPPER ( TipoProtocolo.Descripcion ) AS 'TR_PROT_DESC_TAREATIPO',\n" +
-    "        	Equipos.Codigo AS 'TR_EQUIPO_COD',\n" +
-    "        	Protocolos.Descripcion AS 'TR_PROT_DESC_PROT',\n" +
-    "        	Protocolo_Capitulo.Capitulo AS 'TR_PROT_CAPIT_ID',\n" +
-    "        	UPPER( Protocolo_Capitulo.Descripcion ) AS 'TR_PROT_DESC_CAPI',\n" +
-    "        	Protocolo_Capitulo.Es_Varios AS 'TR_PROT_ESVARIOS',\n" +
-    "        	Protocolo_Capturas.Correlativo AS 'TR_PROT_CAPTURA_ID',\n" +
-    "        	Protocolo_Capturas.Descripcion AS 'TR_PROT_CAPTURA',\n" +
-    "        	TipoRespuesta.Id AS 'TR_PROT_TRESP_ID',\n" +
-    "        	TipoRespuesta.Descripcion AS 'TR_PROT_TRESP_TIPO',\n" +
-    "        	Estados.Descripcion AS 'TR_ESTADO',\n" +
-    "					CONVERT(CAST(CONVERT(IF(Tarea_Respuesta.Respuesta = 'SC','No aplica',IF(Tarea_Respuesta.Respuesta = 'SSR','Sistema sin revisar.',IF\n" +
-    "        	(Tarea_Respuesta.Respuesta = 'SOP','Sistema operativo',IF(Tarea_Respuesta.Respuesta = 'SOCO','Sist. operativo con obs.',\n" +
-    "        	IF(Tarea_Respuesta.Respuesta = 'SFS','Sist. fuera de serv.',IF( Tarea_Respuesta.Respuesta = 'SNO', 'Sist. no operativo', Tarea_Respuesta.Respuesta )))))) USING latin1) AS BINARY) USING UTF8)\n" +
-    "        	 AS 'TR_RESPUESTA',\n" +
-    "        	Usuarios.Descripcion AS 'TR_TECNICO',\n" +
-    "        	UPPER( TE.Descripcion ) AS 'TR_TIPO_EQUIPO',\n" +
-    "        IF\n" +
-    "        	( TipoContingente.Id > 0, 'SI', 'NO' ) AS 'TR_CONTINGENTE_YN',\n" +
-    "        	TipoContingente.Id AS 'TR_CONTINGENTE_ID',\n" +
-    "        	TipoContingente.Descripcion AS 'TR_CONTINGENTE_DESC',\n" +
-    "       IF\n" +
-    "        	( Tareas_Motivos.Motivo IS NULL, 'NO', 'SI' ) AS 'TR_INCIDENCIA_YN',\n" +
-    "        	Tareas_Motivos.Motivo AS 'TR_INCIDENCIA',\n" +
-    "        	EQ.SecDESC AS 'TR_SECTOR',\n" +
-    "        	EQ.AreaDESC AS 'TR_AREA',\n" +
-    "        	EQ.GerDESC AS 'TR_GERENCIA' \n" +
-    "        FROM\n" +
-    "        	Protocolos\n" +
-    "        	INNER JOIN Clientes ON Protocolos.Id_Cliente = Clientes.Id\n" +
-    "        	INNER JOIN Protocolo_Capitulo ON Protocolos.Id = Protocolo_Capitulo.Id_Protocolo\n" +
-    "        INNER JOIN TipoProtocolo ON Protocolos.Id_TipoProtocolo = TipoProtocolo.Id\n" +
-    "        	INNER JOIN Protocolo_Capturas ON Protocolos.Id = Protocolo_Capturas.Id_Protocolo \n" +
-    "        	AND Protocolo_Capitulo.Capitulo = Protocolo_Capturas.Capitulo\n" +
-    "        	INNER JOIN TipoRespuesta ON Protocolo_Capturas.Id_TipoRespuesta = TipoRespuesta.Id\n" +
-    "        	INNER JOIN Tareas ON Protocolos.Id = Tareas.Id_Protocolo\n" +
-    "        	INNER JOIN Tarea_Respuesta ON Tareas.Id = Tarea_Respuesta.Id_Tarea \n" +
-    "        	AND Protocolo_Capitulo.Capitulo = Tarea_Respuesta.Capitulo \n" +
-    "        	AND Protocolo_Capturas.Correlativo = Tarea_Respuesta.Correlativo\n" +
-    "        	INNER JOIN Estados ON Tareas.Id_Estado = Estados.Id\n" +
-    "        	INNER JOIN Equipos ON Tareas.Id_Equipo = Equipos.Id\n" +
-    "        	INNER JOIN Usuarios ON Tareas.Id_Tecnico = Usuarios.Id\n" +
-    "        	LEFT JOIN TipoContingente ON Tareas.Contingente = TipoContingente.Id\n" +
-    "       	LEFT JOIN Tareas_Motivos ON Tareas.Id = Tareas_Motivos.Id_Tarea\n" +
-    "      	INNER JOIN TipoEquipo TE ON TE.Id = Equipos.Id_Tipo\n" +
-    "        	INNER JOIN Usuarios U ON U.Id = Tareas.Id_Tecnico\n" +
-    "        	INNER JOIN (\n" +
-    "        	SELECT\n" +
-    "        		E.Id 'EqID',\n" +
-    "        		S.Descripcion 'SecDESC',\n" +
-    "        	A.Descripcion 'AreaDESC',\n" +
-    "       		G.Descripcion 'GerDESC',\n" +
-    "        		C.Descripcion 'CteDESC' \n" +
-    "       	FROM\n" +
-    "        		Equipos E\n" +
-    "        		INNER JOIN Sectores S ON E.Id_Sector = S.Id\n" +
-    "        		INNER JOIN Areas A ON S.Id_Area = A.Id\n" +
-    "        		INNER JOIN Gerencias G ON A.Id_Gerencia = G.Id\n" +
-    "        		INNER JOIN Clientes C ON G.Id_Cliente = C.Id \n" +
-    "        	) AS EQ ON Tareas.Id_Equipo = EQ.EqID \n" +
-    "        WHERE \n" +
-    "   Tareas.Id =" +IDT +" ORDER BY TR_PROT_DESC_CAPI  ASC, FIELD(TR_PROT_CAPTURA,'Observaciones PV', 'Observación PV', 'Observaciones PV SA', 'Observacies PV SSA', 'Observaciones PV EP'),	TR_PROT_CAPTURA ASC",
-    async (err, result) => {
-      if (err) {
-        console.log(err);
-      } else {
-        const estado = result[0].TR_ESTADO;
-        const filePathName = path.resolve(__dirname, "../views/protocolos/pdf.hbs"); 
-        const html1 = fs.readFileSync(filePathName, "utf8");
-        const ruta_imagen = path.resolve(__dirname, "../public/img/imagen1.png");                   
-        const img = "file:///" + ruta_imagen;
-        const options = {
-          format: "letter",
-          orientation: "portrait",
-          border: "5mm",
-          paginationOffset: 1,       // Override the initial pagination number
-            "footer": {
-              "height": "5mm",
-              "contents": {
-                default: '<div style="font-family: Verdana, Geneva, Tahoma, sans-serif; font-size: 8px"><center>SAPMA-Sercoing | Tarea Nº:  '+IDT+' | Estado: '+estado+' | Página <span style="color: #444;">{{page}}</span>/<span>{{pages}}</span></center></div>', // fallback value
-                
-              }
-            },
-          localUrlAccess: true,
-          base: ('https://sapmadand.sercoing.cl:3000', 'https://localhost:3000')
-        };
+    const info_prot = await pool.query("SELECT\n" +
+      " Tareas.Id AS TR_TAREA_ID,\n" +
+      " date_format(Tareas.Fecha, '%d-%m-%Y') AS FECHA,\n" +
+      " Protocolos.Id AS 'TR_PROT_ID',\n" +
+      " TipoProtocolo.Abreviacion AS 'TR_PROT_TAREATIPO',\n" +
+      " UPPER ( TipoProtocolo.Descripcion ) AS 'TR_PROT_DESC_TAREATIPO',\n" +
+      " Equipos.Codigo AS 'TR_EQUIPO_COD',\n" +
+      " Protocolos.Descripcion AS 'TR_PROT_DESC_PROT',\n" +
+      " Protocolo_Capitulo.Capitulo AS 'TR_PROT_CAPIT_ID',\n" +
+      " UPPER( Protocolo_Capitulo.Descripcion ) AS 'TR_PROT_DESC_CAPI',\n" +
+      " Protocolo_Capitulo.Es_Varios AS 'TR_PROT_ESVARIOS',\n" +
+      " Protocolo_Capturas.Correlativo AS 'TR_PROT_CAPTURA_ID',\n" +
+      " Protocolo_Capturas.Descripcion AS 'TR_PROT_CAPTURA',\n" +
+      " TipoRespuesta.Id AS 'TR_PROT_TRESP_ID',\n" +
+      " TipoRespuesta.Descripcion AS 'TR_PROT_TRESP_TIPO',\n" +
+      " Estados.Descripcion AS 'TR_ESTADO',\n" +
+      " CONVERT ( CAST( CONVERT ( IF ( Tarea_Respuesta.Respuesta = 'SC', 'No aplica',\n" +
+      " IF ( Tarea_Respuesta.Respuesta = 'SSR', 'Sistema sin revisar.', IF(Tarea_Respuesta.Respuesta = 'SOP', 'Sistema operativo',\n" +
+      " IF ( Tarea_Respuesta.Respuesta = 'SOCO', 'Sist. operativo con obs.', IF(Tarea_Respuesta.Respuesta = 'SFS', 'Sist. fuera de serv.',\n" +
+      " IF ( Tarea_Respuesta.Respuesta = 'SNO', 'Sist. no operativo', Tarea_Respuesta.Respuesta )))))) USING UTF8 ) AS BINARY ) USING UTF8 ) AS 'TR_RESPUESTA',\n" +
+      " Usuarios.Descripcion AS 'TR_TECNICO',\n" +
+      " UPPER( TE.Descripcion ) AS 'TR_TIPO_EQUIPO',\n" +
+      " IF ( TipoContingente.Id > 0, 'SI', 'NO' ) AS 'TR_CONTINGENTE_YN',\n" +
+      " TipoContingente.Id AS 'TR_CONTINGENTE_ID',\n" +
+      " TipoContingente.Descripcion AS 'TR_CONTINGENTE_DESC',\n" +
+      " IF( Tareas_Motivos.Motivo IS NULL, 'NO', 'SI' ) AS 'TR_INCIDENCIA_YN',\n" +
+      " Tareas_Motivos.Motivo AS 'TR_INCIDENCIA',\n" +
+      " EQ.SecDESC AS 'TR_SECTOR',\n" +
+      " EQ.AreaDESC AS 'TR_AREA',\n" +
+      " EQ.GerDESC AS 'TR_GERENCIA' \n" +
+      " FROM\n" +
+      " Protocolos\n" +
+      " INNER JOIN Clientes ON Protocolos.Id_Cliente = Clientes.Id\n" +
+      " INNER JOIN Protocolo_Capitulo ON Protocolos.Id = Protocolo_Capitulo.Id_Protocolo\n" +
+      " INNER JOIN TipoProtocolo ON Protocolos.Id_TipoProtocolo = TipoProtocolo.Id\n" +
+      " INNER JOIN Protocolo_Capturas ON Protocolos.Id = Protocolo_Capturas.Id_Protocolo \n" +
+      " AND Protocolo_Capitulo.Capitulo = Protocolo_Capturas.Capitulo\n" +
+      " INNER JOIN TipoRespuesta ON Protocolo_Capturas.Id_TipoRespuesta = TipoRespuesta.Id\n" +
+      " INNER JOIN Tareas ON Protocolos.Id = Tareas.Id_Protocolo\n" +
+      " INNER JOIN Tarea_Respuesta ON Tareas.Id = Tarea_Respuesta.Id_Tarea \n" +
+      " AND Protocolo_Capitulo.Capitulo = Tarea_Respuesta.Capitulo \n" +
+      " AND Protocolo_Capturas.Correlativo = Tarea_Respuesta.Correlativo\n" +
+      " INNER JOIN Estados ON Tareas.Id_Estado = Estados.Id\n" +
+      " INNER JOIN Equipos ON Tareas.Id_Equipo = Equipos.Id\n" +
+      " INNER JOIN Usuarios ON Tareas.Id_Tecnico = Usuarios.Id\n" +
+      " LEFT JOIN TipoContingente ON Tareas.Contingente = TipoContingente.Id\n" +
+      " LEFT JOIN Tareas_Motivos ON Tareas.Id = Tareas_Motivos.Id_Tarea\n" +
+      " INNER JOIN TipoEquipo TE ON TE.Id = Equipos.Id_Tipo\n" +
+      " INNER JOIN Usuarios U ON U.Id = Tareas.Id_Tecnico\n" +
+      " INNER JOIN (\n" +
+      " SELECT\n" +
+      " E.Id 'EqID',\n" +
+      " S.Descripcion 'SecDESC',\n" +
+      " A.Descripcion 'AreaDESC',\n" +
+      " G.Descripcion 'GerDESC',\n" +
+      " C.Descripcion 'CteDESC' \n" +
+      " FROM\n" +
+      " Equipos E\n" +
+      " INNER JOIN Sectores S ON E.Id_Sector = S.Id\n" +
+      " INNER JOIN Areas A ON S.Id_Area = A.Id\n" +
+      " INNER JOIN Gerencias G ON A.Id_Gerencia = G.Id\n" +
+      " INNER JOIN Clientes C ON G.Id_Cliente = C.Id \n" +
+      " ) AS EQ ON Tareas.Id_Equipo = EQ.EqID \n" +
+      " WHERE \n" +
+      " Tareas.Id = "+IDT+" \n" +
+      " ORDER BY TR_PROT_DESC_CAPI  ASC, \n" +
+      " FIELD(TR_PROT_CAPTURA,'Observaciones PV', 'Observación PV', 'Observaciones PV SA', 'Observaciones PV SSA', 'Observaciones PV EP'),	TR_PROT_CAPTURA ASC;"
+    );
 
-        const imagendebd = await pool.query("SELECT * FROM Adjuntos WHERE Id_Tarea = ?", [IDT]);
-        const imagendebd1 = Object.values(imagendebd);
-
-        if (imagendebd1.length > 0) {
-          const imagendebd2 = imagendebd1[0].Archivos.split('|');
-          const ruta15 = path.join(__dirname, "../images/");
-          console.log(ruta15);
-          const imagenes =  imagendebd2.map((img) => {
-            return "File:///"+ruta15  +IDT+"_"+img;
-          });
-  
-          const document = {
-            type: "file", // 'file' or 'buffer'
-            template: html1,
-            context: {
-              IDT: result[0].TR_TAREA_ID,
-              TR_GERENCIA: result[0].TR_GERENCIA,
-              TR_AREA: result[0].TR_AREA,
-              TR_SECTOR: result[0].TR_SECTOR,
-              FECHA: result[0].FECHA,
-              TAREATIPO: result[0].TR_PROT_TAREATIPO,
-              TR_PROT_DESC_TAREATIPO: result[0].TR_PROT_DESC_TAREATIPO,
-              TR_EQUIPO_COD: result[0].TR_EQUIPO_COD,
-              TR_PROT_ID: result[0].TR_PROT_ID,
-              TR_PROT_DESC_PROT: result[0].TR_PROT_DESC_PROT,
-              TR_ESTADO: result[0].TR_ESTADO,
-              prot: result,
-              img: img,
-              imagenes:imagenes
-            },
-            path: "src/pdf/" + IDT + "_"+CODIGO+".pdf", // it is not required if type is buffer
-          };
-  
-          pdf.create(document, options)
-            .then((res) => {
-              console.log("PDF creado");
-  
-              // console.log(res);
-              // const file = Object.values(res);
-              // const file1 = file[0];
-              // fs.readFile(file1, function (err, res, file) {
-              //   res.contentType("application/pdf");
-              //   res.send(file1);
-              // });
-            })
-            .catch((error) => {
-              console.error(error);
-            }).then(() => {
-              res.download(ruta,  IDT+"_"+CODIGO+".pdf",   function(err) {
-                if (err) {
-                  console.log(err);
-                }else{
-                  console.log("descargado");
-                }
-            });
-          });
-        }else{
- 
-          const document = {
-            type: "file", // 'file' or 'buffer'
-            template: html1,
-            context: {
-              IDT: result[0].TR_TAREA_ID,
-              TR_GERENCIA: result[0].TR_GERENCIA,
-              TR_AREA: result[0].TR_AREA,
-              TR_SECTOR: result[0].TR_SECTOR,
-              FECHA: result[0].FECHA,
-              TAREATIPO: result[0].TR_PROT_TAREATIPO,
-              TR_PROT_DESC_TAREATIPO: result[0].TR_PROT_DESC_TAREATIPO,
-              TR_EQUIPO_COD: result[0].TR_EQUIPO_COD,
-              TR_PROT_ID: result[0].TR_PROT_ID,
-              TR_PROT_DESC_PROT: result[0].TR_PROT_DESC_PROT,
-              TR_ESTADO: result[0].TR_ESTADO,
-              prot: result,
-              img: img
-            },
-            path: "src/pdf/" + IDT +"_"+CODIGO+".pdf", // it is not required if type is buffer
-          };
-  
-          pdf.create(document, options)
-            .then((res) => {
-              console.log("PDF creado");
-  
-              // console.log(res);
-              // const file = Object.values(res);
-              // const file1 = file[0];
-              // fs.readFile(file1, function (err, res, file) {
-              //   res.contentType("application/pdf");
-              //   res.send(file1);
-              // });
-            })
-            .catch((error) => {
-              console.error(error);
-            }).then(() => {
-              res.download(ruta,  IDT+"_"+CODIGO+".pdf",   function(err) {
-                if (err) {
-                  console.log(err);
-                }else{
-                  console.log("descargado");
-                }
-            });
-          });
+    const codigo = info_prot[0].TR_EQUIPO_COD;
+    const id_bat = await pool.query("SELECT eq_bat_id FROM Equipos WHERE Codigo =?", [codigo]);
+    const bat_id = id_bat[0].eq_bat_id;
+    const bat = await pool.query("SELECT * FROM Baterias_UPS WHERE bat_id =?", [bat_id]);
+    const agregarDatosBateria = (info_prot, bat) => {
+      for (let i = 0; i < info_prot.length; i++) {
+        if (bat.length > 0) {
+          info_prot[i] = { ...info_prot[i], ...bat[0] };
         }
       }
+    };
+    
+    await agregarDatosBateria(info_prot, bat);
+
+    const ruta =  path.resolve(__dirname ,"../pdf/" + IDT + "_"+CODIGO+".pdf");
+    const estado = info_prot[0].TR_ESTADO;
+    const filePathName = path.resolve(__dirname, "../views/protocolos/pdf.hbs"); 
+    const html1 = fs.readFileSync(filePathName, "utf8");
+    const ruta_imagen = path.resolve(__dirname, "../public/img/imagen1.png");                   
+    const imageBuffer = fs.readFileSync(ruta_imagen);
+    const base64Image = Buffer.from(imageBuffer).toString('base64');
+    const img = 'data:image/png;base64,'+base64Image;
+
+    const options = {
+      format: 'letter',
+      printBackground: true,
+      margin: {
+        top: '30px', // Adjust margins for better visibility
+        right: '20px',
+        bottom: '30px',
+        left: '20px',
+      },
+      displayHeaderFooter: true,
+      footerTemplate: '<div style="font-family: Verdana, Geneva, Tahoma, sans-serif; font-size: 8px; margin: 0 auto;">' + // Centered text, smaller font
+      '<center>SAPMA-Sercoing | Tarea Nº: ' + IDT + ' | Estado: ' + estado + ' | Página <span class="pageNumber"></span> de <span class="totalPages"></span>' +
+      '</center></div>',
+    };
+
+    const imagendebd = await pool.query("SELECT * FROM Adjuntos WHERE Id_Tarea = ?", [IDT]);
+    const imagendebd1 = Object.values(imagendebd);
+
+    if (imagendebd1.length > 0) {
+      const imagendebd2 = imagendebd1[0].Archivos.split('|');
+      const ruta15 = path.join(__dirname, "../images/");
+
+      const imagenes = await Promise.all(imagendebd2.map(async (ruta) => {
+        const rutaCompleta = ruta15 + IDT + "_" + ruta;
+        const imagenBase64 = await leerImagenBase64(rutaCompleta);
+        return imagenBase64;
+      }));
+
+      let context = {
+        IDT: info_prot[0].TR_TAREA_ID,
+        TR_GERENCIA: info_prot[0].TR_GERENCIA,
+        TR_AREA: info_prot[0].TR_AREA,
+        TR_SECTOR: info_prot[0].TR_SECTOR,
+        FECHA: info_prot[0].FECHA,
+        TAREATIPO: info_prot[0].TR_PROT_TAREATIPO,
+        TR_PROT_DESC_TAREATIPO: info_prot[0].TR_PROT_DESC_TAREATIPO,
+        TR_EQUIPO_COD: info_prot[0].TR_EQUIPO_COD,
+        TR_PROT_ID: info_prot[0].TR_PROT_ID,
+        TR_PROT_DESC_PROT: info_prot[0].TR_PROT_DESC_PROT,
+        TR_ESTADO: info_prot[0].TR_ESTADO,
+        prot: info_prot,
+        img: img
+      }
+
+      let template = hbs.compile(html1);
+      let html2 = template(context);
+      
+      const browser = await puppeteer.launch({
+          headless: true,
+          ignoreHTTPSErrors: true,
+          args: ['--disable-image-cache']
+      });
+      const page = await browser.newPage();
+      
+      await page.setContent(html2, {
+          waitUntil: 'networkidle0'
+      });
+      
+      await page.waitForSelector('img');
+      
+      const buffer = await page.pdf(options);
+      
+      fs.writeFile("src/pdf/" + IDT + "_" + CODIGO + ".pdf", buffer, () => console.log('PDF guardado'));
+      
+      res.setHeader('Content-Disposition', `inline; filename="${fileName}"`);
+      res.setHeader('Content-Type', 'application/pdf');
+      res.send(buffer);
+
+      // const fileName = IDT + "_" + CODIGO + ".pdf";
+
+      // res.setHeader('Content-Disposition', `attachment; filename="${fileName}"`);
+      // res.setHeader('Content-Type', 'application/pdf');
+      // res.send(buffer);
+
+      await browser.close();
+
+    }else{
+
+      let context = {
+        IDT: info_prot[0].TR_TAREA_ID,
+        TR_GERENCIA: info_prot[0].TR_GERENCIA,
+        TR_AREA: info_prot[0].TR_AREA,
+        TR_SECTOR: info_prot[0].TR_SECTOR,
+        FECHA: info_prot[0].FECHA,
+        TAREATIPO: info_prot[0].TR_PROT_TAREATIPO,
+        TR_PROT_DESC_TAREATIPO: info_prot[0].TR_PROT_DESC_TAREATIPO,
+        TR_EQUIPO_COD: info_prot[0].TR_EQUIPO_COD,
+        TR_PROT_ID: info_prot[0].TR_PROT_ID,
+        TR_PROT_DESC_PROT: info_prot[0].TR_PROT_DESC_PROT,
+        TR_ESTADO: info_prot[0].TR_ESTADO,
+        prot: info_prot,
+        img: img
+      }
+
+      let template = hbs.compile(html1);
+      let html2 = template(context);
+      
+      const browser = await puppeteer.launch({
+          headless: true,
+          ignoreHTTPSErrors: true,
+          args: ['--disable-image-cache']
+      });
+      const page = await browser.newPage();
+      
+      await page.setContent(html2, {
+          waitUntil: 'networkidle0'
+      });
+      
+      await page.waitForSelector('img');
+      
+      const buffer = await page.pdf(options);
+      
+      fs.writeFile("src/pdf/" + IDT + "_" + CODIGO + ".pdf", buffer, () => console.log('PDF guardado'));
+      
+      const fileName = IDT + "_" + CODIGO + ".pdf";
+
+      res.setHeader('Content-Disposition', `inline; filename="${fileName}"`);
+      res.setHeader('Content-Type', 'application/pdf');
+      res.send(buffer);
+
+      // const fileName = IDT + "_" + CODIGO + ".pdf";
+
+      // res.setHeader('Content-Disposition', `attachment; filename="${fileName}"`);
+      // res.setHeader('Content-Type', 'application/pdf');
+      // res.send(buffer);
+      
+      await browser.close();
+      
+    }
+
+  } catch (error) {
+    console.log(error);
+  }
+
+});
+
+async function leerImagenBase64(ruta) {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = () => resolve(reader.result);
+    reader.onerror = reject;
+    reader.readAsDataURL('data:image/png;base64,'+ ruta);
   });
-
-});
-
-router.get("/pdfc/:IDT/:CODIGO", isLoggedIn, authRole(['Cli_C']), async (req, res) => {
-  const { IDT } = req.params;
-  const { CODIGO } = req.params;
-  const ruta =  path.resolve(__dirname ,"../pdf/" + IDT + "_"+CODIGO+".pdf");
-
-  await pool.query(
-    "SELECT\n" +
-    "        Tareas.Id AS TR_TAREA_ID,\n" +
-    "        date_format(Tareas.Fecha, '%d-%m-%Y') AS FECHA,\n" +
-    "        Protocolos.Id AS 'TR_PROT_ID',\n" +
-    "        	TipoProtocolo.Abreviacion AS 'TR_PROT_TAREATIPO',\n" +
-    "        	UPPER ( TipoProtocolo.Descripcion ) AS 'TR_PROT_DESC_TAREATIPO',\n" +
-    "        	Equipos.Codigo AS 'TR_EQUIPO_COD',\n" +
-    "        	Protocolos.Descripcion AS 'TR_PROT_DESC_PROT',\n" +
-    "        	Protocolo_Capitulo.Capitulo AS 'TR_PROT_CAPIT_ID',\n" +
-    "        	UPPER( Protocolo_Capitulo.Descripcion ) AS 'TR_PROT_DESC_CAPI',\n" +
-    "        	Protocolo_Capitulo.Es_Varios AS 'TR_PROT_ESVARIOS',\n" +
-    "        	Protocolo_Capturas.Correlativo AS 'TR_PROT_CAPTURA_ID',\n" +
-    "        	Protocolo_Capturas.Descripcion AS 'TR_PROT_CAPTURA',\n" +
-    "        	TipoRespuesta.Id AS 'TR_PROT_TRESP_ID',\n" +
-    "        	TipoRespuesta.Descripcion AS 'TR_PROT_TRESP_TIPO',\n" +
-    "        	Estados.Descripcion AS 'TR_ESTADO',\n" +
-    "					CONVERT(CAST(CONVERT(IF(Tarea_Respuesta.Respuesta = 'SC','No aplica',IF(Tarea_Respuesta.Respuesta = 'SSR','Sistema sin revisar.',IF\n" +
-    "        	(Tarea_Respuesta.Respuesta = 'SOP','Sistema operativo',IF(Tarea_Respuesta.Respuesta = 'SOCO','Sist. operativo con obs.',\n" +
-    "        	IF(Tarea_Respuesta.Respuesta = 'SFS','Sist. fuera de serv.',IF( Tarea_Respuesta.Respuesta = 'SNO', 'Sist. no operativo', Tarea_Respuesta.Respuesta )))))) USING latin1) AS BINARY) USING UTF8)\n" +
-    "        	 AS 'TR_RESPUESTA',\n" +
-    "        	Usuarios.Descripcion AS 'TR_TECNICO',\n" +
-    "        	UPPER( TE.Descripcion ) AS 'TR_TIPO_EQUIPO',\n" +
-    "        IF\n" +
-    "        	( TipoContingente.Id > 0, 'SI', 'NO' ) AS 'TR_CONTINGENTE_YN',\n" +
-    "        	TipoContingente.Id AS 'TR_CONTINGENTE_ID',\n" +
-    "        	TipoContingente.Descripcion AS 'TR_CONTINGENTE_DESC',\n" +
-    "       IF\n" +
-    "        	( Tareas_Motivos.Motivo IS NULL, 'NO', 'SI' ) AS 'TR_INCIDENCIA_YN',\n" +
-    "        	Tareas_Motivos.Motivo AS 'TR_INCIDENCIA',\n" +
-    "        	EQ.SecDESC AS 'TR_SECTOR',\n" +
-    "        	EQ.AreaDESC AS 'TR_AREA',\n" +
-    "        	EQ.GerDESC AS 'TR_GERENCIA' \n" +
-    "        FROM\n" +
-    "        	Protocolos\n" +
-    "        	INNER JOIN Clientes ON Protocolos.Id_Cliente = Clientes.Id\n" +
-    "        	INNER JOIN Protocolo_Capitulo ON Protocolos.Id = Protocolo_Capitulo.Id_Protocolo\n" +
-    "        INNER JOIN TipoProtocolo ON Protocolos.Id_TipoProtocolo = TipoProtocolo.Id\n" +
-    "        	INNER JOIN Protocolo_Capturas ON Protocolos.Id = Protocolo_Capturas.Id_Protocolo \n" +
-    "        	AND Protocolo_Capitulo.Capitulo = Protocolo_Capturas.Capitulo\n" +
-    "        	INNER JOIN TipoRespuesta ON Protocolo_Capturas.Id_TipoRespuesta = TipoRespuesta.Id\n" +
-    "        	INNER JOIN Tareas ON Protocolos.Id = Tareas.Id_Protocolo\n" +
-    "        	INNER JOIN Tarea_Respuesta ON Tareas.Id = Tarea_Respuesta.Id_Tarea \n" +
-    "        	AND Protocolo_Capitulo.Capitulo = Tarea_Respuesta.Capitulo \n" +
-    "        	AND Protocolo_Capturas.Correlativo = Tarea_Respuesta.Correlativo\n" +
-    "        	INNER JOIN Estados ON Tareas.Id_Estado = Estados.Id\n" +
-    "        	INNER JOIN Equipos ON Tareas.Id_Equipo = Equipos.Id\n" +
-    "        	INNER JOIN Usuarios ON Tareas.Id_Tecnico = Usuarios.Id\n" +
-    "        	LEFT JOIN TipoContingente ON Tareas.Contingente = TipoContingente.Id\n" +
-    "       	LEFT JOIN Tareas_Motivos ON Tareas.Id = Tareas_Motivos.Id_Tarea\n" +
-    "      	INNER JOIN TipoEquipo TE ON TE.Id = Equipos.Id_Tipo\n" +
-    "        	INNER JOIN Usuarios U ON U.Id = Tareas.Id_Tecnico\n" +
-    "        	INNER JOIN (\n" +
-    "        	SELECT\n" +
-    "        		E.Id 'EqID',\n" +
-    "        		S.Descripcion 'SecDESC',\n" +
-    "        	A.Descripcion 'AreaDESC',\n" +
-    "       		G.Descripcion 'GerDESC',\n" +
-    "        		C.Descripcion 'CteDESC' \n" +
-    "       	FROM\n" +
-    "        		Equipos E\n" +
-    "        		INNER JOIN Sectores S ON E.Id_Sector = S.Id\n" +
-    "        		INNER JOIN Areas A ON S.Id_Area = A.Id\n" +
-    "        		INNER JOIN Gerencias G ON A.Id_Gerencia = G.Id\n" +
-    "        		INNER JOIN Clientes C ON G.Id_Cliente = C.Id \n" +
-    "        	) AS EQ ON Tareas.Id_Equipo = EQ.EqID \n" +
-    "        WHERE \n" +
-    "   Tareas.Id =" +IDT +" ORDER BY TR_PROT_DESC_CAPI  ASC, FIELD(TR_PROT_CAPTURA,'Observaciones PV', 'Observación PV', 'Observaciones PV SA', 'Observacies PV SSA', 'Observaciones PV EP'),	TR_PROT_CAPTURA ASC",
-    async (err, result) => {
-      if (err) {
-        console.log(err);
-      } else {
-        const estado = result[0].TR_ESTADO;
-        const filePathName = path.resolve(__dirname, "../views/protocolos/pdf.hbs") 
-        const html1 = fs.readFileSync(filePathName, "utf8");
-        const ruta_imagen = path.resolve(__dirname, "../public/img/imagen1.png");                   
-        const img = "file:///" + ruta_imagen;
-        const options = {
-          format: "letter",
-          orientation: "portrait",
-          border: "5mm",
-          paginationOffset: 1,       // Override the initial pagination number
-            "footer": {
-              "height": "5mm",
-              "contents": {
-                default: '<div style="font-family: Verdana, Geneva, Tahoma, sans-serif; font-size: 8px"><center>SAPMA-Sercoing | Tarea Nº:  '+IDT+' | Estado: '+estado+' | Página <span style="color: #444;">{{page}}</span>/<span>{{pages}}</span></center></div>', // fallback value
-                
-              }
-            },
-          localUrlAccess: true,
-          base: ('https://sapmadand.sercoing.cl:3000', 'https://localhost:3000')
-        };
-
-        const imagendebd = await pool.query("SELECT * FROM Adjuntos WHERE Id_Tarea = ?", [IDT]);
-        const imagendebd1 = Object.values(imagendebd);
-
-        if (imagendebd1.length > 0) {
-          const imagendebd2 = imagendebd1[0].Archivos.split('|');
-          const ruta15 = path.join(__dirname, "../images/");
-          console.log(ruta15);
-          const imagenes =  imagendebd2.map((img) => {
-            return "File:///"+ruta15  +IDT+"_"+img;
-          });
-  
-          const document = {
-            type: "file", // 'file' or 'buffer'
-            template: html1,
-            context: {
-              IDT: result[0].TR_TAREA_ID,
-              TR_GERENCIA: result[0].TR_GERENCIA,
-              TR_AREA: result[0].TR_AREA,
-              TR_SECTOR: result[0].TR_SECTOR,
-              FECHA: result[0].FECHA,
-              TAREATIPO: result[0].TR_PROT_TAREATIPO,
-              TR_PROT_DESC_TAREATIPO: result[0].TR_PROT_DESC_TAREATIPO,
-              TR_EQUIPO_COD: result[0].TR_EQUIPO_COD,
-              TR_PROT_ID: result[0].TR_PROT_ID,
-              TR_PROT_DESC_PROT: result[0].TR_PROT_DESC_PROT,
-              TR_ESTADO: result[0].TR_ESTADO,
-              prot: result,
-              img: img,
-              imagenes:imagenes
-            },
-            path: "src/pdf/" + IDT +"_"+CODIGO+".pdf", // it is not required if type is buffer
-          };
-  
-          pdf.create(document, options)
-            .then((res) => {
-              console.log("PDF creado");
-  
-              // console.log(res);
-              // const file = Object.values(res);
-              // const file1 = file[0];
-              // fs.readFile(file1, function (err, res, file) {
-              //   res.contentType("application/pdf");
-              //   res.send(file1);
-              // });
-            })
-            .catch((error) => {
-              console.error(error);
-            }).then(() => {
-              res.download(ruta,  IDT+"_"+CODIGO+".pdf",   function(err) {
-                if (err) {
-                  console.log(err);
-                }else{
-                  console.log("descargado");
-                }
-            });
-          });
-        }else{
- 
-          const document = {
-            type: "file", // 'file' or 'buffer'
-            template: html1,
-            context: {
-              IDT: result[0].TR_TAREA_ID,
-              TR_GERENCIA: result[0].TR_GERENCIA,
-              TR_AREA: result[0].TR_AREA,
-              TR_SECTOR: result[0].TR_SECTOR,
-              FECHA: result[0].FECHA,
-              TAREATIPO: result[0].TR_PROT_TAREATIPO,
-              TR_PROT_DESC_TAREATIPO: result[0].TR_PROT_DESC_TAREATIPO,
-              TR_EQUIPO_COD: result[0].TR_EQUIPO_COD,
-              TR_PROT_ID: result[0].TR_PROT_ID,
-              TR_PROT_DESC_PROT: result[0].TR_PROT_DESC_PROT,
-              TR_ESTADO: result[0].TR_ESTADO,
-              prot: result,
-              img: img
-            },
-            path: "src/pdf/" + IDT +"_"+CODIGO+".pdf", // it is not required if type is buffer
-          };
-  
-          pdf.create(document, options)
-            .then((res) => {
-              console.log("PDF creado");
-  
-              // console.log(res);
-              // const file = Object.values(res);
-              // const file1 = file[0];
-              // fs.readFile(file1, function (err, res, file) {
-              //   res.contentType("application/pdf");
-              //   res.send(file1);
-              // });
-            })
-            .catch((error) => {
-              console.error(error);
-            }).then(() => {
-              res.download(ruta,  IDT+"_"+CODIGO+".pdf",   function(err) {
-                if (err) {
-                  console.log(err);
-                }else{
-                  console.log("descargado");
-                }
-            });
-          });
-        }
-      }
-  });
-});
-
-router.get("/pdfb/:IDT/:CODIGO", isLoggedIn, authRole(['Cli_B']), async (req, res) => {
-  const { IDT } = req.params;
-  const { CODIGO } = req.params;
-  const ruta =  path.resolve(__dirname ,"../pdf/" + IDT +"_"+CODIGO+".pdf");
-
-  await pool.query(
-    "SELECT\n" +
-    "        Tareas.Id AS TR_TAREA_ID,\n" +
-    "        date_format(Tareas.Fecha, '%d-%m-%Y') AS FECHA,\n" +
-    "        Protocolos.Id AS 'TR_PROT_ID',\n" +
-    "        	TipoProtocolo.Abreviacion AS 'TR_PROT_TAREATIPO',\n" +
-    "        	UPPER ( TipoProtocolo.Descripcion ) AS 'TR_PROT_DESC_TAREATIPO',\n" +
-    "        	Equipos.Codigo AS 'TR_EQUIPO_COD',\n" +
-    "        	Protocolos.Descripcion AS 'TR_PROT_DESC_PROT',\n" +
-    "        	Protocolo_Capitulo.Capitulo AS 'TR_PROT_CAPIT_ID',\n" +
-    "        	UPPER( Protocolo_Capitulo.Descripcion ) AS 'TR_PROT_DESC_CAPI',\n" +
-    "        	Protocolo_Capitulo.Es_Varios AS 'TR_PROT_ESVARIOS',\n" +
-    "        	Protocolo_Capturas.Correlativo AS 'TR_PROT_CAPTURA_ID',\n" +
-    "        	Protocolo_Capturas.Descripcion AS 'TR_PROT_CAPTURA',\n" +
-    "        	TipoRespuesta.Id AS 'TR_PROT_TRESP_ID',\n" +
-    "        	TipoRespuesta.Descripcion AS 'TR_PROT_TRESP_TIPO',\n" +
-    "        	Estados.Descripcion AS 'TR_ESTADO',\n" +
-    "					CONVERT(CAST(CONVERT(IF(Tarea_Respuesta.Respuesta = 'SC','No aplica',IF(Tarea_Respuesta.Respuesta = 'SSR','Sistema sin revizar',IF\n" +
-    "        	(Tarea_Respuesta.Respuesta = 'SOP','Sistema operativo',IF(Tarea_Respuesta.Respuesta = 'SOCO','Sist. operativo con obs.',\n" +
-    "        	IF(Tarea_Respuesta.Respuesta = 'SFS','Sist. fuera de serv.',IF( Tarea_Respuesta.Respuesta = 'SNO', 'Sist. no operativo', Tarea_Respuesta.Respuesta )))))) USING latin1) AS BINARY) USING UTF8)\n" +
-    "        	 AS 'TR_RESPUESTA',\n" +
-    "        	Usuarios.Descripcion AS 'TR_TECNICO',\n" +
-    "        	UPPER( TE.Descripcion ) AS 'TR_TIPO_EQUIPO',\n" +
-    "        IF\n" +
-    "        	( TipoContingente.Id > 0, 'SI', 'NO' ) AS 'TR_CONTINGENTE_YN',\n" +
-    "        	TipoContingente.Id AS 'TR_CONTINGENTE_ID',\n" +
-    "        	TipoContingente.Descripcion AS 'TR_CONTINGENTE_DESC',\n" +
-    "       IF\n" +
-    "        	( Tareas_Motivos.Motivo IS NULL, 'NO', 'SI' ) AS 'TR_INCIDENCIA_YN',\n" +
-    "        	Tareas_Motivos.Motivo AS 'TR_INCIDENCIA',\n" +
-    "        	EQ.SecDESC AS 'TR_SECTOR',\n" +
-    "        	EQ.AreaDESC AS 'TR_AREA',\n" +
-    "        	EQ.GerDESC AS 'TR_GERENCIA' \n" +
-    "        FROM\n" +
-    "        	Protocolos\n" +
-    "        	INNER JOIN Clientes ON Protocolos.Id_Cliente = Clientes.Id\n" +
-    "        	INNER JOIN Protocolo_Capitulo ON Protocolos.Id = Protocolo_Capitulo.Id_Protocolo\n" +
-    "        INNER JOIN TipoProtocolo ON Protocolos.Id_TipoProtocolo = TipoProtocolo.Id\n" +
-    "        	INNER JOIN Protocolo_Capturas ON Protocolos.Id = Protocolo_Capturas.Id_Protocolo \n" +
-    "        	AND Protocolo_Capitulo.Capitulo = Protocolo_Capturas.Capitulo\n" +
-    "        	INNER JOIN TipoRespuesta ON Protocolo_Capturas.Id_TipoRespuesta = TipoRespuesta.Id\n" +
-    "        	INNER JOIN Tareas ON Protocolos.Id = Tareas.Id_Protocolo\n" +
-    "        	INNER JOIN Tarea_Respuesta ON Tareas.Id = Tarea_Respuesta.Id_Tarea \n" +
-    "        	AND Protocolo_Capitulo.Capitulo = Tarea_Respuesta.Capitulo \n" +
-    "        	AND Protocolo_Capturas.Correlativo = Tarea_Respuesta.Correlativo\n" +
-    "        	INNER JOIN Estados ON Tareas.Id_Estado = Estados.Id\n" +
-    "        	INNER JOIN Equipos ON Tareas.Id_Equipo = Equipos.Id\n" +
-    "        	INNER JOIN Usuarios ON Tareas.Id_Tecnico = Usuarios.Id\n" +
-    "        	LEFT JOIN TipoContingente ON Tareas.Contingente = TipoContingente.Id\n" +
-    "       	LEFT JOIN Tareas_Motivos ON Tareas.Id = Tareas_Motivos.Id_Tarea\n" +
-    "      	INNER JOIN TipoEquipo TE ON TE.Id = Equipos.Id_Tipo\n" +
-    "        	INNER JOIN Usuarios U ON U.Id = Tareas.Id_Tecnico\n" +
-    "        	INNER JOIN (\n" +
-    "        	SELECT\n" +
-    "        		E.Id 'EqID',\n" +
-    "        		S.Descripcion 'SecDESC',\n" +
-    "        	A.Descripcion 'AreaDESC',\n" +
-    "       		G.Descripcion 'GerDESC',\n" +
-    "        		C.Descripcion 'CteDESC' \n" +
-    "       	FROM\n" +
-    "        		Equipos E\n" +
-    "        		INNER JOIN Sectores S ON E.Id_Sector = S.Id\n" +
-    "        		INNER JOIN Areas A ON S.Id_Area = A.Id\n" +
-    "        		INNER JOIN Gerencias G ON A.Id_Gerencia = G.Id\n" +
-    "        		INNER JOIN Clientes C ON G.Id_Cliente = C.Id \n" +
-    "        	) AS EQ ON Tareas.Id_Equipo = EQ.EqID \n" +
-    "        WHERE \n" +
-    "   Tareas.Id =" +IDT +" ORDER BY TR_PROT_DESC_CAPI  ASC, FIELD(TR_PROT_CAPTURA,'Observaciones PV', 'Observación PV', 'Observaciones PV SA', 'Observacies PV SSA', 'Observaciones PV EP'),	TR_PROT_CAPTURA ASC",
-    async (err, result) => {
-      if (err) {
-        console.log(err);
-      } else {
-        const estado = result[0].TR_ESTADO;
-        const filePathName = path.resolve(__dirname, "../views/protocolos/pdf.hbs") 
-        const html1 = fs.readFileSync(filePathName, "utf8");
-        const ruta_imagen = path.resolve(__dirname, "../public/img/imagen1.png");                   
-        const img = "file:///" + ruta_imagen;
-        const options = {
-          format: "letter",
-          orientation: "portrait",
-          border: "5mm",
-          paginationOffset: 1,       // Override the initial pagination number
-            "footer": {
-              "height": "5mm",
-              "contents": {
-                default: '<div style="font-family: Verdana, Geneva, Tahoma, sans-serif; font-size: 8px"><center>SAPMA-Sercoing | Tarea Nº:  '+IDT+' | Estado: '+estado+' | Página <span style="color: #444;">{{page}}</span>/<span>{{pages}}</span></center></div>', // fallback value
-                
-              }
-            },
-          localUrlAccess: true,
-          base: ('https://sapmadand.sercoing.cl:3000', 'https://localhost:3000')
-        };
-
-        const imagendebd = await pool.query("SELECT * FROM Adjuntos WHERE Id_Tarea = ?", [IDT]);
-        const imagendebd1 = Object.values(imagendebd);
-
-        if (imagendebd1.length > 0) {
-          const imagendebd2 = imagendebd1[0].Archivos.split('|');
-          const ruta15 = path.join(__dirname, "../images/");
-          console.log(ruta15);
-          const imagenes =  imagendebd2.map((img) => {
-            return "File:///"+ruta15  +IDT+"_"+img;
-          });
-  
-          const document = {
-            type: "file", // 'file' or 'buffer'
-            template: html1,
-            context: {
-              IDT: result[0].TR_TAREA_ID,
-              TR_GERENCIA: result[0].TR_GERENCIA,
-              TR_AREA: result[0].TR_AREA,
-              TR_SECTOR: result[0].TR_SECTOR,
-              FECHA: result[0].FECHA,
-              TAREATIPO: result[0].TR_PROT_TAREATIPO,
-              TR_PROT_DESC_TAREATIPO: result[0].TR_PROT_DESC_TAREATIPO,
-              TR_EQUIPO_COD: result[0].TR_EQUIPO_COD,
-              TR_PROT_ID: result[0].TR_PROT_ID,
-              TR_PROT_DESC_PROT: result[0].TR_PROT_DESC_PROT,
-              TR_ESTADO: result[0].TR_ESTADO,
-              prot: result,
-              img: img,
-              imagenes:imagenes
-            },
-            path: "src/pdf/" + IDT +"_"+CODIGO+".pdf", // it is not required if type is buffer
-          };
-  
-          pdf.create(document, options)
-            .then((res) => {
-              console.log("PDF creado");
-  
-              // console.log(res);
-              // const file = Object.values(res);
-              // const file1 = file[0];
-              // fs.readFile(file1, function (err, res, file) {
-              //   res.contentType("application/pdf");
-              //   res.send(file1);
-              // });
-            })
-            .catch((error) => {
-              console.error(error);
-            }).then(() => {
-              res.download(ruta,  IDT+"_"+CODIGO+".pdf",   function(err) {
-                if (err) {
-                  console.log(err);
-                }else{
-                  console.log("descargado");
-                }
-            });
-          });
-        }else{
- 
-          const document = {
-            type: "file", // 'file' or 'buffer'
-            template: html1,
-            context: {
-              IDT: result[0].TR_TAREA_ID,
-              TR_GERENCIA: result[0].TR_GERENCIA,
-              TR_AREA: result[0].TR_AREA,
-              TR_SECTOR: result[0].TR_SECTOR,
-              FECHA: result[0].FECHA,
-              TAREATIPO: result[0].TR_PROT_TAREATIPO,
-              TR_PROT_DESC_TAREATIPO: result[0].TR_PROT_DESC_TAREATIPO,
-              TR_EQUIPO_COD: result[0].TR_EQUIPO_COD,
-              TR_PROT_ID: result[0].TR_PROT_ID,
-              TR_PROT_DESC_PROT: result[0].TR_PROT_DESC_PROT,
-              TR_ESTADO: result[0].TR_ESTADO,
-              prot: result,
-              img: img
-            },
-            path: "src/pdf/" + IDT +"_"+CODIGO+".pdf", // it is not required if type is buffer
-          };
-  
-          pdf.create(document, options)
-            .then((res) => {
-              console.log("PDF creado");
-  
-              // console.log(res);
-              // const file = Object.values(res);
-              // const file1 = file[0];
-              // fs.readFile(file1, function (err, res, file) {
-              //   res.contentType("application/pdf");
-              //   res.send(file1);
-              // });
-            })
-            .catch((error) => {
-              console.error(error);
-            }).then(() => {
-              res.download(ruta,  IDT+"_"+CODIGO+".pdf",   function(err) {
-                if (err) {
-                  console.log(err);
-                }else{
-                  console.log("descargado");
-                }
-            });
-          });
-        }
-      }
-  });
-});
-
-router.get("/pdfa/:IDT/:CODIGO", isLoggedIn, authRole(['Cli_A']), async (req, res) => {
-  const { IDT } = req.params;
-  const { CODIGO } = req.params;
-  const ruta =  path.resolve(__dirname ,"../pdf/" + IDT +"_"+CODIGO+".pdf");
-
-  await pool.query(
-    "SELECT\n" +
-    "        Tareas.Id AS TR_TAREA_ID,\n" +
-    "        date_format(Tareas.Fecha, '%d-%m-%Y') AS FECHA,\n" +
-    "        Protocolos.Id AS 'TR_PROT_ID',\n" +
-    "        	TipoProtocolo.Abreviacion AS 'TR_PROT_TAREATIPO',\n" +
-    "        	UPPER ( TipoProtocolo.Descripcion ) AS 'TR_PROT_DESC_TAREATIPO',\n" +
-    "        	Equipos.Codigo AS 'TR_EQUIPO_COD',\n" +
-    "        	Protocolos.Descripcion AS 'TR_PROT_DESC_PROT',\n" +
-    "        	Protocolo_Capitulo.Capitulo AS 'TR_PROT_CAPIT_ID',\n" +
-    "        	UPPER( Protocolo_Capitulo.Descripcion ) AS 'TR_PROT_DESC_CAPI',\n" +
-    "        	Protocolo_Capitulo.Es_Varios AS 'TR_PROT_ESVARIOS',\n" +
-    "        	Protocolo_Capturas.Correlativo AS 'TR_PROT_CAPTURA_ID',\n" +
-    "        	Protocolo_Capturas.Descripcion AS 'TR_PROT_CAPTURA',\n" +
-    "        	TipoRespuesta.Id AS 'TR_PROT_TRESP_ID',\n" +
-    "        	TipoRespuesta.Descripcion AS 'TR_PROT_TRESP_TIPO',\n" +
-    "        	Estados.Descripcion AS 'TR_ESTADO',\n" +
-    "					CONVERT(CAST(CONVERT(IF(Tarea_Respuesta.Respuesta = 'SC','No aplica',IF(Tarea_Respuesta.Respuesta = 'SSR','Sistema sin revisar.',IF\n" +
-    "        	(Tarea_Respuesta.Respuesta = 'SOP','Sistema operativo',IF(Tarea_Respuesta.Respuesta = 'SOCO','Sist. operativo con obs.',\n" +
-    "        	IF(Tarea_Respuesta.Respuesta = 'SFS','Sist. fuera de serv.',IF( Tarea_Respuesta.Respuesta = 'SNO', 'Sist. no operativo', Tarea_Respuesta.Respuesta )))))) USING latin1) AS BINARY) USING UTF8)\n" +
-    "        	 AS 'TR_RESPUESTA',\n" +
-    "        	Usuarios.Descripcion AS 'TR_TECNICO',\n" +
-    "        	UPPER( TE.Descripcion ) AS 'TR_TIPO_EQUIPO',\n" +
-    "        IF\n" +
-    "        	( TipoContingente.Id > 0, 'SI', 'NO' ) AS 'TR_CONTINGENTE_YN',\n" +
-    "        	TipoContingente.Id AS 'TR_CONTINGENTE_ID',\n" +
-    "        	TipoContingente.Descripcion AS 'TR_CONTINGENTE_DESC',\n" +
-    "       IF\n" +
-    "        	( Tareas_Motivos.Motivo IS NULL, 'NO', 'SI' ) AS 'TR_INCIDENCIA_YN',\n" +
-    "        	Tareas_Motivos.Motivo AS 'TR_INCIDENCIA',\n" +
-    "        	EQ.SecDESC AS 'TR_SECTOR',\n" +
-    "        	EQ.AreaDESC AS 'TR_AREA',\n" +
-    "        	EQ.GerDESC AS 'TR_GERENCIA' \n" +
-    "        FROM\n" +
-    "        	Protocolos\n" +
-    "        	INNER JOIN Clientes ON Protocolos.Id_Cliente = Clientes.Id\n" +
-    "        	INNER JOIN Protocolo_Capitulo ON Protocolos.Id = Protocolo_Capitulo.Id_Protocolo\n" +
-    "        INNER JOIN TipoProtocolo ON Protocolos.Id_TipoProtocolo = TipoProtocolo.Id\n" +
-    "        	INNER JOIN Protocolo_Capturas ON Protocolos.Id = Protocolo_Capturas.Id_Protocolo \n" +
-    "        	AND Protocolo_Capitulo.Capitulo = Protocolo_Capturas.Capitulo\n" +
-    "        	INNER JOIN TipoRespuesta ON Protocolo_Capturas.Id_TipoRespuesta = TipoRespuesta.Id\n" +
-    "        	INNER JOIN Tareas ON Protocolos.Id = Tareas.Id_Protocolo\n" +
-    "        	INNER JOIN Tarea_Respuesta ON Tareas.Id = Tarea_Respuesta.Id_Tarea \n" +
-    "        	AND Protocolo_Capitulo.Capitulo = Tarea_Respuesta.Capitulo \n" +
-    "        	AND Protocolo_Capturas.Correlativo = Tarea_Respuesta.Correlativo\n" +
-    "        	INNER JOIN Estados ON Tareas.Id_Estado = Estados.Id\n" +
-    "        	INNER JOIN Equipos ON Tareas.Id_Equipo = Equipos.Id\n" +
-    "        	INNER JOIN Usuarios ON Tareas.Id_Tecnico = Usuarios.Id\n" +
-    "        	LEFT JOIN TipoContingente ON Tareas.Contingente = TipoContingente.Id\n" +
-    "       	LEFT JOIN Tareas_Motivos ON Tareas.Id = Tareas_Motivos.Id_Tarea\n" +
-    "      	INNER JOIN TipoEquipo TE ON TE.Id = Equipos.Id_Tipo\n" +
-    "        	INNER JOIN Usuarios U ON U.Id = Tareas.Id_Tecnico\n" +
-    "        	INNER JOIN (\n" +
-    "        	SELECT\n" +
-    "        		E.Id 'EqID',\n" +
-    "        		S.Descripcion 'SecDESC',\n" +
-    "        	A.Descripcion 'AreaDESC',\n" +
-    "       		G.Descripcion 'GerDESC',\n" +
-    "        		C.Descripcion 'CteDESC' \n" +
-    "       	FROM\n" +
-    "        		Equipos E\n" +
-    "        		INNER JOIN Sectores S ON E.Id_Sector = S.Id\n" +
-    "        		INNER JOIN Areas A ON S.Id_Area = A.Id\n" +
-    "        		INNER JOIN Gerencias G ON A.Id_Gerencia = G.Id\n" +
-    "        		INNER JOIN Clientes C ON G.Id_Cliente = C.Id \n" +
-    "        	) AS EQ ON Tareas.Id_Equipo = EQ.EqID \n" +
-    "        WHERE \n" +
-    "   Tareas.Id =" +IDT +" ORDER BY TR_PROT_DESC_CAPI  ASC, FIELD(TR_PROT_CAPTURA,'Observaciones PV', 'Observación PV', 'Observaciones PV SA', 'Observacies PV SSA', 'Observaciones PV EP'),	TR_PROT_CAPTURA ASC",
-    async (err, result) => {
-      if (err) {
-        console.log(err);
-      } else {
-        const estado = result[0].TR_ESTADO;
-        const filePathName = path.resolve(__dirname, "../views/protocolos/pdf.hbs") 
-        const html1 = fs.readFileSync(filePathName, "utf8");
-        const ruta_imagen = path.resolve(__dirname, "../public/img/imagen1.png");                   
-        const img = "file:///" + ruta_imagen;
-        const options = {
-          format: "letter",
-          orientation: "portrait",
-          border: "5mm",
-          paginationOffset: 1,       // Override the initial pagination number
-            "footer": {
-              "height": "5mm",
-              "contents": {
-                default: '<div style="font-family: Verdana, Geneva, Tahoma, sans-serif; font-size: 8px"><center>SAPMA-Sercoing | Tarea Nº:  '+IDT+' | Estado: '+estado+' | Página <span style="color: #444;">{{page}}</span>/<span>{{pages}}</span></center></div>', // fallback value
-                
-              }
-            },
-          localUrlAccess: true,
-          base: ('https://sapmadand.sercoing.cl:3000', 'https://localhost:3000')
-        };
-
-        const imagendebd = await pool.query("SELECT * FROM Adjuntos WHERE Id_Tarea = ?", [IDT]);
-        const imagendebd1 = Object.values(imagendebd);
-
-        if (imagendebd1.length > 0) {
-          const imagendebd2 = imagendebd1[0].Archivos.split('|');
-          const ruta15 = path.join(__dirname, "../images/");
-          console.log(ruta15);
-          const imagenes =  imagendebd2.map((img) => {
-            return "File:///"+ruta15  +IDT+"_"+img;
-          });
-  
-          const document = {
-            type: "file", // 'file' or 'buffer'
-            template: html1,
-            context: {
-              IDT: result[0].TR_TAREA_ID,
-              TR_GERENCIA: result[0].TR_GERENCIA,
-              TR_AREA: result[0].TR_AREA,
-              TR_SECTOR: result[0].TR_SECTOR,
-              FECHA: result[0].FECHA,
-              TAREATIPO: result[0].TR_PROT_TAREATIPO,
-              TR_PROT_DESC_TAREATIPO: result[0].TR_PROT_DESC_TAREATIPO,
-              TR_EQUIPO_COD: result[0].TR_EQUIPO_COD,
-              TR_PROT_ID: result[0].TR_PROT_ID,
-              TR_PROT_DESC_PROT: result[0].TR_PROT_DESC_PROT,
-              TR_ESTADO: result[0].TR_ESTADO,
-              prot: result,
-              img: img,
-              imagenes:imagenes
-            },
-            path: "src/pdf/" + IDT +"_"+CODIGO+".pdf", // it is not required if type is buffer
-          };
-  
-          pdf.create(document, options)
-            .then((res) => {
-              console.log("PDF creado");
-  
-              // console.log(res);
-              // const file = Object.values(res);
-              // const file1 = file[0];
-              // fs.readFile(file1, function (err, res, file) {
-              //   res.contentType("application/pdf");
-              //   res.send(file1);
-              // });
-            })
-            .catch((error) => {
-              console.error(error);
-            }).then(() => {
-              res.download(ruta,  IDT+"_"+CODIGO+".pdf",   function(err) {
-                if (err) {
-                  console.log(err);
-                }else{
-                  console.log("descargado");
-                }
-            });
-          });
-        }else{
- 
-          const document = {
-            type: "file", // 'file' or 'buffer'
-            template: html1,
-            context: {
-              IDT: result[0].TR_TAREA_ID,
-              TR_GERENCIA: result[0].TR_GERENCIA,
-              TR_AREA: result[0].TR_AREA,
-              TR_SECTOR: result[0].TR_SECTOR,
-              FECHA: result[0].FECHA,
-              TAREATIPO: result[0].TR_PROT_TAREATIPO,
-              TR_PROT_DESC_TAREATIPO: result[0].TR_PROT_DESC_TAREATIPO,
-              TR_EQUIPO_COD: result[0].TR_EQUIPO_COD,
-              TR_PROT_ID: result[0].TR_PROT_ID,
-              TR_PROT_DESC_PROT: result[0].TR_PROT_DESC_PROT,
-              TR_ESTADO: result[0].TR_ESTADO,
-              prot: result,
-              img: img
-            },
-            path: "src/pdf/" + IDT +"_"+CODIGO+".pdf", // it is not required if type is buffer
-          };
-  
-          pdf.create(document, options)
-            .then((res) => {
-              console.log("PDF creado");
-  
-              // console.log(res);
-              // const file = Object.values(res);
-              // const file1 = file[0];
-              // fs.readFile(file1, function (err, res, file) {
-              //   res.contentType("application/pdf");
-              //   res.send(file1);
-              // });
-            })
-            .catch((error) => {
-              console.error(error);
-            }).then(() => {
-              res.download(ruta,  IDT+"_"+CODIGO+".pdf",   function(err) {
-                if (err) {
-                  console.log(err);
-                }else{
-                  console.log("descargado");
-                }
-            });
-          });
-        }
-      }
-  }); 
-});
-
-router.get("/pdfd/:IDT/:CODIGO", isLoggedIn, authRole(['Cli_D']), async (req, res) => {
-  const { IDT } = req.params;
-  const { CODIGO } = req.params;
-  const ruta =  path.resolve(__dirname ,"../pdf/" + IDT +"_"+CODIGO+".pdf");
-
-  await pool.query(
-    "SELECT\n" +
-    "        Tareas.Id AS TR_TAREA_ID,\n" +
-    "        date_format(Tareas.Fecha, '%d-%m-%Y') AS FECHA,\n" +
-    "        Protocolos.Id AS 'TR_PROT_ID',\n" +
-    "        	TipoProtocolo.Abreviacion AS 'TR_PROT_TAREATIPO',\n" +
-    "        	UPPER ( TipoProtocolo.Descripcion ) AS 'TR_PROT_DESC_TAREATIPO',\n" +
-    "        	Equipos.Codigo AS 'TR_EQUIPO_COD',\n" +
-    "        	Protocolos.Descripcion AS 'TR_PROT_DESC_PROT',\n" +
-    "        	Protocolo_Capitulo.Capitulo AS 'TR_PROT_CAPIT_ID',\n" +
-    "        	UPPER( Protocolo_Capitulo.Descripcion ) AS 'TR_PROT_DESC_CAPI',\n" +
-    "        	Protocolo_Capitulo.Es_Varios AS 'TR_PROT_ESVARIOS',\n" +
-    "        	Protocolo_Capturas.Correlativo AS 'TR_PROT_CAPTURA_ID',\n" +
-    "        	Protocolo_Capturas.Descripcion AS 'TR_PROT_CAPTURA',\n" +
-    "        	TipoRespuesta.Id AS 'TR_PROT_TRESP_ID',\n" +
-    "        	TipoRespuesta.Descripcion AS 'TR_PROT_TRESP_TIPO',\n" +
-    "        	Estados.Descripcion AS 'TR_ESTADO',\n" +
-    "					CONVERT(CAST(CONVERT(IF(Tarea_Respuesta.Respuesta = 'SC','No aplica',IF(Tarea_Respuesta.Respuesta = 'SSR','Sistema sin revisar',IF\n" +
-    "        	(Tarea_Respuesta.Respuesta = 'SOP','Sistema operativo.',IF(Tarea_Respuesta.Respuesta = 'SOCO','Sist. operativo con obs.',\n" +
-    "        	IF(Tarea_Respuesta.Respuesta = 'SFS','Sist. fuera de serv.',IF( Tarea_Respuesta.Respuesta = 'SNO', 'Sist. no operativo.', Tarea_Respuesta.Respuesta )))))) USING latin1) AS BINARY) USING UTF8)\n" +
-    "        	 AS 'TR_RESPUESTA',\n" +
-    "        	Usuarios.Descripcion AS 'TR_TECNICO',\n" +
-    "        	UPPER( TE.Descripcion ) AS 'TR_TIPO_EQUIPO',\n" +
-    "        IF\n" +
-    "        	( TipoContingente.Id > 0, 'SI', 'NO' ) AS 'TR_CONTINGENTE_YN',\n" +
-    "        	TipoContingente.Id AS 'TR_CONTINGENTE_ID',\n" +
-    "        	TipoContingente.Descripcion AS 'TR_CONTINGENTE_DESC',\n" +
-    "       IF\n" +
-    "        	( Tareas_Motivos.Motivo IS NULL, 'NO', 'SI' ) AS 'TR_INCIDENCIA_YN',\n" +
-    "        	Tareas_Motivos.Motivo AS 'TR_INCIDENCIA',\n" +
-    "        	EQ.SecDESC AS 'TR_SECTOR',\n" +
-    "        	EQ.AreaDESC AS 'TR_AREA',\n" +
-    "        	EQ.GerDESC AS 'TR_GERENCIA' \n" +
-    "        FROM\n" +
-    "        	Protocolos\n" +
-    "        	INNER JOIN Clientes ON Protocolos.Id_Cliente = Clientes.Id\n" +
-    "        	INNER JOIN Protocolo_Capitulo ON Protocolos.Id = Protocolo_Capitulo.Id_Protocolo\n" +
-    "        INNER JOIN TipoProtocolo ON Protocolos.Id_TipoProtocolo = TipoProtocolo.Id\n" +
-    "        	INNER JOIN Protocolo_Capturas ON Protocolos.Id = Protocolo_Capturas.Id_Protocolo \n" +
-    "        	AND Protocolo_Capitulo.Capitulo = Protocolo_Capturas.Capitulo\n" +
-    "        	INNER JOIN TipoRespuesta ON Protocolo_Capturas.Id_TipoRespuesta = TipoRespuesta.Id\n" +
-    "        	INNER JOIN Tareas ON Protocolos.Id = Tareas.Id_Protocolo\n" +
-    "        	INNER JOIN Tarea_Respuesta ON Tareas.Id = Tarea_Respuesta.Id_Tarea \n" +
-    "        	AND Protocolo_Capitulo.Capitulo = Tarea_Respuesta.Capitulo \n" +
-    "        	AND Protocolo_Capturas.Correlativo = Tarea_Respuesta.Correlativo\n" +
-    "        	INNER JOIN Estados ON Tareas.Id_Estado = Estados.Id\n" +
-    "        	INNER JOIN Equipos ON Tareas.Id_Equipo = Equipos.Id\n" +
-    "        	INNER JOIN Usuarios ON Tareas.Id_Tecnico = Usuarios.Id\n" +
-    "        	LEFT JOIN TipoContingente ON Tareas.Contingente = TipoContingente.Id\n" +
-    "       	LEFT JOIN Tareas_Motivos ON Tareas.Id = Tareas_Motivos.Id_Tarea\n" +
-    "      	INNER JOIN TipoEquipo TE ON TE.Id = Equipos.Id_Tipo\n" +
-    "        	INNER JOIN Usuarios U ON U.Id = Tareas.Id_Tecnico\n" +
-    "        	INNER JOIN (\n" +
-    "        	SELECT\n" +
-    "        		E.Id 'EqID',\n" +
-    "        		S.Descripcion 'SecDESC',\n" +
-    "        	A.Descripcion 'AreaDESC',\n" +
-    "       		G.Descripcion 'GerDESC',\n" +
-    "        		C.Descripcion 'CteDESC' \n" +
-    "       	FROM\n" +
-    "        		Equipos E\n" +
-    "        		INNER JOIN Sectores S ON E.Id_Sector = S.Id\n" +
-    "        		INNER JOIN Areas A ON S.Id_Area = A.Id\n" +
-    "        		INNER JOIN Gerencias G ON A.Id_Gerencia = G.Id\n" +
-    "        		INNER JOIN Clientes C ON G.Id_Cliente = C.Id \n" +
-    "        	) AS EQ ON Tareas.Id_Equipo = EQ.EqID \n" +
-    "        WHERE \n" +
-    "   Tareas.Id =" +IDT +" ORDER BY TR_PROT_DESC_CAPI  ASC, FIELD(TR_PROT_CAPTURA,'Observaciones PV', 'Observación PV', 'Observaciones PV SA', 'Observacies PV SSA', 'Observaciones PV EP'),	TR_PROT_CAPTURA ASC",
-    async (err, result) => {
-      if (err) {
-        console.log(err);
-      } else {
-        const estado = result[0].TR_ESTADO;
-        const filePathName = path.resolve(__dirname, "../views/protocolos/pdf.hbs") 
-        const html1 = fs.readFileSync(filePathName, "utf8");
-        const ruta_imagen = path.resolve(__dirname, "../public/img/imagen1.png");                   
-        const img = "file:///" + ruta_imagen;
-        const options = {
-          format: "letter",
-          orientation: "portrait",
-          border: "5mm",
-          paginationOffset: 1,       // Override the initial pagination number
-            "footer": {
-              "height": "5mm",
-              "contents": {
-                default: '<div style="font-family: Verdana, Geneva, Tahoma, sans-serif; font-size: 8px"><center>SAPMA-Sercoing | Tarea Nº:  '+IDT+' | Estado: '+estado+' | Página <span style="color: #444;">{{page}}</span>/<span>{{pages}}</span></center></div>', // fallback value
-                
-              }
-            },
-          localUrlAccess: true,
-          base: ('https://sapmadand.sercoing.cl:3000', 'https://localhost:3000')
-        };
-
-        const imagendebd = await pool.query("SELECT * FROM Adjuntos WHERE Id_Tarea = ?", [IDT]);
-        const imagendebd1 = Object.values(imagendebd);
-
-        if (imagendebd1.length > 0) {
-          const imagendebd2 = imagendebd1[0].Archivos.split('|');
-          const ruta15 = path.join(__dirname, "../images/");
-          console.log(ruta15);
-          const imagenes =  imagendebd2.map((img) => {
-            return "File:///"+ruta15  +IDT+"_"+img;
-          });
-  
-          const document = {
-            type: "file", // 'file' or 'buffer'
-            template: html1,
-            context: {
-              IDT: result[0].TR_TAREA_ID,
-              TR_GERENCIA: result[0].TR_GERENCIA,
-              TR_AREA: result[0].TR_AREA,
-              TR_SECTOR: result[0].TR_SECTOR,
-              FECHA: result[0].FECHA,
-              TAREATIPO: result[0].TR_PROT_TAREATIPO,
-              TR_PROT_DESC_TAREATIPO: result[0].TR_PROT_DESC_TAREATIPO,
-              TR_EQUIPO_COD: result[0].TR_EQUIPO_COD,
-              TR_PROT_ID: result[0].TR_PROT_ID,
-              TR_PROT_DESC_PROT: result[0].TR_PROT_DESC_PROT,
-              TR_ESTADO: result[0].TR_ESTADO,
-              prot: result,
-              img: img,
-              imagenes:imagenes
-            },
-            path: "src/pdf/" + IDT +"_"+CODIGO+".pdf", // it is not required if type is buffer
-          };
-  
-          pdf.create(document, options)
-            .then((res) => {
-              console.log("PDF creado");
-
-            })
-            .catch((error) => {
-              console.error(error);
-            }).then(() => {
-              res.download(ruta,  IDT+"_"+CODIGO+".pdf",   function(err) {
-                if (err) {
-                  console.log(err);
-                }else{
-                  console.log("descargado");
-                }
-            });
-          });
-        }else{
- 
-          const document = {
-            type: "file", // 'file' or 'buffer'
-            template: html1,
-            context: {
-              IDT: result[0].TR_TAREA_ID,
-              TR_GERENCIA: result[0].TR_GERENCIA,
-              TR_AREA: result[0].TR_AREA,
-              TR_SECTOR: result[0].TR_SECTOR,
-              FECHA: result[0].FECHA,
-              TAREATIPO: result[0].TR_PROT_TAREATIPO,
-              TR_PROT_DESC_TAREATIPO: result[0].TR_PROT_DESC_TAREATIPO,
-              TR_EQUIPO_COD: result[0].TR_EQUIPO_COD,
-              TR_PROT_ID: result[0].TR_PROT_ID,
-              TR_PROT_DESC_PROT: result[0].TR_PROT_DESC_PROT,
-              TR_ESTADO: result[0].TR_ESTADO,
-              prot: result,
-              img: img
-            },
-            path: "src/pdf/" + IDT +"_"+CODIGO+".pdf", // it is not required if type is buffer
-          };
-  
-          pdf.create(document, options)
-            .then((res) => {
-              console.log("PDF creado");
-  
-              // console.log(res);
-              // const file = Object.values(res);
-              // const file1 = file[0];
-              // fs.readFile(file1, function (err, res, file) {
-              //   res.contentType("application/pdf");
-              //   res.send(file1);
-              // });
-            })
-            .catch((error) => {
-              console.error(error);
-            }).then(() => {
-              res.download(ruta,  IDT+"_"+CODIGO+".pdf",   function(err) {
-                if (err) {
-                  console.log(err);
-                }else{
-                  console.log("descargado");
-                }
-            });
-          });
-        }
-      }
-  });
-});
-
-router.get("/pdfe/:IDT/:CODIGO", isLoggedIn, authRole(['Cli_E']), async (req, res) => {
-  const { IDT } = req.params;
-  const { CODIGO } = req.params;
-  const ruta =  path.resolve(__dirname ,"../pdf/" + IDT +"_"+CODIGO+".pdf");
-
-  await pool.query(
-    "SELECT\n" +
-    "        Tareas.Id AS TR_TAREA_ID,\n" +
-    "        date_format(Tareas.Fecha, '%d-%m-%Y') AS FECHA,\n" +
-    "        Protocolos.Id AS 'TR_PROT_ID',\n" +
-    "        	TipoProtocolo.Abreviacion AS 'TR_PROT_TAREATIPO',\n" +
-    "        	UPPER ( TipoProtocolo.Descripcion ) AS 'TR_PROT_DESC_TAREATIPO',\n" +
-    "        	Equipos.Codigo AS 'TR_EQUIPO_COD',\n" +
-    "        	Protocolos.Descripcion AS 'TR_PROT_DESC_PROT',\n" +
-    "        	Protocolo_Capitulo.Capitulo AS 'TR_PROT_CAPIT_ID',\n" +
-    "        	UPPER( Protocolo_Capitulo.Descripcion ) AS 'TR_PROT_DESC_CAPI',\n" +
-    "        	Protocolo_Capitulo.Es_Varios AS 'TR_PROT_ESVARIOS',\n" +
-    "        	Protocolo_Capturas.Correlativo AS 'TR_PROT_CAPTURA_ID',\n" +
-    "        	Protocolo_Capturas.Descripcion AS 'TR_PROT_CAPTURA',\n" +
-    "        	TipoRespuesta.Id AS 'TR_PROT_TRESP_ID',\n" +
-    "        	TipoRespuesta.Descripcion AS 'TR_PROT_TRESP_TIPO',\n" +
-    "        	Estados.Descripcion AS 'TR_ESTADO',\n" +
-    "					CONVERT(CAST(CONVERT(IF(Tarea_Respuesta.Respuesta = 'SC','No aplica',IF(Tarea_Respuesta.Respuesta = 'SSR','Sistema sin revisar',IF\n" +
-    "        	(Tarea_Respuesta.Respuesta = 'SOP','Sistema operativo.',IF(Tarea_Respuesta.Respuesta = 'SOCO','Sist. operativo con obs.',\n" +
-    "        	IF(Tarea_Respuesta.Respuesta = 'SFS','Sist. fuera de serv.',IF( Tarea_Respuesta.Respuesta = 'SNO', 'Sist. no operativo.', Tarea_Respuesta.Respuesta )))))) USING latin1) AS BINARY) USING UTF8)\n" +
-    "        	 AS 'TR_RESPUESTA',\n" +
-    "        	Usuarios.Descripcion AS 'TR_TECNICO',\n" +
-    "        	UPPER( TE.Descripcion ) AS 'TR_TIPO_EQUIPO',\n" +
-    "        IF\n" +
-    "        	( TipoContingente.Id > 0, 'SI', 'NO' ) AS 'TR_CONTINGENTE_YN',\n" +
-    "        	TipoContingente.Id AS 'TR_CONTINGENTE_ID',\n" +
-    "        	TipoContingente.Descripcion AS 'TR_CONTINGENTE_DESC',\n" +
-    "       IF\n" +
-    "        	( Tareas_Motivos.Motivo IS NULL, 'NO', 'SI' ) AS 'TR_INCIDENCIA_YN',\n" +
-    "        	Tareas_Motivos.Motivo AS 'TR_INCIDENCIA',\n" +
-    "        	EQ.SecDESC AS 'TR_SECTOR',\n" +
-    "        	EQ.AreaDESC AS 'TR_AREA',\n" +
-    "        	EQ.GerDESC AS 'TR_GERENCIA' \n" +
-    "        FROM\n" +
-    "        	Protocolos\n" +
-    "        	INNER JOIN Clientes ON Protocolos.Id_Cliente = Clientes.Id\n" +
-    "        	INNER JOIN Protocolo_Capitulo ON Protocolos.Id = Protocolo_Capitulo.Id_Protocolo\n" +
-    "        INNER JOIN TipoProtocolo ON Protocolos.Id_TipoProtocolo = TipoProtocolo.Id\n" +
-    "        	INNER JOIN Protocolo_Capturas ON Protocolos.Id = Protocolo_Capturas.Id_Protocolo \n" +
-    "        	AND Protocolo_Capitulo.Capitulo = Protocolo_Capturas.Capitulo\n" +
-    "        	INNER JOIN TipoRespuesta ON Protocolo_Capturas.Id_TipoRespuesta = TipoRespuesta.Id\n" +
-    "        	INNER JOIN Tareas ON Protocolos.Id = Tareas.Id_Protocolo\n" +
-    "        	INNER JOIN Tarea_Respuesta ON Tareas.Id = Tarea_Respuesta.Id_Tarea \n" +
-    "        	AND Protocolo_Capitulo.Capitulo = Tarea_Respuesta.Capitulo \n" +
-    "        	AND Protocolo_Capturas.Correlativo = Tarea_Respuesta.Correlativo\n" +
-    "        	INNER JOIN Estados ON Tareas.Id_Estado = Estados.Id\n" +
-    "        	INNER JOIN Equipos ON Tareas.Id_Equipo = Equipos.Id\n" +
-    "        	INNER JOIN Usuarios ON Tareas.Id_Tecnico = Usuarios.Id\n" +
-    "        	LEFT JOIN TipoContingente ON Tareas.Contingente = TipoContingente.Id\n" +
-    "       	LEFT JOIN Tareas_Motivos ON Tareas.Id = Tareas_Motivos.Id_Tarea\n" +
-    "      	INNER JOIN TipoEquipo TE ON TE.Id = Equipos.Id_Tipo\n" +
-    "        	INNER JOIN Usuarios U ON U.Id = Tareas.Id_Tecnico\n" +
-    "        	INNER JOIN (\n" +
-    "        	SELECT\n" +
-    "        		E.Id 'EqID',\n" +
-    "        		S.Descripcion 'SecDESC',\n" +
-    "        	A.Descripcion 'AreaDESC',\n" +
-    "       		G.Descripcion 'GerDESC',\n" +
-    "        		C.Descripcion 'CteDESC' \n" +
-    "       	FROM\n" +
-    "        		Equipos E\n" +
-    "        		INNER JOIN Sectores S ON E.Id_Sector = S.Id\n" +
-    "        		INNER JOIN Areas A ON S.Id_Area = A.Id\n" +
-    "        		INNER JOIN Gerencias G ON A.Id_Gerencia = G.Id\n" +
-    "        		INNER JOIN Clientes C ON G.Id_Cliente = C.Id \n" +
-    "        	) AS EQ ON Tareas.Id_Equipo = EQ.EqID \n" +
-    "        WHERE \n" +
-    "   Tareas.Id =" +IDT +" ORDER BY TR_PROT_DESC_CAPI  ASC, FIELD(TR_PROT_CAPTURA,'Observaciones PV', 'Observación PV', 'Observaciones PV SA', 'Observacies PV SSA', 'Observaciones PV EP'),	TR_PROT_CAPTURA ASC",
-    async (err, result) => {
-      if (err) {
-        console.log(err);
-      } else {
-        const estado = result[0].TR_ESTADO;
-        const filePathName = path.resolve(__dirname, "../views/protocolos/pdf.hbs") 
-        const html1 = fs.readFileSync(filePathName, "utf8");
-        const ruta_imagen = path.resolve(__dirname, "../public/img/imagen1.png");                   
-        const img = "file:///" + ruta_imagen;
-        const options = {
-          format: "letter",
-          orientation: "portrait",
-          border: "5mm",
-          paginationOffset: 1,       // Override the initial pagination number
-            "footer": {
-              "height": "5mm",
-              "contents": {
-                default: '<div style="font-family: Verdana, Geneva, Tahoma, sans-serif; font-size: 8px"><center>SAPMA-Sercoing | Tarea Nº:  '+IDT+' | Estado: '+estado+' | Página <span style="color: #444;">{{page}}</span>/<span>{{pages}}</span></center></div>', // fallback value
-                
-              }
-            },
-          localUrlAccess: true,
-          base: ('https://sapmadand.sercoing.cl:3000', 'https://localhost:3000')
-        };
-
-        const imagendebd = await pool.query("SELECT * FROM Adjuntos WHERE Id_Tarea = ?", [IDT]);
-        const imagendebd1 = Object.values(imagendebd);
-
-        if (imagendebd1.length > 0) {
-          const imagendebd2 = imagendebd1[0].Archivos.split('|');
-          const ruta15 = path.join(__dirname, "../images/");
-          console.log(ruta15);
-          const imagenes =  imagendebd2.map((img) => {
-            return "File:///"+ruta15  +IDT+"_"+img;
-          });
-  
-          const document = {
-            type: "file", // 'file' or 'buffer'
-            template: html1,
-            context: {
-              IDT: result[0].TR_TAREA_ID,
-              TR_GERENCIA: result[0].TR_GERENCIA,
-              TR_AREA: result[0].TR_AREA,
-              TR_SECTOR: result[0].TR_SECTOR,
-              FECHA: result[0].FECHA,
-              TAREATIPO: result[0].TR_PROT_TAREATIPO,
-              TR_PROT_DESC_TAREATIPO: result[0].TR_PROT_DESC_TAREATIPO,
-              TR_EQUIPO_COD: result[0].TR_EQUIPO_COD,
-              TR_PROT_ID: result[0].TR_PROT_ID,
-              TR_PROT_DESC_PROT: result[0].TR_PROT_DESC_PROT,
-              TR_ESTADO: result[0].TR_ESTADO,
-              prot: result,
-              img: img,
-              imagenes:imagenes
-            },
-            path: "src/pdf/" + IDT +"_"+CODIGO+".pdf", // it is not required if type is buffer
-          };
-  
-          pdf.create(document, options)
-            .then((res) => {
-              console.log("PDF creado");
-
-            })
-            .catch((error) => {
-              console.error(error);
-            }).then(() => {
-              res.download(ruta,  IDT+"_"+CODIGO+".pdf",   function(err) {
-                if (err) {
-                  console.log(err);
-                }else{
-                  console.log("descargado");
-                }
-            });
-          });
-        }else{
- 
-          const document = {
-            type: "file", // 'file' or 'buffer'
-            template: html1,
-            context: {
-              IDT: result[0].TR_TAREA_ID,
-              TR_GERENCIA: result[0].TR_GERENCIA,
-              TR_AREA: result[0].TR_AREA,
-              TR_SECTOR: result[0].TR_SECTOR,
-              FECHA: result[0].FECHA,
-              TAREATIPO: result[0].TR_PROT_TAREATIPO,
-              TR_PROT_DESC_TAREATIPO: result[0].TR_PROT_DESC_TAREATIPO,
-              TR_EQUIPO_COD: result[0].TR_EQUIPO_COD,
-              TR_PROT_ID: result[0].TR_PROT_ID,
-              TR_PROT_DESC_PROT: result[0].TR_PROT_DESC_PROT,
-              TR_ESTADO: result[0].TR_ESTADO,
-              prot: result,
-              img: img
-            },
-            path: "src/pdf/" + IDT +"_"+CODIGO+".pdf", // it is not required if type is buffer
-          };
-  
-          pdf.create(document, options)
-            .then((res) => {
-              console.log("PDF creado");
-  
-              // console.log(res);
-              // const file = Object.values(res);
-              // const file1 = file[0];
-              // fs.readFile(file1, function (err, res, file) {
-              //   res.contentType("application/pdf");
-              //   res.send(file1);
-              // });
-            })
-            .catch((error) => {
-              console.error(error);
-            }).then(() => {
-              res.download(ruta,  IDT+"_"+CODIGO+".pdf",   function(err) {
-                if (err) {
-                  console.log(err);
-                }else{
-                  console.log("descargado");
-                }
-            });
-          });
-        }
-      }
-  });
-});
-
+}
 
 module.exports = router;
+
+// router.get("/pdfc/:IDT/:CODIGO", isLoggedIn, authRole(['Cli_C']), async (req, res) => {
+//   const { IDT } = req.params;
+//   const { CODIGO } = req.params;
+//   const ruta =  path.resolve(__dirname ,"../pdf/" + IDT + "_"+CODIGO+".pdf");
+
+//   await pool.query(
+//     "SELECT\n" +
+//     "        Tareas.Id AS TR_TAREA_ID,\n" +
+//     "        date_format(Tareas.Fecha, '%d-%m-%Y') AS FECHA,\n" +
+//     "        Protocolos.Id AS 'TR_PROT_ID',\n" +
+//     "        	TipoProtocolo.Abreviacion AS 'TR_PROT_TAREATIPO',\n" +
+//     "        	UPPER ( TipoProtocolo.Descripcion ) AS 'TR_PROT_DESC_TAREATIPO',\n" +
+//     "        	Equipos.Codigo AS 'TR_EQUIPO_COD',\n" +
+//     "        	Protocolos.Descripcion AS 'TR_PROT_DESC_PROT',\n" +
+//     "        	Protocolo_Capitulo.Capitulo AS 'TR_PROT_CAPIT_ID',\n" +
+//     "        	UPPER( Protocolo_Capitulo.Descripcion ) AS 'TR_PROT_DESC_CAPI',\n" +
+//     "        	Protocolo_Capitulo.Es_Varios AS 'TR_PROT_ESVARIOS',\n" +
+//     "        	Protocolo_Capturas.Correlativo AS 'TR_PROT_CAPTURA_ID',\n" +
+//     "        	Protocolo_Capturas.Descripcion AS 'TR_PROT_CAPTURA',\n" +
+//     "        	TipoRespuesta.Id AS 'TR_PROT_TRESP_ID',\n" +
+//     "        	TipoRespuesta.Descripcion AS 'TR_PROT_TRESP_TIPO',\n" +
+//     "        	Estados.Descripcion AS 'TR_ESTADO',\n" +
+//     "    CONVERT (\n" +
+//     "        CAST(\n" +
+//     "            CONVERT (\n" +
+//     "            IF\n" +
+//     "                (\n" +
+//     "                    Tarea_Respuesta.Respuesta = 'SC',\n" +
+//     "                    'No aplica',\n" +
+//     "                IF\n" +
+//     "                    (\n" +
+//     "                        Tarea_Respuesta.Respuesta = 'SSR',\n" +
+//     "                        'Sistema sin revisar.',\n" +
+//     "                    IF\n" +
+//     "                        (\n" +
+//     "                            Tarea_Respuesta.Respuesta = 'SOP',\n" +
+//     "                            'Sistema operativo',\n" +
+//     "                        IF\n" +
+//     "                            (\n" +
+//     "                                Tarea_Respuesta.Respuesta = 'SOCO',\n" +
+//     "                                'Sist. operativo con obs.',\n" +
+//     "                            IF\n" +
+//     "                                (\n" +
+//     "                                    Tarea_Respuesta.Respuesta = 'SFS',\n" +
+//     "                                    'Sist. fuera de serv.',\n" +
+//     "                                IF\n" +
+//     "                                ( Tarea_Respuesta.Respuesta = 'SNO', 'Sist. no operativo', Tarea_Respuesta.Respuesta )))))) USING UTF8 \n" +
+//     "            ) AS BINARY \n" +
+//     "        ) USING UTF8 \n" +
+//     "    ) AS 'TR_RESPUESTA',\n" +
+//     "        	Usuarios.Descripcion AS 'TR_TECNICO',\n" +
+//     "        	UPPER( TE.Descripcion ) AS 'TR_TIPO_EQUIPO',\n" +
+//     "        IF\n" +
+//     "        	( TipoContingente.Id > 0, 'SI', 'NO' ) AS 'TR_CONTINGENTE_YN',\n" +
+//     "        	TipoContingente.Id AS 'TR_CONTINGENTE_ID',\n" +
+//     "        	TipoContingente.Descripcion AS 'TR_CONTINGENTE_DESC',\n" +
+//     "       IF\n" +
+//     "        	( Tareas_Motivos.Motivo IS NULL, 'NO', 'SI' ) AS 'TR_INCIDENCIA_YN',\n" +
+//     "        	Tareas_Motivos.Motivo AS 'TR_INCIDENCIA',\n" +
+//     "        	EQ.SecDESC AS 'TR_SECTOR',\n" +
+//     "        	EQ.AreaDESC AS 'TR_AREA',\n" +
+//     "        	EQ.GerDESC AS 'TR_GERENCIA' \n" +
+//     "        FROM\n" +
+//     "        	Protocolos\n" +
+//     "        	INNER JOIN Clientes ON Protocolos.Id_Cliente = Clientes.Id\n" +
+//     "        	INNER JOIN Protocolo_Capitulo ON Protocolos.Id = Protocolo_Capitulo.Id_Protocolo\n" +
+//     "        INNER JOIN TipoProtocolo ON Protocolos.Id_TipoProtocolo = TipoProtocolo.Id\n" +
+//     "        	INNER JOIN Protocolo_Capturas ON Protocolos.Id = Protocolo_Capturas.Id_Protocolo \n" +
+//     "        	AND Protocolo_Capitulo.Capitulo = Protocolo_Capturas.Capitulo\n" +
+//     "        	INNER JOIN TipoRespuesta ON Protocolo_Capturas.Id_TipoRespuesta = TipoRespuesta.Id\n" +
+//     "        	INNER JOIN Tareas ON Protocolos.Id = Tareas.Id_Protocolo\n" +
+//     "        	INNER JOIN Tarea_Respuesta ON Tareas.Id = Tarea_Respuesta.Id_Tarea \n" +
+//     "        	AND Protocolo_Capitulo.Capitulo = Tarea_Respuesta.Capitulo \n" +
+//     "        	AND Protocolo_Capturas.Correlativo = Tarea_Respuesta.Correlativo\n" +
+//     "        	INNER JOIN Estados ON Tareas.Id_Estado = Estados.Id\n" +
+//     "        	INNER JOIN Equipos ON Tareas.Id_Equipo = Equipos.Id\n" +
+//     "        	INNER JOIN Usuarios ON Tareas.Id_Tecnico = Usuarios.Id\n" +
+//     "        	LEFT JOIN TipoContingente ON Tareas.Contingente = TipoContingente.Id\n" +
+//     "       	LEFT JOIN Tareas_Motivos ON Tareas.Id = Tareas_Motivos.Id_Tarea\n" +
+//     "      	INNER JOIN TipoEquipo TE ON TE.Id = Equipos.Id_Tipo\n" +
+//     "        	INNER JOIN Usuarios U ON U.Id = Tareas.Id_Tecnico\n" +
+//     "        	INNER JOIN (\n" +
+//     "        	SELECT\n" +
+//     "        		E.Id 'EqID',\n" +
+//     "        		S.Descripcion 'SecDESC',\n" +
+//     "        	A.Descripcion 'AreaDESC',\n" +
+//     "       		G.Descripcion 'GerDESC',\n" +
+//     "        		C.Descripcion 'CteDESC' \n" +
+//     "       	FROM\n" +
+//     "        		Equipos E\n" +
+//     "        		INNER JOIN Sectores S ON E.Id_Sector = S.Id\n" +
+//     "        		INNER JOIN Areas A ON S.Id_Area = A.Id\n" +
+//     "        		INNER JOIN Gerencias G ON A.Id_Gerencia = G.Id\n" +
+//     "        		INNER JOIN Clientes C ON G.Id_Cliente = C.Id \n" +
+//     "        	) AS EQ ON Tareas.Id_Equipo = EQ.EqID \n" +
+//     "        WHERE \n" +
+//     "   Tareas.Id =" +IDT +" ORDER BY TR_PROT_DESC_CAPI  ASC, FIELD(TR_PROT_CAPTURA,'Observaciones PV', 'Observación PV', 'Observaciones PV SA', 'Observaciones PV SSA', 'Observaciones PV EP'),	TR_PROT_CAPTURA ASC",
+//     async (err, result) => {
+//       if (err) {
+//         console.log(err);
+//       } else {
+//         const estado = result[0].TR_ESTADO;
+//         const filePathName = path.resolve(__dirname, "../views/protocolos/pdf.hbs") 
+//         const html1 = fs.readFileSync(filePathName, "utf8");
+//         const ruta_imagen = path.resolve(__dirname, "../public/img/imagen1.png");                   
+//         const img = "file:///" + ruta_imagen;
+//         const options = {
+//           format: "letter",
+//           orientation: "portrait",
+//           border: "5mm",
+//           paginationOffset: 1,       // Override the initial pagination number
+//             "footer": {
+//               "height": "5mm",
+//               "contents": {
+//                 default: '<div style="font-family: Verdana, Geneva, Tahoma, sans-serif; font-size: 8px"><center>SAPMA-Sercoing | Tarea Nº:  '+IDT+' | Estado: '+estado+' | Página <span style="color: #444;">{{page}}</span>/<span>{{pages}}</span></center></div>', // fallback value
+                
+//               }
+//             },
+//           localUrlAccess: true,
+//           base: ('https://sapmamlcc.sercoing.cl:3000', 'https://localhost:3000')
+//         };
+
+//         const imagendebd = await pool.query("SELECT * FROM Adjuntos WHERE Id_Tarea = ?", [IDT]);
+//         const imagendebd1 = Object.values(imagendebd);
+
+//         if (imagendebd1.length > 0) {
+//           const imagendebd2 = imagendebd1[0].Archivos.split('|');
+//           const ruta15 = path.join(__dirname, "../images/");
+//           console.log(ruta15);
+//           const imagenes =  imagendebd2.map((img) => {
+//             return "File:///"+ruta15  +IDT+"_"+img;
+//           });
+  
+//           const document = {
+//             type: "file", // 'file' or 'buffer'
+//             template: html1,
+//             context: {
+//               IDT: result[0].TR_TAREA_ID,
+//               TR_GERENCIA: result[0].TR_GERENCIA,
+//               TR_AREA: result[0].TR_AREA,
+//               TR_SECTOR: result[0].TR_SECTOR,
+//               FECHA: result[0].FECHA,
+//               TAREATIPO: result[0].TR_PROT_TAREATIPO,
+//               TR_PROT_DESC_TAREATIPO: result[0].TR_PROT_DESC_TAREATIPO,
+//               TR_EQUIPO_COD: result[0].TR_EQUIPO_COD,
+//               TR_PROT_ID: result[0].TR_PROT_ID,
+//               TR_PROT_DESC_PROT: result[0].TR_PROT_DESC_PROT,
+//               TR_ESTADO: result[0].TR_ESTADO,
+//               prot: result,
+//               img: img,
+//               imagenes:imagenes
+//             },
+//             path: "src/pdf/" + IDT +"_"+CODIGO+".pdf", // it is not required if type is buffer
+//           };
+  
+//           pdf.create(document, options)
+//             .then((res) => {
+//               console.log("PDF creado");
+  
+//               // console.log(res);
+//               // const file = Object.values(res);
+//               // const file1 = file[0];
+//               // fs.readFile(file1, function (err, res, file) {
+//               //   res.contentType("application/pdf");
+//               //   res.send(file1);
+//               // });
+//             })
+//             .catch((error) => {
+//               console.error(error);
+//             }).then(() => {
+//               res.download(ruta,  IDT+"_"+CODIGO+".pdf",   function(err) {
+//                 if (err) {
+//                   console.log(err);
+//                 }else{
+//                   console.log("descargado");
+//                 }
+//             });
+//           });
+//         }else{
+ 
+//           const document = {
+//             type: "file", // 'file' or 'buffer'
+//             template: html1,
+//             context: {
+//               IDT: result[0].TR_TAREA_ID,
+//               TR_GERENCIA: result[0].TR_GERENCIA,
+//               TR_AREA: result[0].TR_AREA,
+//               TR_SECTOR: result[0].TR_SECTOR,
+//               FECHA: result[0].FECHA,
+//               TAREATIPO: result[0].TR_PROT_TAREATIPO,
+//               TR_PROT_DESC_TAREATIPO: result[0].TR_PROT_DESC_TAREATIPO,
+//               TR_EQUIPO_COD: result[0].TR_EQUIPO_COD,
+//               TR_PROT_ID: result[0].TR_PROT_ID,
+//               TR_PROT_DESC_PROT: result[0].TR_PROT_DESC_PROT,
+//               TR_ESTADO: result[0].TR_ESTADO,
+//               prot: result,
+//               img: img
+//             },
+//             path: "src/pdf/" + IDT +"_"+CODIGO+".pdf", // it is not required if type is buffer
+//           };
+  
+//           pdf.create(document, options)
+//             .then((res) => {
+//               console.log("PDF creado");
+  
+//               // console.log(res);
+//               // const file = Object.values(res);
+//               // const file1 = file[0];
+//               // fs.readFile(file1, function (err, res, file) {
+//               //   res.contentType("application/pdf");
+//               //   res.send(file1);
+//               // });
+//             })
+//             .catch((error) => {
+//               console.error(error);
+//             }).then(() => {
+//               res.download(ruta,  IDT+"_"+CODIGO+".pdf",   function(err) {
+//                 if (err) {
+//                   console.log(err);
+//                 }else{
+//                   console.log("descargado");
+//                 }
+//             });
+//           });
+//         }
+//       }
+//   });
+// });
+
+// router.get("/pdfb/:IDT/:CODIGO", isLoggedIn, authRole(['Cli_B']), async (req, res) => {
+//   const { IDT } = req.params;
+//   const { CODIGO } = req.params;
+//   const ruta =  path.resolve(__dirname ,"../pdf/" + IDT +"_"+CODIGO+".pdf");
+
+//   await pool.query(
+//     "SELECT\n" +
+//     "        Tareas.Id AS TR_TAREA_ID,\n" +
+//     "        date_format(Tareas.Fecha, '%d-%m-%Y') AS FECHA,\n" +
+//     "        Protocolos.Id AS 'TR_PROT_ID',\n" +
+//     "        	TipoProtocolo.Abreviacion AS 'TR_PROT_TAREATIPO',\n" +
+//     "        	UPPER ( TipoProtocolo.Descripcion ) AS 'TR_PROT_DESC_TAREATIPO',\n" +
+//     "        	Equipos.Codigo AS 'TR_EQUIPO_COD',\n" +
+//     "        	Protocolos.Descripcion AS 'TR_PROT_DESC_PROT',\n" +
+//     "        	Protocolo_Capitulo.Capitulo AS 'TR_PROT_CAPIT_ID',\n" +
+//     "        	UPPER( Protocolo_Capitulo.Descripcion ) AS 'TR_PROT_DESC_CAPI',\n" +
+//     "        	Protocolo_Capitulo.Es_Varios AS 'TR_PROT_ESVARIOS',\n" +
+//     "        	Protocolo_Capturas.Correlativo AS 'TR_PROT_CAPTURA_ID',\n" +
+//     "        	Protocolo_Capturas.Descripcion AS 'TR_PROT_CAPTURA',\n" +
+//     "        	TipoRespuesta.Id AS 'TR_PROT_TRESP_ID',\n" +
+//     "        	TipoRespuesta.Descripcion AS 'TR_PROT_TRESP_TIPO',\n" +
+//     "        	Estados.Descripcion AS 'TR_ESTADO',\n" +
+//     "    CONVERT (\n" +
+//     "        CAST(\n" +
+//     "            CONVERT (\n" +
+//     "            IF\n" +
+//     "                (\n" +
+//     "                    Tarea_Respuesta.Respuesta = 'SC',\n" +
+//     "                    'No aplica',\n" +
+//     "                IF\n" +
+//     "                    (\n" +
+//     "                        Tarea_Respuesta.Respuesta = 'SSR',\n" +
+//     "                        'Sistema sin revisar.',\n" +
+//     "                    IF\n" +
+//     "                        (\n" +
+//     "                            Tarea_Respuesta.Respuesta = 'SOP',\n" +
+//     "                            'Sistema operativo',\n" +
+//     "                        IF\n" +
+//     "                            (\n" +
+//     "                                Tarea_Respuesta.Respuesta = 'SOCO',\n" +
+//     "                                'Sist. operativo con obs.',\n" +
+//     "                            IF\n" +
+//     "                                (\n" +
+//     "                                    Tarea_Respuesta.Respuesta = 'SFS',\n" +
+//     "                                    'Sist. fuera de serv.',\n" +
+//     "                                IF\n" +
+//     "                                ( Tarea_Respuesta.Respuesta = 'SNO', 'Sist. no operativo', Tarea_Respuesta.Respuesta )))))) USING UTF8 \n" +
+//     "            ) AS BINARY \n" +
+//     "        ) USING UTF8 \n" +
+//     "    ) AS 'TR_RESPUESTA',\n" +
+//     "        	Usuarios.Descripcion AS 'TR_TECNICO',\n" +
+//     "        	UPPER( TE.Descripcion ) AS 'TR_TIPO_EQUIPO',\n" +
+//     "        IF\n" +
+//     "        	( TipoContingente.Id > 0, 'SI', 'NO' ) AS 'TR_CONTINGENTE_YN',\n" +
+//     "        	TipoContingente.Id AS 'TR_CONTINGENTE_ID',\n" +
+//     "        	TipoContingente.Descripcion AS 'TR_CONTINGENTE_DESC',\n" +
+//     "       IF\n" +
+//     "        	( Tareas_Motivos.Motivo IS NULL, 'NO', 'SI' ) AS 'TR_INCIDENCIA_YN',\n" +
+//     "        	Tareas_Motivos.Motivo AS 'TR_INCIDENCIA',\n" +
+//     "        	EQ.SecDESC AS 'TR_SECTOR',\n" +
+//     "        	EQ.AreaDESC AS 'TR_AREA',\n" +
+//     "        	EQ.GerDESC AS 'TR_GERENCIA' \n" +
+//     "        FROM\n" +
+//     "        	Protocolos\n" +
+//     "        	INNER JOIN Clientes ON Protocolos.Id_Cliente = Clientes.Id\n" +
+//     "        	INNER JOIN Protocolo_Capitulo ON Protocolos.Id = Protocolo_Capitulo.Id_Protocolo\n" +
+//     "        INNER JOIN TipoProtocolo ON Protocolos.Id_TipoProtocolo = TipoProtocolo.Id\n" +
+//     "        	INNER JOIN Protocolo_Capturas ON Protocolos.Id = Protocolo_Capturas.Id_Protocolo \n" +
+//     "        	AND Protocolo_Capitulo.Capitulo = Protocolo_Capturas.Capitulo\n" +
+//     "        	INNER JOIN TipoRespuesta ON Protocolo_Capturas.Id_TipoRespuesta = TipoRespuesta.Id\n" +
+//     "        	INNER JOIN Tareas ON Protocolos.Id = Tareas.Id_Protocolo\n" +
+//     "        	INNER JOIN Tarea_Respuesta ON Tareas.Id = Tarea_Respuesta.Id_Tarea \n" +
+//     "        	AND Protocolo_Capitulo.Capitulo = Tarea_Respuesta.Capitulo \n" +
+//     "        	AND Protocolo_Capturas.Correlativo = Tarea_Respuesta.Correlativo\n" +
+//     "        	INNER JOIN Estados ON Tareas.Id_Estado = Estados.Id\n" +
+//     "        	INNER JOIN Equipos ON Tareas.Id_Equipo = Equipos.Id\n" +
+//     "        	INNER JOIN Usuarios ON Tareas.Id_Tecnico = Usuarios.Id\n" +
+//     "        	LEFT JOIN TipoContingente ON Tareas.Contingente = TipoContingente.Id\n" +
+//     "       	LEFT JOIN Tareas_Motivos ON Tareas.Id = Tareas_Motivos.Id_Tarea\n" +
+//     "      	INNER JOIN TipoEquipo TE ON TE.Id = Equipos.Id_Tipo\n" +
+//     "        	INNER JOIN Usuarios U ON U.Id = Tareas.Id_Tecnico\n" +
+//     "        	INNER JOIN (\n" +
+//     "        	SELECT\n" +
+//     "        		E.Id 'EqID',\n" +
+//     "        		S.Descripcion 'SecDESC',\n" +
+//     "        	A.Descripcion 'AreaDESC',\n" +
+//     "       		G.Descripcion 'GerDESC',\n" +
+//     "        		C.Descripcion 'CteDESC' \n" +
+//     "       	FROM\n" +
+//     "        		Equipos E\n" +
+//     "        		INNER JOIN Sectores S ON E.Id_Sector = S.Id\n" +
+//     "        		INNER JOIN Areas A ON S.Id_Area = A.Id\n" +
+//     "        		INNER JOIN Gerencias G ON A.Id_Gerencia = G.Id\n" +
+//     "        		INNER JOIN Clientes C ON G.Id_Cliente = C.Id \n" +
+//     "        	) AS EQ ON Tareas.Id_Equipo = EQ.EqID \n" +
+//     "        WHERE \n" +
+//     "   Tareas.Id =" +IDT +" ORDER BY TR_PROT_DESC_CAPI  ASC, FIELD(TR_PROT_CAPTURA,'Observaciones PV', 'Observación PV', 'Observaciones PV SA', 'Observaciones PV SSA', 'Observaciones PV EP'),	TR_PROT_CAPTURA ASC",
+//     async (err, result) => {
+//       if (err) {
+//         console.log(err);
+//       } else {
+//         const estado = result[0].TR_ESTADO;
+//         const filePathName = path.resolve(__dirname, "../views/protocolos/pdf.hbs") 
+//         const html1 = fs.readFileSync(filePathName, "utf8");
+//         const ruta_imagen = path.resolve(__dirname, "../public/img/imagen1.png");                   
+//         const img = "file:///" + ruta_imagen;
+//         const options = {
+//           format: "letter",
+//           orientation: "portrait",
+//           border: "5mm",
+//           paginationOffset: 1,       // Override the initial pagination number
+//             "footer": {
+//               "height": "5mm",
+//               "contents": {
+//                 default: '<div style="font-family: Verdana, Geneva, Tahoma, sans-serif; font-size: 8px"><center>SAPMA-Sercoing | Tarea Nº:  '+IDT+' | Estado: '+estado+' | Página <span style="color: #444;">{{page}}</span>/<span>{{pages}}</span></center></div>', // fallback value
+                
+//               }
+//             },
+//           localUrlAccess: true,
+//           base: ('https://sapmamlcc.sercoing.cl:3000', 'https://localhost:3000')
+//         };
+
+//         const imagendebd = await pool.query("SELECT * FROM Adjuntos WHERE Id_Tarea = ?", [IDT]);
+//         const imagendebd1 = Object.values(imagendebd);
+
+//         if (imagendebd1.length > 0) {
+//           const imagendebd2 = imagendebd1[0].Archivos.split('|');
+//           const ruta15 = path.join(__dirname, "../images/");
+//           console.log(ruta15);
+//           const imagenes =  imagendebd2.map((img) => {
+//             return "File:///"+ruta15  +IDT+"_"+img;
+//           });
+  
+//           const document = {
+//             type: "file", // 'file' or 'buffer'
+//             template: html1,
+//             context: {
+//               IDT: result[0].TR_TAREA_ID,
+//               TR_GERENCIA: result[0].TR_GERENCIA,
+//               TR_AREA: result[0].TR_AREA,
+//               TR_SECTOR: result[0].TR_SECTOR,
+//               FECHA: result[0].FECHA,
+//               TAREATIPO: result[0].TR_PROT_TAREATIPO,
+//               TR_PROT_DESC_TAREATIPO: result[0].TR_PROT_DESC_TAREATIPO,
+//               TR_EQUIPO_COD: result[0].TR_EQUIPO_COD,
+//               TR_PROT_ID: result[0].TR_PROT_ID,
+//               TR_PROT_DESC_PROT: result[0].TR_PROT_DESC_PROT,
+//               TR_ESTADO: result[0].TR_ESTADO,
+//               prot: result,
+//               img: img,
+//               imagenes:imagenes
+//             },
+//             path: "src/pdf/" + IDT +"_"+CODIGO+".pdf", // it is not required if type is buffer
+//           };
+  
+//           pdf.create(document, options)
+//             .then((res) => {
+//               console.log("PDF creado");
+  
+//               // console.log(res);
+//               // const file = Object.values(res);
+//               // const file1 = file[0];
+//               // fs.readFile(file1, function (err, res, file) {
+//               //   res.contentType("application/pdf");
+//               //   res.send(file1);
+//               // });
+//             })
+//             .catch((error) => {
+//               console.error(error);
+//             }).then(() => {
+//               res.download(ruta,  IDT+"_"+CODIGO+".pdf",   function(err) {
+//                 if (err) {
+//                   console.log(err);
+//                 }else{
+//                   console.log("descargado");
+//                 }
+//             });
+//           });
+//         }else{
+ 
+//           const document = {
+//             type: "file", // 'file' or 'buffer'
+//             template: html1,
+//             context: {
+//               IDT: result[0].TR_TAREA_ID,
+//               TR_GERENCIA: result[0].TR_GERENCIA,
+//               TR_AREA: result[0].TR_AREA,
+//               TR_SECTOR: result[0].TR_SECTOR,
+//               FECHA: result[0].FECHA,
+//               TAREATIPO: result[0].TR_PROT_TAREATIPO,
+//               TR_PROT_DESC_TAREATIPO: result[0].TR_PROT_DESC_TAREATIPO,
+//               TR_EQUIPO_COD: result[0].TR_EQUIPO_COD,
+//               TR_PROT_ID: result[0].TR_PROT_ID,
+//               TR_PROT_DESC_PROT: result[0].TR_PROT_DESC_PROT,
+//               TR_ESTADO: result[0].TR_ESTADO,
+//               prot: result,
+//               img: img
+//             },
+//             path: "src/pdf/" + IDT +"_"+CODIGO+".pdf", // it is not required if type is buffer
+//           };
+  
+//           pdf.create(document, options)
+//             .then((res) => {
+//               console.log("PDF creado");
+  
+//               // console.log(res);
+//               // const file = Object.values(res);
+//               // const file1 = file[0];
+//               // fs.readFile(file1, function (err, res, file) {
+//               //   res.contentType("application/pdf");
+//               //   res.send(file1);
+//               // });
+//             })
+//             .catch((error) => {
+//               console.error(error);
+//             }).then(() => {
+//               res.download(ruta,  IDT+"_"+CODIGO+".pdf",   function(err) {
+//                 if (err) {
+//                   console.log(err);
+//                 }else{
+//                   console.log("descargado");
+//                 }
+//             });
+//           });
+//         }
+//       }
+//   });
+// });
+
+// router.get("/pdfa/:IDT/:CODIGO", isLoggedIn, authRole(['Cli_A']), async (req, res) => {
+//   const { IDT } = req.params;
+//   const { CODIGO } = req.params;
+//   const ruta =  path.resolve(__dirname ,"../pdf/" + IDT +"_"+CODIGO+".pdf");
+
+//   await pool.query(
+//     "SELECT\n" +
+//     "        Tareas.Id AS TR_TAREA_ID,\n" +
+//     "        date_format(Tareas.Fecha, '%d-%m-%Y') AS FECHA,\n" +
+//     "        Protocolos.Id AS 'TR_PROT_ID',\n" +
+//     "        	TipoProtocolo.Abreviacion AS 'TR_PROT_TAREATIPO',\n" +
+//     "        	UPPER ( TipoProtocolo.Descripcion ) AS 'TR_PROT_DESC_TAREATIPO',\n" +
+//     "        	Equipos.Codigo AS 'TR_EQUIPO_COD',\n" +
+//     "        	Protocolos.Descripcion AS 'TR_PROT_DESC_PROT',\n" +
+//     "        	Protocolo_Capitulo.Capitulo AS 'TR_PROT_CAPIT_ID',\n" +
+//     "        	UPPER( Protocolo_Capitulo.Descripcion ) AS 'TR_PROT_DESC_CAPI',\n" +
+//     "        	Protocolo_Capitulo.Es_Varios AS 'TR_PROT_ESVARIOS',\n" +
+//     "        	Protocolo_Capturas.Correlativo AS 'TR_PROT_CAPTURA_ID',\n" +
+//     "        	Protocolo_Capturas.Descripcion AS 'TR_PROT_CAPTURA',\n" +
+//     "        	TipoRespuesta.Id AS 'TR_PROT_TRESP_ID',\n" +
+//     "        	TipoRespuesta.Descripcion AS 'TR_PROT_TRESP_TIPO',\n" +
+//     "        	Estados.Descripcion AS 'TR_ESTADO',\n" +
+//     "    CONVERT (\n" +
+//     "        CAST(\n" +
+//     "            CONVERT (\n" +
+//     "            IF\n" +
+//     "                (\n" +
+//     "                    Tarea_Respuesta.Respuesta = 'SC',\n" +
+//     "                    'No aplica',\n" +
+//     "                IF\n" +
+//     "                    (\n" +
+//     "                        Tarea_Respuesta.Respuesta = 'SSR',\n" +
+//     "                        'Sistema sin revisar.',\n" +
+//     "                    IF\n" +
+//     "                        (\n" +
+//     "                            Tarea_Respuesta.Respuesta = 'SOP',\n" +
+//     "                            'Sistema operativo',\n" +
+//     "                        IF\n" +
+//     "                            (\n" +
+//     "                                Tarea_Respuesta.Respuesta = 'SOCO',\n" +
+//     "                                'Sist. operativo con obs.',\n" +
+//     "                            IF\n" +
+//     "                                (\n" +
+//     "                                    Tarea_Respuesta.Respuesta = 'SFS',\n" +
+//     "                                    'Sist. fuera de serv.',\n" +
+//     "                                IF\n" +
+//     "                                ( Tarea_Respuesta.Respuesta = 'SNO', 'Sist. no operativo', Tarea_Respuesta.Respuesta )))))) USING UTF8 \n" +
+//     "            ) AS BINARY \n" +
+//     "        ) USING UTF8 \n" +
+//     "    ) AS 'TR_RESPUESTA',\n" +
+//     "        	Usuarios.Descripcion AS 'TR_TECNICO',\n" +
+//     "        	UPPER( TE.Descripcion ) AS 'TR_TIPO_EQUIPO',\n" +
+//     "        IF\n" +
+//     "        	( TipoContingente.Id > 0, 'SI', 'NO' ) AS 'TR_CONTINGENTE_YN',\n" +
+//     "        	TipoContingente.Id AS 'TR_CONTINGENTE_ID',\n" +
+//     "        	TipoContingente.Descripcion AS 'TR_CONTINGENTE_DESC',\n" +
+//     "       IF\n" +
+//     "        	( Tareas_Motivos.Motivo IS NULL, 'NO', 'SI' ) AS 'TR_INCIDENCIA_YN',\n" +
+//     "        	Tareas_Motivos.Motivo AS 'TR_INCIDENCIA',\n" +
+//     "        	EQ.SecDESC AS 'TR_SECTOR',\n" +
+//     "        	EQ.AreaDESC AS 'TR_AREA',\n" +
+//     "        	EQ.GerDESC AS 'TR_GERENCIA' \n" +
+//     "        FROM\n" +
+//     "        	Protocolos\n" +
+//     "        	INNER JOIN Clientes ON Protocolos.Id_Cliente = Clientes.Id\n" +
+//     "        	INNER JOIN Protocolo_Capitulo ON Protocolos.Id = Protocolo_Capitulo.Id_Protocolo\n" +
+//     "        INNER JOIN TipoProtocolo ON Protocolos.Id_TipoProtocolo = TipoProtocolo.Id\n" +
+//     "        	INNER JOIN Protocolo_Capturas ON Protocolos.Id = Protocolo_Capturas.Id_Protocolo \n" +
+//     "        	AND Protocolo_Capitulo.Capitulo = Protocolo_Capturas.Capitulo\n" +
+//     "        	INNER JOIN TipoRespuesta ON Protocolo_Capturas.Id_TipoRespuesta = TipoRespuesta.Id\n" +
+//     "        	INNER JOIN Tareas ON Protocolos.Id = Tareas.Id_Protocolo\n" +
+//     "        	INNER JOIN Tarea_Respuesta ON Tareas.Id = Tarea_Respuesta.Id_Tarea \n" +
+//     "        	AND Protocolo_Capitulo.Capitulo = Tarea_Respuesta.Capitulo \n" +
+//     "        	AND Protocolo_Capturas.Correlativo = Tarea_Respuesta.Correlativo\n" +
+//     "        	INNER JOIN Estados ON Tareas.Id_Estado = Estados.Id\n" +
+//     "        	INNER JOIN Equipos ON Tareas.Id_Equipo = Equipos.Id\n" +
+//     "        	INNER JOIN Usuarios ON Tareas.Id_Tecnico = Usuarios.Id\n" +
+//     "        	LEFT JOIN TipoContingente ON Tareas.Contingente = TipoContingente.Id\n" +
+//     "       	LEFT JOIN Tareas_Motivos ON Tareas.Id = Tareas_Motivos.Id_Tarea\n" +
+//     "      	INNER JOIN TipoEquipo TE ON TE.Id = Equipos.Id_Tipo\n" +
+//     "        	INNER JOIN Usuarios U ON U.Id = Tareas.Id_Tecnico\n" +
+//     "        	INNER JOIN (\n" +
+//     "        	SELECT\n" +
+//     "        		E.Id 'EqID',\n" +
+//     "        		S.Descripcion 'SecDESC',\n" +
+//     "        	A.Descripcion 'AreaDESC',\n" +
+//     "       		G.Descripcion 'GerDESC',\n" +
+//     "        		C.Descripcion 'CteDESC' \n" +
+//     "       	FROM\n" +
+//     "        		Equipos E\n" +
+//     "        		INNER JOIN Sectores S ON E.Id_Sector = S.Id\n" +
+//     "        		INNER JOIN Areas A ON S.Id_Area = A.Id\n" +
+//     "        		INNER JOIN Gerencias G ON A.Id_Gerencia = G.Id\n" +
+//     "        		INNER JOIN Clientes C ON G.Id_Cliente = C.Id \n" +
+//     "        	) AS EQ ON Tareas.Id_Equipo = EQ.EqID \n" +
+//     "        WHERE \n" +
+//     "   Tareas.Id =" +IDT +" ORDER BY TR_PROT_DESC_CAPI  ASC, FIELD(TR_PROT_CAPTURA,'Observaciones PV', 'Observación PV', 'Observaciones PV SA', 'Observaciones PV SSA', 'Observaciones PV EP'),	TR_PROT_CAPTURA ASC",
+//     async (err, result) => {
+//       if (err) {
+//         console.log(err);
+//       } else {
+//         const estado = result[0].TR_ESTADO;
+//         const filePathName = path.resolve(__dirname, "../views/protocolos/pdf.hbs") 
+//         const html1 = fs.readFileSync(filePathName, "utf8");
+//         const ruta_imagen = path.resolve(__dirname, "../public/img/imagen1.png");                   
+//         const img = "file:///" + ruta_imagen;
+//         const options = {
+//           format: "letter",
+//           orientation: "portrait",
+//           border: "5mm",
+//           paginationOffset: 1,       // Override the initial pagination number
+//             "footer": {
+//               "height": "5mm",
+//               "contents": {
+//                 default: '<div style="font-family: Verdana, Geneva, Tahoma, sans-serif; font-size: 8px"><center>SAPMA-Sercoing | Tarea Nº:  '+IDT+' | Estado: '+estado+' | Página <span style="color: #444;">{{page}}</span>/<span>{{pages}}</span></center></div>', // fallback value
+                
+//               }
+//             },
+//           localUrlAccess: true,
+//           base: ('https://sapmamlcc.sercoing.cl:3000', 'https://localhost:3000')
+//         };
+
+//         const imagendebd = await pool.query("SELECT * FROM Adjuntos WHERE Id_Tarea = ?", [IDT]);
+//         const imagendebd1 = Object.values(imagendebd);
+
+//         if (imagendebd1.length > 0) {
+//           const imagendebd2 = imagendebd1[0].Archivos.split('|');
+//           const ruta15 = path.join(__dirname, "../images/");
+//           console.log(ruta15);
+//           const imagenes =  imagendebd2.map((img) => {
+//             return "File:///"+ruta15  +IDT+"_"+img;
+//           });
+  
+//           const document = {
+//             type: "file", // 'file' or 'buffer'
+//             template: html1,
+//             context: {
+//               IDT: result[0].TR_TAREA_ID,
+//               TR_GERENCIA: result[0].TR_GERENCIA,
+//               TR_AREA: result[0].TR_AREA,
+//               TR_SECTOR: result[0].TR_SECTOR,
+//               FECHA: result[0].FECHA,
+//               TAREATIPO: result[0].TR_PROT_TAREATIPO,
+//               TR_PROT_DESC_TAREATIPO: result[0].TR_PROT_DESC_TAREATIPO,
+//               TR_EQUIPO_COD: result[0].TR_EQUIPO_COD,
+//               TR_PROT_ID: result[0].TR_PROT_ID,
+//               TR_PROT_DESC_PROT: result[0].TR_PROT_DESC_PROT,
+//               TR_ESTADO: result[0].TR_ESTADO,
+//               prot: result,
+//               img: img,
+//               imagenes:imagenes
+//             },
+//             path: "src/pdf/" + IDT +"_"+CODIGO+".pdf", // it is not required if type is buffer
+//           };
+  
+//           pdf.create(document, options)
+//             .then((res) => {
+//               console.log("PDF creado");
+  
+//               // console.log(res);
+//               // const file = Object.values(res);
+//               // const file1 = file[0];
+//               // fs.readFile(file1, function (err, res, file) {
+//               //   res.contentType("application/pdf");
+//               //   res.send(file1);
+//               // });
+//             })
+//             .catch((error) => {
+//               console.error(error);
+//             }).then(() => {
+//               res.download(ruta,  IDT+"_"+CODIGO+".pdf",   function(err) {
+//                 if (err) {
+//                   console.log(err);
+//                 }else{
+//                   console.log("descargado");
+//                 }
+//             });
+//           });
+//         }else{
+ 
+//           const document = {
+//             type: "file", // 'file' or 'buffer'
+//             template: html1,
+//             context: {
+//               IDT: result[0].TR_TAREA_ID,
+//               TR_GERENCIA: result[0].TR_GERENCIA,
+//               TR_AREA: result[0].TR_AREA,
+//               TR_SECTOR: result[0].TR_SECTOR,
+//               FECHA: result[0].FECHA,
+//               TAREATIPO: result[0].TR_PROT_TAREATIPO,
+//               TR_PROT_DESC_TAREATIPO: result[0].TR_PROT_DESC_TAREATIPO,
+//               TR_EQUIPO_COD: result[0].TR_EQUIPO_COD,
+//               TR_PROT_ID: result[0].TR_PROT_ID,
+//               TR_PROT_DESC_PROT: result[0].TR_PROT_DESC_PROT,
+//               TR_ESTADO: result[0].TR_ESTADO,
+//               prot: result,
+//               img: img
+//             },
+//             path: "src/pdf/" + IDT +"_"+CODIGO+".pdf", // it is not required if type is buffer
+//           };
+  
+//           pdf.create(document, options)
+//             .then((res) => {
+//               console.log("PDF creado");
+  
+//               // console.log(res);
+//               // const file = Object.values(res);
+//               // const file1 = file[0];
+//               // fs.readFile(file1, function (err, res, file) {
+//               //   res.contentType("application/pdf");
+//               //   res.send(file1);
+//               // });
+//             })
+//             .catch((error) => {
+//               console.error(error);
+//             }).then(() => {
+//               res.download(ruta,  IDT+"_"+CODIGO+".pdf",   function(err) {
+//                 if (err) {
+//                   console.log(err);
+//                 }else{
+//                   console.log("descargado");
+//                 }
+//             });
+//           });
+//         }
+//       }
+//   }); 
+// });
+
+// router.get("/pdfd/:IDT/:CODIGO", isLoggedIn, authRole(['Cli_D']), async (req, res) => {
+//   const { IDT } = req.params;
+//   const { CODIGO } = req.params;
+//   const ruta =  path.resolve(__dirname ,"../pdf/" + IDT +"_"+CODIGO+".pdf");
+
+//   await pool.query(
+//     "SELECT\n" +
+//     "        Tareas.Id AS TR_TAREA_ID,\n" +
+//     "        date_format(Tareas.Fecha, '%d-%m-%Y') AS FECHA,\n" +
+//     "        Protocolos.Id AS 'TR_PROT_ID',\n" +
+//     "        	TipoProtocolo.Abreviacion AS 'TR_PROT_TAREATIPO',\n" +
+//     "        	UPPER ( TipoProtocolo.Descripcion ) AS 'TR_PROT_DESC_TAREATIPO',\n" +
+//     "        	Equipos.Codigo AS 'TR_EQUIPO_COD',\n" +
+//     "        	Protocolos.Descripcion AS 'TR_PROT_DESC_PROT',\n" +
+//     "        	Protocolo_Capitulo.Capitulo AS 'TR_PROT_CAPIT_ID',\n" +
+//     "        	UPPER( Protocolo_Capitulo.Descripcion ) AS 'TR_PROT_DESC_CAPI',\n" +
+//     "        	Protocolo_Capitulo.Es_Varios AS 'TR_PROT_ESVARIOS',\n" +
+//     "        	Protocolo_Capturas.Correlativo AS 'TR_PROT_CAPTURA_ID',\n" +
+//     "        	Protocolo_Capturas.Descripcion AS 'TR_PROT_CAPTURA',\n" +
+//     "        	TipoRespuesta.Id AS 'TR_PROT_TRESP_ID',\n" +
+//     "        	TipoRespuesta.Descripcion AS 'TR_PROT_TRESP_TIPO',\n" +
+//     "        	Estados.Descripcion AS 'TR_ESTADO',\n" +
+//     "    CONVERT (\n" +
+//     "        CAST(\n" +
+//     "            CONVERT (\n" +
+//     "            IF\n" +
+//     "                (\n" +
+//     "                    Tarea_Respuesta.Respuesta = 'SC',\n" +
+//     "                    'No aplica',\n" +
+//     "                IF\n" +
+//     "                    (\n" +
+//     "                        Tarea_Respuesta.Respuesta = 'SSR',\n" +
+//     "                        'Sistema sin revisar.',\n" +
+//     "                    IF\n" +
+//     "                        (\n" +
+//     "                            Tarea_Respuesta.Respuesta = 'SOP',\n" +
+//     "                            'Sistema operativo',\n" +
+//     "                        IF\n" +
+//     "                            (\n" +
+//     "                                Tarea_Respuesta.Respuesta = 'SOCO',\n" +
+//     "                                'Sist. operativo con obs.',\n" +
+//     "                            IF\n" +
+//     "                                (\n" +
+//     "                                    Tarea_Respuesta.Respuesta = 'SFS',\n" +
+//     "                                    'Sist. fuera de serv.',\n" +
+//     "                                IF\n" +
+//     "                                ( Tarea_Respuesta.Respuesta = 'SNO', 'Sist. no operativo', Tarea_Respuesta.Respuesta )))))) USING UTF8 \n" +
+//     "            ) AS BINARY \n" +
+//     "        ) USING UTF8 \n" +
+//     "    ) AS 'TR_RESPUESTA',\n" +
+//     "        	Usuarios.Descripcion AS 'TR_TECNICO',\n" +
+//     "        	UPPER( TE.Descripcion ) AS 'TR_TIPO_EQUIPO',\n" +
+//     "        IF\n" +
+//     "        	( TipoContingente.Id > 0, 'SI', 'NO' ) AS 'TR_CONTINGENTE_YN',\n" +
+//     "        	TipoContingente.Id AS 'TR_CONTINGENTE_ID',\n" +
+//     "        	TipoContingente.Descripcion AS 'TR_CONTINGENTE_DESC',\n" +
+//     "       IF\n" +
+//     "        	( Tareas_Motivos.Motivo IS NULL, 'NO', 'SI' ) AS 'TR_INCIDENCIA_YN',\n" +
+//     "        	Tareas_Motivos.Motivo AS 'TR_INCIDENCIA',\n" +
+//     "        	EQ.SecDESC AS 'TR_SECTOR',\n" +
+//     "        	EQ.AreaDESC AS 'TR_AREA',\n" +
+//     "        	EQ.GerDESC AS 'TR_GERENCIA' \n" +
+//     "        FROM\n" +
+//     "        	Protocolos\n" +
+//     "        	INNER JOIN Clientes ON Protocolos.Id_Cliente = Clientes.Id\n" +
+//     "        	INNER JOIN Protocolo_Capitulo ON Protocolos.Id = Protocolo_Capitulo.Id_Protocolo\n" +
+//     "        INNER JOIN TipoProtocolo ON Protocolos.Id_TipoProtocolo = TipoProtocolo.Id\n" +
+//     "        	INNER JOIN Protocolo_Capturas ON Protocolos.Id = Protocolo_Capturas.Id_Protocolo \n" +
+//     "        	AND Protocolo_Capitulo.Capitulo = Protocolo_Capturas.Capitulo\n" +
+//     "        	INNER JOIN TipoRespuesta ON Protocolo_Capturas.Id_TipoRespuesta = TipoRespuesta.Id\n" +
+//     "        	INNER JOIN Tareas ON Protocolos.Id = Tareas.Id_Protocolo\n" +
+//     "        	INNER JOIN Tarea_Respuesta ON Tareas.Id = Tarea_Respuesta.Id_Tarea \n" +
+//     "        	AND Protocolo_Capitulo.Capitulo = Tarea_Respuesta.Capitulo \n" +
+//     "        	AND Protocolo_Capturas.Correlativo = Tarea_Respuesta.Correlativo\n" +
+//     "        	INNER JOIN Estados ON Tareas.Id_Estado = Estados.Id\n" +
+//     "        	INNER JOIN Equipos ON Tareas.Id_Equipo = Equipos.Id\n" +
+//     "        	INNER JOIN Usuarios ON Tareas.Id_Tecnico = Usuarios.Id\n" +
+//     "        	LEFT JOIN TipoContingente ON Tareas.Contingente = TipoContingente.Id\n" +
+//     "       	LEFT JOIN Tareas_Motivos ON Tareas.Id = Tareas_Motivos.Id_Tarea\n" +
+//     "      	INNER JOIN TipoEquipo TE ON TE.Id = Equipos.Id_Tipo\n" +
+//     "        	INNER JOIN Usuarios U ON U.Id = Tareas.Id_Tecnico\n" +
+//     "        	INNER JOIN (\n" +
+//     "        	SELECT\n" +
+//     "        		E.Id 'EqID',\n" +
+//     "        		S.Descripcion 'SecDESC',\n" +
+//     "        	A.Descripcion 'AreaDESC',\n" +
+//     "       		G.Descripcion 'GerDESC',\n" +
+//     "        		C.Descripcion 'CteDESC' \n" +
+//     "       	FROM\n" +
+//     "        		Equipos E\n" +
+//     "        		INNER JOIN Sectores S ON E.Id_Sector = S.Id\n" +
+//     "        		INNER JOIN Areas A ON S.Id_Area = A.Id\n" +
+//     "        		INNER JOIN Gerencias G ON A.Id_Gerencia = G.Id\n" +
+//     "        		INNER JOIN Clientes C ON G.Id_Cliente = C.Id \n" +
+//     "        	) AS EQ ON Tareas.Id_Equipo = EQ.EqID \n" +
+//     "        WHERE \n" +
+//     "   Tareas.Id =" +IDT +" ORDER BY TR_PROT_DESC_CAPI  ASC, FIELD(TR_PROT_CAPTURA,'Observaciones PV', 'Observación PV', 'Observaciones PV SA', 'Observaciones PV SSA', 'Observaciones PV EP'),	TR_PROT_CAPTURA ASC",
+//     async (err, result) => {
+//       if (err) {
+//         console.log(err);
+//       } else {
+//         const estado = result[0].TR_ESTADO;
+//         const filePathName = path.resolve(__dirname, "../views/protocolos/pdf.hbs") 
+//         const html1 = fs.readFileSync(filePathName, "utf8");
+//         const ruta_imagen = path.resolve(__dirname, "../public/img/imagen1.png");                   
+//         const img = "file:///" + ruta_imagen;
+//         const options = {
+//           format: "letter",
+//           orientation: "portrait",
+//           border: "5mm",
+//           paginationOffset: 1,       // Override the initial pagination number
+//             "footer": {
+//               "height": "5mm",
+//               "contents": {
+//                 default: '<div style="font-family: Verdana, Geneva, Tahoma, sans-serif; font-size: 8px"><center>SAPMA-Sercoing | Tarea Nº:  '+IDT+' | Estado: '+estado+' | Página <span style="color: #444;">{{page}}</span>/<span>{{pages}}</span></center></div>', // fallback value
+                
+//               }
+//             },
+//           localUrlAccess: true,
+//           base: ('https://sapmamlcc.sercoing.cl:3000', 'https://localhost:3000')
+//         };
+
+//         const imagendebd = await pool.query("SELECT * FROM Adjuntos WHERE Id_Tarea = ?", [IDT]);
+//         const imagendebd1 = Object.values(imagendebd);
+
+//         if (imagendebd1.length > 0) {
+//           const imagendebd2 = imagendebd1[0].Archivos.split('|');
+//           const ruta15 = path.join(__dirname, "../images/");
+//           console.log(ruta15);
+//           const imagenes =  imagendebd2.map((img) => {
+//             return "File:///"+ruta15  +IDT+"_"+img;
+//           });
+  
+//           const document = {
+//             type: "file", // 'file' or 'buffer'
+//             template: html1,
+//             context: {
+//               IDT: result[0].TR_TAREA_ID,
+//               TR_GERENCIA: result[0].TR_GERENCIA,
+//               TR_AREA: result[0].TR_AREA,
+//               TR_SECTOR: result[0].TR_SECTOR,
+//               FECHA: result[0].FECHA,
+//               TAREATIPO: result[0].TR_PROT_TAREATIPO,
+//               TR_PROT_DESC_TAREATIPO: result[0].TR_PROT_DESC_TAREATIPO,
+//               TR_EQUIPO_COD: result[0].TR_EQUIPO_COD,
+//               TR_PROT_ID: result[0].TR_PROT_ID,
+//               TR_PROT_DESC_PROT: result[0].TR_PROT_DESC_PROT,
+//               TR_ESTADO: result[0].TR_ESTADO,
+//               prot: result,
+//               img: img,
+//               imagenes:imagenes
+//             },
+//             path: "src/pdf/" + IDT +"_"+CODIGO+".pdf", // it is not required if type is buffer
+//           };
+  
+//           pdf.create(document, options)
+//             .then((res) => {
+//               console.log("PDF creado");
+
+//             })
+//             .catch((error) => {
+//               console.error(error);
+//             }).then(() => {
+//               res.download(ruta,  IDT+"_"+CODIGO+".pdf",   function(err) {
+//                 if (err) {
+//                   console.log(err);
+//                 }else{
+//                   console.log("descargado");
+//                 }
+//             });
+//           });
+//         }else{
+ 
+//           const document = {
+//             type: "file", // 'file' or 'buffer'
+//             template: html1,
+//             context: {
+//               IDT: result[0].TR_TAREA_ID,
+//               TR_GERENCIA: result[0].TR_GERENCIA,
+//               TR_AREA: result[0].TR_AREA,
+//               TR_SECTOR: result[0].TR_SECTOR,
+//               FECHA: result[0].FECHA,
+//               TAREATIPO: result[0].TR_PROT_TAREATIPO,
+//               TR_PROT_DESC_TAREATIPO: result[0].TR_PROT_DESC_TAREATIPO,
+//               TR_EQUIPO_COD: result[0].TR_EQUIPO_COD,
+//               TR_PROT_ID: result[0].TR_PROT_ID,
+//               TR_PROT_DESC_PROT: result[0].TR_PROT_DESC_PROT,
+//               TR_ESTADO: result[0].TR_ESTADO,
+//               prot: result,
+//               img: img
+//             },
+//             path: "src/pdf/" + IDT +"_"+CODIGO+".pdf", // it is not required if type is buffer
+//           };
+  
+//           pdf.create(document, options)
+//             .then((res) => {
+//               console.log("PDF creado");
+  
+//               // console.log(res);
+//               // const file = Object.values(res);
+//               // const file1 = file[0];
+//               // fs.readFile(file1, function (err, res, file) {
+//               //   res.contentType("application/pdf");
+//               //   res.send(file1);
+//               // });
+//             })
+//             .catch((error) => {
+//               console.error(error);
+//             }).then(() => {
+//               res.download(ruta,  IDT+"_"+CODIGO+".pdf",   function(err) {
+//                 if (err) {
+//                   console.log(err);
+//                 }else{
+//                   console.log("descargado");
+//                 }
+//             });
+//           });
+//         }
+//       }
+//   });
+// });
+
+// router.get("/pdfe/:IDT/:CODIGO", isLoggedIn, authRole(['Cli_E']), async (req, res) => {
+//   const { IDT } = req.params;
+//   const { CODIGO } = req.params;
+//   const ruta =  path.resolve(__dirname ,"../pdf/" + IDT +"_"+CODIGO+".pdf");
+
+//   await pool.query(
+//     "SELECT\n" +
+//     "        Tareas.Id AS TR_TAREA_ID,\n" +
+//     "        date_format(Tareas.Fecha, '%d-%m-%Y') AS FECHA,\n" +
+//     "        Protocolos.Id AS 'TR_PROT_ID',\n" +
+//     "        	TipoProtocolo.Abreviacion AS 'TR_PROT_TAREATIPO',\n" +
+//     "        	UPPER ( TipoProtocolo.Descripcion ) AS 'TR_PROT_DESC_TAREATIPO',\n" +
+//     "        	Equipos.Codigo AS 'TR_EQUIPO_COD',\n" +
+//     "        	Protocolos.Descripcion AS 'TR_PROT_DESC_PROT',\n" +
+//     "        	Protocolo_Capitulo.Capitulo AS 'TR_PROT_CAPIT_ID',\n" +
+//     "        	UPPER( Protocolo_Capitulo.Descripcion ) AS 'TR_PROT_DESC_CAPI',\n" +
+//     "        	Protocolo_Capitulo.Es_Varios AS 'TR_PROT_ESVARIOS',\n" +
+//     "        	Protocolo_Capturas.Correlativo AS 'TR_PROT_CAPTURA_ID',\n" +
+//     "        	Protocolo_Capturas.Descripcion AS 'TR_PROT_CAPTURA',\n" +
+//     "        	TipoRespuesta.Id AS 'TR_PROT_TRESP_ID',\n" +
+//     "        	TipoRespuesta.Descripcion AS 'TR_PROT_TRESP_TIPO',\n" +
+//     "        	Estados.Descripcion AS 'TR_ESTADO',\n" +
+//     "    CONVERT (\n" +
+//     "        CAST(\n" +
+//     "            CONVERT (\n" +
+//     "            IF\n" +
+//     "                (\n" +
+//     "                    Tarea_Respuesta.Respuesta = 'SC',\n" +
+//     "                    'No aplica',\n" +
+//     "                IF\n" +
+//     "                    (\n" +
+//     "                        Tarea_Respuesta.Respuesta = 'SSR',\n" +
+//     "                        'Sistema sin revisar.',\n" +
+//     "                    IF\n" +
+//     "                        (\n" +
+//     "                            Tarea_Respuesta.Respuesta = 'SOP',\n" +
+//     "                            'Sistema operativo',\n" +
+//     "                        IF\n" +
+//     "                            (\n" +
+//     "                                Tarea_Respuesta.Respuesta = 'SOCO',\n" +
+//     "                                'Sist. operativo con obs.',\n" +
+//     "                            IF\n" +
+//     "                                (\n" +
+//     "                                    Tarea_Respuesta.Respuesta = 'SFS',\n" +
+//     "                                    'Sist. fuera de serv.',\n" +
+//     "                                IF\n" +
+//     "                                ( Tarea_Respuesta.Respuesta = 'SNO', 'Sist. no operativo', Tarea_Respuesta.Respuesta )))))) USING UTF8 \n" +
+//     "            ) AS BINARY \n" +
+//     "        ) USING UTF8 \n" +
+//     "    ) AS 'TR_RESPUESTA',\n" +
+//     "        	Usuarios.Descripcion AS 'TR_TECNICO',\n" +
+//     "        	UPPER( TE.Descripcion ) AS 'TR_TIPO_EQUIPO',\n" +
+//     "        IF\n" +
+//     "        	( TipoContingente.Id > 0, 'SI', 'NO' ) AS 'TR_CONTINGENTE_YN',\n" +
+//     "        	TipoContingente.Id AS 'TR_CONTINGENTE_ID',\n" +
+//     "        	TipoContingente.Descripcion AS 'TR_CONTINGENTE_DESC',\n" +
+//     "       IF\n" +
+//     "        	( Tareas_Motivos.Motivo IS NULL, 'NO', 'SI' ) AS 'TR_INCIDENCIA_YN',\n" +
+//     "        	Tareas_Motivos.Motivo AS 'TR_INCIDENCIA',\n" +
+//     "        	EQ.SecDESC AS 'TR_SECTOR',\n" +
+//     "        	EQ.AreaDESC AS 'TR_AREA',\n" +
+//     "        	EQ.GerDESC AS 'TR_GERENCIA' \n" +
+//     "        FROM\n" +
+//     "        	Protocolos\n" +
+//     "        	INNER JOIN Clientes ON Protocolos.Id_Cliente = Clientes.Id\n" +
+//     "        	INNER JOIN Protocolo_Capitulo ON Protocolos.Id = Protocolo_Capitulo.Id_Protocolo\n" +
+//     "        INNER JOIN TipoProtocolo ON Protocolos.Id_TipoProtocolo = TipoProtocolo.Id\n" +
+//     "        	INNER JOIN Protocolo_Capturas ON Protocolos.Id = Protocolo_Capturas.Id_Protocolo \n" +
+//     "        	AND Protocolo_Capitulo.Capitulo = Protocolo_Capturas.Capitulo\n" +
+//     "        	INNER JOIN TipoRespuesta ON Protocolo_Capturas.Id_TipoRespuesta = TipoRespuesta.Id\n" +
+//     "        	INNER JOIN Tareas ON Protocolos.Id = Tareas.Id_Protocolo\n" +
+//     "        	INNER JOIN Tarea_Respuesta ON Tareas.Id = Tarea_Respuesta.Id_Tarea \n" +
+//     "        	AND Protocolo_Capitulo.Capitulo = Tarea_Respuesta.Capitulo \n" +
+//     "        	AND Protocolo_Capturas.Correlativo = Tarea_Respuesta.Correlativo\n" +
+//     "        	INNER JOIN Estados ON Tareas.Id_Estado = Estados.Id\n" +
+//     "        	INNER JOIN Equipos ON Tareas.Id_Equipo = Equipos.Id\n" +
+//     "        	INNER JOIN Usuarios ON Tareas.Id_Tecnico = Usuarios.Id\n" +
+//     "        	LEFT JOIN TipoContingente ON Tareas.Contingente = TipoContingente.Id\n" +
+//     "       	LEFT JOIN Tareas_Motivos ON Tareas.Id = Tareas_Motivos.Id_Tarea\n" +
+//     "      	INNER JOIN TipoEquipo TE ON TE.Id = Equipos.Id_Tipo\n" +
+//     "        	INNER JOIN Usuarios U ON U.Id = Tareas.Id_Tecnico\n" +
+//     "        	INNER JOIN (\n" +
+//     "        	SELECT\n" +
+//     "        		E.Id 'EqID',\n" +
+//     "        		S.Descripcion 'SecDESC',\n" +
+//     "        	A.Descripcion 'AreaDESC',\n" +
+//     "       		G.Descripcion 'GerDESC',\n" +
+//     "        		C.Descripcion 'CteDESC' \n" +
+//     "       	FROM\n" +
+//     "        		Equipos E\n" +
+//     "        		INNER JOIN Sectores S ON E.Id_Sector = S.Id\n" +
+//     "        		INNER JOIN Areas A ON S.Id_Area = A.Id\n" +
+//     "        		INNER JOIN Gerencias G ON A.Id_Gerencia = G.Id\n" +
+//     "        		INNER JOIN Clientes C ON G.Id_Cliente = C.Id \n" +
+//     "        	) AS EQ ON Tareas.Id_Equipo = EQ.EqID \n" +
+//     "        WHERE \n" +
+//     "   Tareas.Id =" +IDT +" ORDER BY TR_PROT_DESC_CAPI  ASC, FIELD(TR_PROT_CAPTURA,'Observaciones PV', 'Observación PV', 'Observaciones PV SA', 'Observaciones PV SSA', 'Observaciones PV EP'),	TR_PROT_CAPTURA ASC",
+//     async (err, result) => {
+//       if (err) {
+//         console.log(err);
+//       } else {
+//         const estado = result[0].TR_ESTADO;
+//         const filePathName = path.resolve(__dirname, "../views/protocolos/pdf.hbs") 
+//         const html1 = fs.readFileSync(filePathName, "utf8");
+//         const ruta_imagen = path.resolve(__dirname, "../public/img/imagen1.png");                   
+//         const img = "file:///" + ruta_imagen;
+//         const options = {
+//           format: "letter",
+//           orientation: "portrait",
+//           border: "5mm",
+//           paginationOffset: 1,       // Override the initial pagination number
+//             "footer": {
+//               "height": "5mm",
+//               "contents": {
+//                 default: '<div style="font-family: Verdana, Geneva, Tahoma, sans-serif; font-size: 8px"><center>SAPMA-Sercoing | Tarea Nº:  '+IDT+' | Estado: '+estado+' | Página <span style="color: #444;">{{page}}</span>/<span>{{pages}}</span></center></div>', // fallback value
+                
+//               }
+//             },
+//           localUrlAccess: true,
+//           base: ('https://sapmamlcc.sercoing.cl:3000', 'https://localhost:3000')
+//         };
+
+//         const imagendebd = await pool.query("SELECT * FROM Adjuntos WHERE Id_Tarea = ?", [IDT]);
+//         const imagendebd1 = Object.values(imagendebd);
+
+//         if (imagendebd1.length > 0) {
+//           const imagendebd2 = imagendebd1[0].Archivos.split('|');
+//           const ruta15 = path.join(__dirname, "../images/");
+//           console.log(ruta15);
+//           const imagenes =  imagendebd2.map((img) => {
+//             return "File:///"+ruta15  +IDT+"_"+img;
+//           });
+  
+//           const document = {
+//             type: "file", // 'file' or 'buffer'
+//             template: html1,
+//             context: {
+//               IDT: result[0].TR_TAREA_ID,
+//               TR_GERENCIA: result[0].TR_GERENCIA,
+//               TR_AREA: result[0].TR_AREA,
+//               TR_SECTOR: result[0].TR_SECTOR,
+//               FECHA: result[0].FECHA,
+//               TAREATIPO: result[0].TR_PROT_TAREATIPO,
+//               TR_PROT_DESC_TAREATIPO: result[0].TR_PROT_DESC_TAREATIPO,
+//               TR_EQUIPO_COD: result[0].TR_EQUIPO_COD,
+//               TR_PROT_ID: result[0].TR_PROT_ID,
+//               TR_PROT_DESC_PROT: result[0].TR_PROT_DESC_PROT,
+//               TR_ESTADO: result[0].TR_ESTADO,
+//               prot: result,
+//               img: img,
+//               imagenes:imagenes
+//             },
+//             path: "src/pdf/" + IDT +"_"+CODIGO+".pdf", // it is not required if type is buffer
+//           };
+  
+//           pdf.create(document, options)
+//             .then((res) => {
+//               console.log("PDF creado");
+
+//             })
+//             .catch((error) => {
+//               console.error(error);
+//             }).then(() => {
+//               res.download(ruta,  IDT+"_"+CODIGO+".pdf",   function(err) {
+//                 if (err) {
+//                   console.log(err);
+//                 }else{
+//                   console.log("descargado");
+//                 }
+//             });
+//           });
+//         }else{
+ 
+//           const document = {
+//             type: "file", // 'file' or 'buffer'
+//             template: html1,
+//             context: {
+//               IDT: result[0].TR_TAREA_ID,
+//               TR_GERENCIA: result[0].TR_GERENCIA,
+//               TR_AREA: result[0].TR_AREA,
+//               TR_SECTOR: result[0].TR_SECTOR,
+//               FECHA: result[0].FECHA,
+//               TAREATIPO: result[0].TR_PROT_TAREATIPO,
+//               TR_PROT_DESC_TAREATIPO: result[0].TR_PROT_DESC_TAREATIPO,
+//               TR_EQUIPO_COD: result[0].TR_EQUIPO_COD,
+//               TR_PROT_ID: result[0].TR_PROT_ID,
+//               TR_PROT_DESC_PROT: result[0].TR_PROT_DESC_PROT,
+//               TR_ESTADO: result[0].TR_ESTADO,
+//               prot: result,
+//               img: img
+//             },
+//             path: "src/pdf/" + IDT +"_"+CODIGO+".pdf", // it is not required if type is buffer
+//           };
+  
+//           pdf.create(document, options)
+//             .then((res) => {
+//               console.log("PDF creado");
+  
+//               // console.log(res);
+//               // const file = Object.values(res);
+//               // const file1 = file[0];
+//               // fs.readFile(file1, function (err, res, file) {
+//               //   res.contentType("application/pdf");
+//               //   res.send(file1);
+//               // });
+//             })
+//             .catch((error) => {
+//               console.error(error);
+//             }).then(() => {
+//               res.download(ruta,  IDT+"_"+CODIGO+".pdf",   function(err) {
+//                 if (err) {
+//                   console.log(err);
+//                 }else{
+//                   console.log("descargado");
+//                 }
+//             });
+//           });
+//         }
+//       }
+//   });
+// });
+
+// router.get("/pdf/:IDT/:CODIGO", isLoggedIn, async (req, res) => {
+//   const { IDT } = req.params;
+//   const { CODIGO } = req.params;
+//   const ruta =  path.resolve(__dirname ,"../pdf/" + IDT + "_"+CODIGO+".pdf");
+
+//   await pool.query(
+//     "SELECT\n" +
+//     "        Tareas.Id AS TR_TAREA_ID,\n" +
+//     "        date_format(Tareas.Fecha, '%d-%m-%Y') AS FECHA,\n" +
+//     "        Protocolos.Id AS 'TR_PROT_ID',\n" +
+//     "        	TipoProtocolo.Abreviacion AS 'TR_PROT_TAREATIPO',\n" +
+//     "        	UPPER ( TipoProtocolo.Descripcion ) AS 'TR_PROT_DESC_TAREATIPO',\n" +
+//     "        	Equipos.Codigo AS 'TR_EQUIPO_COD',\n" +
+//     "        	Protocolos.Descripcion AS 'TR_PROT_DESC_PROT',\n" +
+//     "        	Protocolo_Capitulo.Capitulo AS 'TR_PROT_CAPIT_ID',\n" +
+//     "        	UPPER( Protocolo_Capitulo.Descripcion ) AS 'TR_PROT_DESC_CAPI',\n" +
+//     "        	Protocolo_Capitulo.Es_Varios AS 'TR_PROT_ESVARIOS',\n" +
+//     "        	Protocolo_Capturas.Correlativo AS 'TR_PROT_CAPTURA_ID',\n" +
+//     "        	Protocolo_Capturas.Descripcion AS 'TR_PROT_CAPTURA',\n" +
+//     "        	TipoRespuesta.Id AS 'TR_PROT_TRESP_ID',\n" +
+//     "        	TipoRespuesta.Descripcion AS 'TR_PROT_TRESP_TIPO',\n" +
+//     "        	Estados.Descripcion AS 'TR_ESTADO',\n" +
+//     "    CONVERT (\n" +
+//     "        CAST(\n" +
+//     "            CONVERT (\n" +
+//     "            IF\n" +
+//     "                (\n" +
+//     "                    Tarea_Respuesta.Respuesta = 'SC',\n" +
+//     "                    'No aplica',\n" +
+//     "                IF\n" +
+//     "                    (\n" +
+//     "                        Tarea_Respuesta.Respuesta = 'SSR',\n" +
+//     "                        'Sistema sin revisar.',\n" +
+//     "                    IF\n" +
+//     "                        (\n" +
+//     "                            Tarea_Respuesta.Respuesta = 'SOP',\n" +
+//     "                            'Sistema operativo',\n" +
+//     "                        IF\n" +
+//     "                            (\n" +
+//     "                                Tarea_Respuesta.Respuesta = 'SOCO',\n" +
+//     "                                'Sist. operativo con obs.',\n" +
+//     "                            IF\n" +
+//     "                                (\n" +
+//     "                                    Tarea_Respuesta.Respuesta = 'SFS',\n" +
+//     "                                    'Sist. fuera de serv.',\n" +
+//     "                                IF\n" +
+//     "                                ( Tarea_Respuesta.Respuesta = 'SNO', 'Sist. no operativo', Tarea_Respuesta.Respuesta )))))) USING UTF8 \n" +
+//     "            ) AS BINARY \n" +
+//     "        ) USING UTF8 \n" +
+//     "    ) AS 'TR_RESPUESTA',\n" +
+//     "        	Usuarios.Descripcion AS 'TR_TECNICO',\n" +
+//     "        	UPPER( TE.Descripcion ) AS 'TR_TIPO_EQUIPO',\n" +
+//     "        IF\n" +
+//     "        	( TipoContingente.Id > 0, 'SI', 'NO' ) AS 'TR_CONTINGENTE_YN',\n" +
+//     "        	TipoContingente.Id AS 'TR_CONTINGENTE_ID',\n" +
+//     "        	TipoContingente.Descripcion AS 'TR_CONTINGENTE_DESC',\n" +
+//     "       IF\n" +
+//     "        	( Tareas_Motivos.Motivo IS NULL, 'NO', 'SI' ) AS 'TR_INCIDENCIA_YN',\n" +
+//     "        	Tareas_Motivos.Motivo AS 'TR_INCIDENCIA',\n" +
+//     "        	EQ.SecDESC AS 'TR_SECTOR',\n" +
+//     "        	EQ.AreaDESC AS 'TR_AREA',\n" +
+//     "        	EQ.GerDESC AS 'TR_GERENCIA' \n" +
+//     "        FROM\n" +
+//     "        	Protocolos\n" +
+//     "        	INNER JOIN Clientes ON Protocolos.Id_Cliente = Clientes.Id\n" +
+//     "        	INNER JOIN Protocolo_Capitulo ON Protocolos.Id = Protocolo_Capitulo.Id_Protocolo\n" +
+//     "        INNER JOIN TipoProtocolo ON Protocolos.Id_TipoProtocolo = TipoProtocolo.Id\n" +
+//     "        	INNER JOIN Protocolo_Capturas ON Protocolos.Id = Protocolo_Capturas.Id_Protocolo \n" +
+//     "        	AND Protocolo_Capitulo.Capitulo = Protocolo_Capturas.Capitulo\n" +
+//     "        	INNER JOIN TipoRespuesta ON Protocolo_Capturas.Id_TipoRespuesta = TipoRespuesta.Id\n" +
+//     "        	INNER JOIN Tareas ON Protocolos.Id = Tareas.Id_Protocolo\n" +
+//     "        	INNER JOIN Tarea_Respuesta ON Tareas.Id = Tarea_Respuesta.Id_Tarea \n" +
+//     "        	AND Protocolo_Capitulo.Capitulo = Tarea_Respuesta.Capitulo \n" +
+//     "        	AND Protocolo_Capturas.Correlativo = Tarea_Respuesta.Correlativo\n" +
+//     "        	INNER JOIN Estados ON Tareas.Id_Estado = Estados.Id\n" +
+//     "        	INNER JOIN Equipos ON Tareas.Id_Equipo = Equipos.Id\n" +
+//     "        	INNER JOIN Usuarios ON Tareas.Id_Tecnico = Usuarios.Id\n" +
+//     "        	LEFT JOIN TipoContingente ON Tareas.Contingente = TipoContingente.Id\n" +
+//     "       	LEFT JOIN Tareas_Motivos ON Tareas.Id = Tareas_Motivos.Id_Tarea\n" +
+//     "      	INNER JOIN TipoEquipo TE ON TE.Id = Equipos.Id_Tipo\n" +
+//     "        	INNER JOIN Usuarios U ON U.Id = Tareas.Id_Tecnico\n" +
+//     "        	INNER JOIN (\n" +
+//     "        	SELECT\n" +
+//     "        		E.Id 'EqID',\n" +
+//     "        		S.Descripcion 'SecDESC',\n" +
+//     "        	A.Descripcion 'AreaDESC',\n" +
+//     "       		G.Descripcion 'GerDESC',\n" +
+//     "        		C.Descripcion 'CteDESC' \n" +
+//     "       	FROM\n" +
+//     "        		Equipos E\n" +
+//     "        		INNER JOIN Sectores S ON E.Id_Sector = S.Id\n" +
+//     "        		INNER JOIN Areas A ON S.Id_Area = A.Id\n" +
+//     "        		INNER JOIN Gerencias G ON A.Id_Gerencia = G.Id\n" +
+//     "        		INNER JOIN Clientes C ON G.Id_Cliente = C.Id \n" +
+//     "        	) AS EQ ON Tareas.Id_Equipo = EQ.EqID \n" +
+//     "        WHERE \n" +
+//     "   Tareas.Id =" +IDT +" ORDER BY TR_PROT_DESC_CAPI  ASC, FIELD(TR_PROT_CAPTURA,'Observaciones PV', 'Observación PV', 'Observaciones PV SA', 'Observaciones PV SSA', 'Observaciones PV EP'),	TR_PROT_CAPTURA ASC",
+//     async (err, result) => {
+//       if (err) {
+//         console.log(err);
+//       } else {
+
+//         const codigo = result[0].TR_EQUIPO_COD;
+//         const id_bat = await pool.query("SELECT eq_bat_id FROM Equipos WHERE Codigo =?", [codigo]);
+//         const bat_id = id_bat[0].eq_bat_id;
+//         const bat = await pool.query("SELECT * FROM Baterias_UPS WHERE bat_id =?", [bat_id]);
+    
+//         const agregarDatosBateria = (result, bat) => {
+    
+//           for (let i = 0; i < result.length; i++) {
+    
+//             if (bat.length > 0) {
+//               result[i] = { ...result[i], ...bat[0] };
+//             }
+//           }
+//         };
+        
+//         await agregarDatosBateria(result, bat);
+//         const estado = result[0].TR_ESTADO;
+//         const filePathName = path.resolve(__dirname, "../views/protocolos/pdf.hbs"); 
+//         const html1 = fs.readFileSync(filePathName, "utf8");
+//         const ruta_imagen = path.resolve(__dirname, "../public/img/imagen1.png");                   
+//         const img = "file:///" + ruta_imagen;
+//         const boot = path.resolve(__dirname, "../public/css/lib/bootstrap/bootstrap.min.css");
+//         const boot1 = path.resolve(__dirname, "../public/js/lib/bootstrap/bootstrap.min.js");
+//         console.log(boot1);
+
+//         const options = {
+//           format: "letter",
+//           orientation: "portrait",
+//           border: "5mm",
+//           paginationOffset: 1,   
+//             "footer": {
+//               "height": "5mm",
+//               "contents": {
+//                 default: '<div style="font-family: Verdana, Geneva, Tahoma, sans-serif; font-size: 8px"><center>SAPMA-Sercoing | Tarea Nº:  '+IDT+' | Estado: '+estado+' | Página <span style="color: #444;">{{page}}</span>/<span>{{pages}}</span></center></div>', // fallback value
+                
+//               }
+//             },
+//           localUrlAccess: true,
+//           base: ('https://sapmamlcc.sercoing.cl:3000', 'https://localhost:3000')
+//         };
+
+//         const imagendebd = await pool.query("SELECT * FROM Adjuntos WHERE Id_Tarea = ?", [IDT]);
+//         const imagendebd1 = Object.values(imagendebd);
+
+//         if (imagendebd1.length > 0) {
+//           const imagendebd2 = imagendebd1[0].Archivos.split('|');
+//           const ruta15 = path.join(__dirname, "../images/");
+//           console.log(ruta15);
+//           const imagenes =  imagendebd2.map((img) => {
+//             return "File:///"+ruta15  +IDT+"_"+img;
+//           });
+  
+//           const document = {
+//             type: "file", // 'file' or 'buffer'
+//             template: html1,
+//             context: {
+//               IDT: result[0].TR_TAREA_ID,
+//               TR_GERENCIA: result[0].TR_GERENCIA,
+//               TR_AREA: result[0].TR_AREA,
+//               TR_SECTOR: result[0].TR_SECTOR,
+//               FECHA: result[0].FECHA,
+//               TAREATIPO: result[0].TR_PROT_TAREATIPO,
+//               TR_PROT_DESC_TAREATIPO: result[0].TR_PROT_DESC_TAREATIPO,
+//               TR_EQUIPO_COD: result[0].TR_EQUIPO_COD,
+//               TR_PROT_ID: result[0].TR_PROT_ID,
+//               TR_PROT_DESC_PROT: result[0].TR_PROT_DESC_PROT,
+//               TR_ESTADO: result[0].TR_ESTADO,
+//               prot: result,
+//               img: img,
+//               imagenes:imagenes,
+//               boot: boot,
+//               boot1: boot1
+//             },
+//             path: "src/pdf/" + IDT + "_"+CODIGO+".pdf", // it is not required if type is buffer
+//           };
+  
+//           pdf.create(document, options)
+//             .then((res) => {
+//               console.log("PDF creado");
+//             })
+//             .catch((error) => {
+//               console.error(error);
+//             }).then(() => {
+//               res.download(ruta,  IDT+"_"+CODIGO+".pdf",   function(err) {
+//                 if (err) {
+//                   console.log(err);
+//                 }else{
+//                   console.log("descargado");
+//                 }
+//             });
+//           });
+//         }else{
+ 
+//           const document = {
+//             type: "file", // 'file' or 'buffer'
+//             template: html1,
+//             context: {
+//               IDT: result[0].TR_TAREA_ID,
+//               TR_GERENCIA: result[0].TR_GERENCIA,
+//               TR_AREA: result[0].TR_AREA,
+//               TR_SECTOR: result[0].TR_SECTOR,
+//               FECHA: result[0].FECHA,
+//               TAREATIPO: result[0].TR_PROT_TAREATIPO,
+//               TR_PROT_DESC_TAREATIPO: result[0].TR_PROT_DESC_TAREATIPO,
+//               TR_EQUIPO_COD: result[0].TR_EQUIPO_COD,
+//               TR_PROT_ID: result[0].TR_PROT_ID,
+//               TR_PROT_DESC_PROT: result[0].TR_PROT_DESC_PROT,
+//               TR_ESTADO: result[0].TR_ESTADO,
+//               prot: result,
+//               img: img,
+//               boot: boot,
+//               boot1: boot1
+//             },
+//             path: "src/pdf/" + IDT +"_"+CODIGO+".pdf", // it is not required if type is buffer
+//           };
+  
+//           pdf.create(document, options)
+//             .then((res) => {
+//               console.log("PDF creado");
+  
+//             })
+//             .catch((error) => {
+//               console.error(error);
+//             }).then(() => {
+//               res.download(ruta,  IDT+"_"+CODIGO+".pdf",   function(err) {
+//                 if (err) {
+//                   console.log(err);
+//                 }else{
+//                   console.log("descargado");
+//                 }
+//             });
+//           });
+//         }
+//       }
+//   });
+
+// });
+
+// router.get("/protocoloc/:IDT", isLoggedIn, authRole(['Cli_C']), async (req, res) => {
+//   const { IDT } = req.params;
+//   const { Id_Cliente } = req.user;
+//   const { Login } = req.user;
+
+//   const headers = { "User-Agent": "node-fetch" };
+
+//   const response = await fetch(
+//     "https://sapma.sercoing.cl/svc/ver_tarea.py?login=" +
+//       Login +
+//       "&idCliente=" +
+//       Id_Cliente +
+//       "&tarea=" +
+//       IDT,
+//     { headers }
+//   )
+//     .then((res) => res.json())
+//     .then((data) => {
+//       return data;
+//     });
+//   const imagen = Object.values(response);
+//   const imagenes = imagen[2];
+
+//   const dir = "src/images/";
+
+//   imagenes.forEach(function(url) {
+//     var filename = dir + url.split("/").pop();
+//     request.head(url, function(err, res, body){
+//       request(url).pipe(fs.createWriteStream(filename));
+//     });
+//   });
+
+
+//   await pool.query(
+//     "SELECT\n" +
+//     "        Tareas.Id AS TR_TAREA_ID,\n" +
+//     "        date_format(Tareas.Fecha, '%d-%m-%Y') AS FECHA,\n" +
+//     "        Protocolos.Id AS 'TR_PROT_ID',\n" +
+//     "        	TipoProtocolo.Abreviacion AS 'TR_PROT_TAREATIPO',\n" +
+//     "        	UPPER ( TipoProtocolo.Descripcion ) AS 'TR_PROT_DESC_TAREATIPO',\n" +
+//     "        	Equipos.Codigo AS 'TR_EQUIPO_COD',\n" +
+//     "        	Protocolos.Descripcion AS 'TR_PROT_DESC_PROT',\n" +
+//     "        	Protocolo_Capitulo.Capitulo AS 'TR_PROT_CAPIT_ID',\n" +
+//     "        	UPPER( Protocolo_Capitulo.Descripcion ) AS 'TR_PROT_DESC_CAPI',\n" +
+//     "        	Protocolo_Capitulo.Es_Varios AS 'TR_PROT_ESVARIOS',\n" +
+//     "        	Protocolo_Capturas.Correlativo AS 'TR_PROT_CAPTURA_ID',\n" +
+//     "        	Protocolo_Capturas.Descripcion AS 'TR_PROT_CAPTURA',\n" +
+//     "        	TipoRespuesta.Id AS 'TR_PROT_TRESP_ID',\n" +
+//     "        	TipoRespuesta.Descripcion AS 'TR_PROT_TRESP_TIPO',\n" +
+//     "        	Estados.Descripcion AS 'TR_ESTADO',\n" +
+//     "    CONVERT (\n" +
+//     "        CAST(\n" +
+//     "            CONVERT (\n" +
+//     "            IF\n" +
+//     "                (\n" +
+//     "                    Tarea_Respuesta.Respuesta = 'SC',\n" +
+//     "                    'No aplica',\n" +
+//     "                IF\n" +
+//     "                    (\n" +
+//     "                        Tarea_Respuesta.Respuesta = 'SSR',\n" +
+//     "                        'Sistema sin revisar.',\n" +
+//     "                    IF\n" +
+//     "                        (\n" +
+//     "                            Tarea_Respuesta.Respuesta = 'SOP',\n" +
+//     "                            'Sistema operativo',\n" +
+//     "                        IF\n" +
+//     "                            (\n" +
+//     "                                Tarea_Respuesta.Respuesta = 'SOCO',\n" +
+//     "                                'Sist. operativo con obs.',\n" +
+//     "                            IF\n" +
+//     "                                (\n" +
+//     "                                    Tarea_Respuesta.Respuesta = 'SFS',\n" +
+//     "                                    'Sist. fuera de serv.',\n" +
+//     "                                IF\n" +
+//     "                                ( Tarea_Respuesta.Respuesta = 'SNO', 'Sist. no operativo', Tarea_Respuesta.Respuesta )))))) USING UTF8 \n" +
+//     "            ) AS BINARY \n" +
+//     "        ) USING UTF8 \n" +
+//     "    ) AS 'TR_RESPUESTA',\n" +
+//     "        	Usuarios.Descripcion AS 'TR_TECNICO',\n" +
+//     "        	UPPER( TE.Descripcion ) AS 'TR_TIPO_EQUIPO',\n" +
+//     "        IF\n" +
+//     "        	( TipoContingente.Id > 0, 'SI', 'NO' ) AS 'TR_CONTINGENTE_YN',\n" +
+//     "        	TipoContingente.Id AS 'TR_CONTINGENTE_ID',\n" +
+//     "        	TipoContingente.Descripcion AS 'TR_CONTINGENTE_DESC',\n" +
+//     "       IF\n" +
+//     "        	( Tareas_Motivos.Motivo IS NULL, 'NO', 'SI' ) AS 'TR_INCIDENCIA_YN',\n" +
+//     "        	Tareas_Motivos.Motivo AS 'TR_INCIDENCIA',\n" +
+//     "        	EQ.SecDESC AS 'TR_SECTOR',\n" +
+//     "        	EQ.AreaDESC AS 'TR_AREA',\n" +
+//     "        	EQ.GerDESC AS 'TR_GERENCIA' \n" +
+//     "        FROM\n" +
+//     "        	Protocolos\n" +
+//     "        	INNER JOIN Clientes ON Protocolos.Id_Cliente = Clientes.Id\n" +
+//     "        	INNER JOIN Protocolo_Capitulo ON Protocolos.Id = Protocolo_Capitulo.Id_Protocolo\n" +
+//     "        INNER JOIN TipoProtocolo ON Protocolos.Id_TipoProtocolo = TipoProtocolo.Id\n" +
+//     "        	INNER JOIN Protocolo_Capturas ON Protocolos.Id = Protocolo_Capturas.Id_Protocolo \n" +
+//     "        	AND Protocolo_Capitulo.Capitulo = Protocolo_Capturas.Capitulo\n" +
+//     "        	INNER JOIN TipoRespuesta ON Protocolo_Capturas.Id_TipoRespuesta = TipoRespuesta.Id\n" +
+//     "        	INNER JOIN Tareas ON Protocolos.Id = Tareas.Id_Protocolo\n" +
+//     "        	INNER JOIN Tarea_Respuesta ON Tareas.Id = Tarea_Respuesta.Id_Tarea \n" +
+//     "        	AND Protocolo_Capitulo.Capitulo = Tarea_Respuesta.Capitulo \n" +
+//     "        	AND Protocolo_Capturas.Correlativo = Tarea_Respuesta.Correlativo\n" +
+//     "        	INNER JOIN Estados ON Tareas.Id_Estado = Estados.Id\n" +
+//     "        	INNER JOIN Equipos ON Tareas.Id_Equipo = Equipos.Id\n" +
+//     "        	INNER JOIN Usuarios ON Tareas.Id_Tecnico = Usuarios.Id\n" +
+//     "        	LEFT JOIN TipoContingente ON Tareas.Contingente = TipoContingente.Id\n" +
+//     "       	LEFT JOIN Tareas_Motivos ON Tareas.Id = Tareas_Motivos.Id_Tarea\n" +
+//     "      	INNER JOIN TipoEquipo TE ON TE.Id = Equipos.Id_Tipo\n" +
+//     "        	INNER JOIN Usuarios U ON U.Id = Tareas.Id_Tecnico\n" +
+//     "        	INNER JOIN (\n" +
+//     "        	SELECT\n" +
+//     "        		E.Id 'EqID',\n" +
+//     "        		S.Descripcion 'SecDESC',\n" +
+//     "        	A.Descripcion 'AreaDESC',\n" +
+//     "       		G.Descripcion 'GerDESC',\n" +
+//     "        		C.Descripcion 'CteDESC' \n" +
+//     "       	FROM\n" +
+//     "        		Equipos E\n" +
+//     "        		INNER JOIN Sectores S ON E.Id_Sector = S.Id\n" +
+//     "        		INNER JOIN Areas A ON S.Id_Area = A.Id\n" +
+//     "        		INNER JOIN Gerencias G ON A.Id_Gerencia = G.Id\n" +
+//     "        		INNER JOIN Clientes C ON G.Id_Cliente = C.Id \n" +
+//     "        	) AS EQ ON Tareas.Id_Equipo = EQ.EqID \n" +
+//     "        WHERE \n" +
+//     "   Tareas.Id =" +IDT +" ORDER BY TR_PROT_DESC_CAPI  ASC, FIELD(TR_PROT_CAPTURA,'Observaciones PV', 'Observación PV', 'Observaciones PV SA', 'Observaciones PV SSA', 'Observaciones PV EP'),	TR_PROT_CAPTURA ASC",
+//     (err, result) => {
+//       if (err) {
+//         console.log(err);
+//       } else {
+//         function onlyUnique(value, index, self) {
+//           return self.indexOf(value) === index;
+//         }
+//         const cap = result.map((a) => a.TR_PROT_DESC_CAPI);
+//         const cap1 = cap.filter(onlyUnique);
+
+//         res.render("protocolos/protocolo", {
+//           IDT: result[0].TR_TAREA_ID,
+//           TR_GERENCIA: result[0].TR_GERENCIA,
+//           TR_AREA: result[0].TR_AREA,
+//           TR_SECTOR: result[0].TR_SECTOR,
+//           FECHA: result[0].FECHA,
+//           TAREATIPO: result[0].TR_PROT_TAREATIPO,
+//           TR_PROT_DESC_TAREATIPO: result[0].TR_PROT_DESC_TAREATIPO,
+//           TR_EQUIPO_COD: result[0].TR_EQUIPO_COD,
+//           TR_PROT_ID: result[0].TR_PROT_ID,
+//           TR_PROT_DESC_PROT: result[0].TR_PROT_DESC_PROT,
+//           TR_ESTADO: result[0].TR_ESTADO,
+//           cap1: cap1,
+//           prot: result,
+//           imagenes: imagenes,
+//         });
+        
+
+//       }
+//     }
+//   );
+// });
+
+// router.get("/protocolob/:IDT", isLoggedIn, authRole(['Cli_B']), async (req, res) => {
+//   const { IDT } = req.params;
+//   const { Id_Cliente } = req.user;
+//   const { Login } = req.user;
+
+//   const headers = { "User-Agent": "node-fetch" };
+
+//   const response = await fetch(
+//     "https://sapma.sercoing.cl/svc/ver_tarea.py?login=" +
+//       Login +
+//       "&idCliente=" +
+//       Id_Cliente +
+//       "&tarea=" +
+//       IDT,
+//     { headers }
+//   )
+//     .then((res) => res.json())
+//     .then((data) => {
+//       return data;
+//     });
+//   const imagen = Object.values(response);
+//   const imagenes = imagen[2];
+
+//   const dir = "src/images/";
+
+//   imagenes.forEach(function(url) {
+//     var filename = dir + url.split("/").pop();
+//     request.head(url, function(err, res, body){
+//       request(url).pipe(fs.createWriteStream(filename));
+//     });
+//   });
+
+
+//   await pool.query(
+//     "SELECT\n" +
+//     "        Tareas.Id AS TR_TAREA_ID,\n" +
+//     "        date_format(Tareas.Fecha, '%d-%m-%Y') AS FECHA,\n" +
+//     "        Protocolos.Id AS 'TR_PROT_ID',\n" +
+//     "        	TipoProtocolo.Abreviacion AS 'TR_PROT_TAREATIPO',\n" +
+//     "        	UPPER ( TipoProtocolo.Descripcion ) AS 'TR_PROT_DESC_TAREATIPO',\n" +
+//     "        	Equipos.Codigo AS 'TR_EQUIPO_COD',\n" +
+//     "        	Protocolos.Descripcion AS 'TR_PROT_DESC_PROT',\n" +
+//     "        	Protocolo_Capitulo.Capitulo AS 'TR_PROT_CAPIT_ID',\n" +
+//     "        	UPPER( Protocolo_Capitulo.Descripcion ) AS 'TR_PROT_DESC_CAPI',\n" +
+//     "        	Protocolo_Capitulo.Es_Varios AS 'TR_PROT_ESVARIOS',\n" +
+//     "        	Protocolo_Capturas.Correlativo AS 'TR_PROT_CAPTURA_ID',\n" +
+//     "        	Protocolo_Capturas.Descripcion AS 'TR_PROT_CAPTURA',\n" +
+//     "        	TipoRespuesta.Id AS 'TR_PROT_TRESP_ID',\n" +
+//     "        	TipoRespuesta.Descripcion AS 'TR_PROT_TRESP_TIPO',\n" +
+//     "        	Estados.Descripcion AS 'TR_ESTADO',\n" +
+//     "    CONVERT (\n" +
+//     "        CAST(\n" +
+//     "            CONVERT (\n" +
+//     "            IF\n" +
+//     "                (\n" +
+//     "                    Tarea_Respuesta.Respuesta = 'SC',\n" +
+//     "                    'No aplica',\n" +
+//     "                IF\n" +
+//     "                    (\n" +
+//     "                        Tarea_Respuesta.Respuesta = 'SSR',\n" +
+//     "                        'Sistema sin revisar.',\n" +
+//     "                    IF\n" +
+//     "                        (\n" +
+//     "                            Tarea_Respuesta.Respuesta = 'SOP',\n" +
+//     "                            'Sistema operativo',\n" +
+//     "                        IF\n" +
+//     "                            (\n" +
+//     "                                Tarea_Respuesta.Respuesta = 'SOCO',\n" +
+//     "                                'Sist. operativo con obs.',\n" +
+//     "                            IF\n" +
+//     "                                (\n" +
+//     "                                    Tarea_Respuesta.Respuesta = 'SFS',\n" +
+//     "                                    'Sist. fuera de serv.',\n" +
+//     "                                IF\n" +
+//     "                                ( Tarea_Respuesta.Respuesta = 'SNO', 'Sist. no operativo', Tarea_Respuesta.Respuesta )))))) USING UTF8 \n" +
+//     "            ) AS BINARY \n" +
+//     "        ) USING UTF8 \n" +
+//     "    ) AS 'TR_RESPUESTA',\n" +
+//     "        	Usuarios.Descripcion AS 'TR_TECNICO',\n" +
+//     "        	UPPER( TE.Descripcion ) AS 'TR_TIPO_EQUIPO',\n" +
+//     "        IF\n" +
+//     "        	( TipoContingente.Id > 0, 'SI', 'NO' ) AS 'TR_CONTINGENTE_YN',\n" +
+//     "        	TipoContingente.Id AS 'TR_CONTINGENTE_ID',\n" +
+//     "        	TipoContingente.Descripcion AS 'TR_CONTINGENTE_DESC',\n" +
+//     "       IF\n" +
+//     "        	( Tareas_Motivos.Motivo IS NULL, 'NO', 'SI' ) AS 'TR_INCIDENCIA_YN',\n" +
+//     "        	Tareas_Motivos.Motivo AS 'TR_INCIDENCIA',\n" +
+//     "        	EQ.SecDESC AS 'TR_SECTOR',\n" +
+//     "        	EQ.AreaDESC AS 'TR_AREA',\n" +
+//     "        	EQ.GerDESC AS 'TR_GERENCIA' \n" +
+//     "        FROM\n" +
+//     "        	Protocolos\n" +
+//     "        	INNER JOIN Clientes ON Protocolos.Id_Cliente = Clientes.Id\n" +
+//     "        	INNER JOIN Protocolo_Capitulo ON Protocolos.Id = Protocolo_Capitulo.Id_Protocolo\n" +
+//     "        INNER JOIN TipoProtocolo ON Protocolos.Id_TipoProtocolo = TipoProtocolo.Id\n" +
+//     "        	INNER JOIN Protocolo_Capturas ON Protocolos.Id = Protocolo_Capturas.Id_Protocolo \n" +
+//     "        	AND Protocolo_Capitulo.Capitulo = Protocolo_Capturas.Capitulo\n" +
+//     "        	INNER JOIN TipoRespuesta ON Protocolo_Capturas.Id_TipoRespuesta = TipoRespuesta.Id\n" +
+//     "        	INNER JOIN Tareas ON Protocolos.Id = Tareas.Id_Protocolo\n" +
+//     "        	INNER JOIN Tarea_Respuesta ON Tareas.Id = Tarea_Respuesta.Id_Tarea \n" +
+//     "        	AND Protocolo_Capitulo.Capitulo = Tarea_Respuesta.Capitulo \n" +
+//     "        	AND Protocolo_Capturas.Correlativo = Tarea_Respuesta.Correlativo\n" +
+//     "        	INNER JOIN Estados ON Tareas.Id_Estado = Estados.Id\n" +
+//     "        	INNER JOIN Equipos ON Tareas.Id_Equipo = Equipos.Id\n" +
+//     "        	INNER JOIN Usuarios ON Tareas.Id_Tecnico = Usuarios.Id\n" +
+//     "        	LEFT JOIN TipoContingente ON Tareas.Contingente = TipoContingente.Id\n" +
+//     "       	LEFT JOIN Tareas_Motivos ON Tareas.Id = Tareas_Motivos.Id_Tarea\n" +
+//     "      	INNER JOIN TipoEquipo TE ON TE.Id = Equipos.Id_Tipo\n" +
+//     "        	INNER JOIN Usuarios U ON U.Id = Tareas.Id_Tecnico\n" +
+//     "        	INNER JOIN (\n" +
+//     "        	SELECT\n" +
+//     "        		E.Id 'EqID',\n" +
+//     "        		S.Descripcion 'SecDESC',\n" +
+//     "        	A.Descripcion 'AreaDESC',\n" +
+//     "       		G.Descripcion 'GerDESC',\n" +
+//     "        		C.Descripcion 'CteDESC' \n" +
+//     "       	FROM\n" +
+//     "        		Equipos E\n" +
+//     "        		INNER JOIN Sectores S ON E.Id_Sector = S.Id\n" +
+//     "        		INNER JOIN Areas A ON S.Id_Area = A.Id\n" +
+//     "        		INNER JOIN Gerencias G ON A.Id_Gerencia = G.Id\n" +
+//     "        		INNER JOIN Clientes C ON G.Id_Cliente = C.Id \n" +
+//     "        	) AS EQ ON Tareas.Id_Equipo = EQ.EqID \n" +
+//     "        WHERE \n" +
+//     "   Tareas.Id =" +IDT +" ORDER BY TR_PROT_DESC_CAPI  ASC, FIELD(TR_PROT_CAPTURA,'Observaciones PV', 'Observación PV', 'Observaciones PV SA', 'Observaciones PV SSA', 'Observaciones PV EP'),	TR_PROT_CAPTURA ASC",
+//     (err, result) => {
+//       if (err) {
+//         console.log(err);
+//       } else {
+//         function onlyUnique(value, index, self) {
+//           return self.indexOf(value) === index;
+//         }
+//         const cap = result.map((a) => a.TR_PROT_DESC_CAPI);
+//         const cap1 = cap.filter(onlyUnique);
+
+//         res.render("protocolos/protocolo", {
+//           IDT: result[0].TR_TAREA_ID,
+//           TR_GERENCIA: result[0].TR_GERENCIA,
+//           TR_AREA: result[0].TR_AREA,
+//           TR_SECTOR: result[0].TR_SECTOR,
+//           FECHA: result[0].FECHA,
+//           TAREATIPO: result[0].TR_PROT_TAREATIPO,
+//           TR_PROT_DESC_TAREATIPO: result[0].TR_PROT_DESC_TAREATIPO,
+//           TR_EQUIPO_COD: result[0].TR_EQUIPO_COD,
+//           TR_PROT_ID: result[0].TR_PROT_ID,
+//           TR_PROT_DESC_PROT: result[0].TR_PROT_DESC_PROT,
+//           TR_ESTADO: result[0].TR_ESTADO,
+//           cap1: cap1,
+//           prot: result,
+//           imagenes: imagenes,
+//         });
+        
+
+//       }
+//     }
+//   );
+//   }
+// );
+
+// router.get("/protocoloa/:IDT", isLoggedIn, authRole(['Cli_A']), async (req, res) => {
+//   const { IDT } = req.params;
+//   const { Id_Cliente } = req.user;
+//   const { Login } = req.user;
+
+//   const headers = { "User-Agent": "node-fetch" };
+
+//   const response = await fetch(
+//     "https://sapma.sercoing.cl/svc/ver_tarea.py?login=" +
+//       Login +
+//       "&idCliente=" +
+//       Id_Cliente +
+//       "&tarea=" +
+//       IDT,
+//     { headers }
+//   )
+//     .then((res) => res.json())
+//     .then((data) => {
+//       return data;
+//     });
+//   const imagen = Object.values(response);
+//   const imagenes = imagen[2];
+
+//   const dir = "src/images/";
+
+//   imagenes.forEach(function(url) {
+//     var filename = dir + url.split("/").pop();
+//     request.head(url, function(err, res, body){
+//       request(url).pipe(fs.createWriteStream(filename));
+//     });
+//   });
+
+
+//   await pool.query(
+//     "SELECT\n" +
+//     "        Tareas.Id AS TR_TAREA_ID,\n" +
+//     "        date_format(Tareas.Fecha, '%d-%m-%Y') AS FECHA,\n" +
+//     "        Protocolos.Id AS 'TR_PROT_ID',\n" +
+//     "        	TipoProtocolo.Abreviacion AS 'TR_PROT_TAREATIPO',\n" +
+//     "        	UPPER ( TipoProtocolo.Descripcion ) AS 'TR_PROT_DESC_TAREATIPO',\n" +
+//     "        	Equipos.Codigo AS 'TR_EQUIPO_COD',\n" +
+//     "        	Protocolos.Descripcion AS 'TR_PROT_DESC_PROT',\n" +
+//     "        	Protocolo_Capitulo.Capitulo AS 'TR_PROT_CAPIT_ID',\n" +
+//     "        	UPPER( Protocolo_Capitulo.Descripcion ) AS 'TR_PROT_DESC_CAPI',\n" +
+//     "        	Protocolo_Capitulo.Es_Varios AS 'TR_PROT_ESVARIOS',\n" +
+//     "        	Protocolo_Capturas.Correlativo AS 'TR_PROT_CAPTURA_ID',\n" +
+//     "        	Protocolo_Capturas.Descripcion AS 'TR_PROT_CAPTURA',\n" +
+//     "        	TipoRespuesta.Id AS 'TR_PROT_TRESP_ID',\n" +
+//     "        	TipoRespuesta.Descripcion AS 'TR_PROT_TRESP_TIPO',\n" +
+//     "        	Estados.Descripcion AS 'TR_ESTADO',\n" +
+//     "    CONVERT (\n" +
+//     "        CAST(\n" +
+//     "            CONVERT (\n" +
+//     "            IF\n" +
+//     "                (\n" +
+//     "                    Tarea_Respuesta.Respuesta = 'SC',\n" +
+//     "                    'No aplica',\n" +
+//     "                IF\n" +
+//     "                    (\n" +
+//     "                        Tarea_Respuesta.Respuesta = 'SSR',\n" +
+//     "                        'Sistema sin revisar.',\n" +
+//     "                    IF\n" +
+//     "                        (\n" +
+//     "                            Tarea_Respuesta.Respuesta = 'SOP',\n" +
+//     "                            'Sistema operativo',\n" +
+//     "                        IF\n" +
+//     "                            (\n" +
+//     "                                Tarea_Respuesta.Respuesta = 'SOCO',\n" +
+//     "                                'Sist. operativo con obs.',\n" +
+//     "                            IF\n" +
+//     "                                (\n" +
+//     "                                    Tarea_Respuesta.Respuesta = 'SFS',\n" +
+//     "                                    'Sist. fuera de serv.',\n" +
+//     "                                IF\n" +
+//     "                                ( Tarea_Respuesta.Respuesta = 'SNO', 'Sist. no operativo', Tarea_Respuesta.Respuesta )))))) USING UTF8 \n" +
+//     "            ) AS BINARY \n" +
+//     "        ) USING UTF8 \n" +
+//     "    ) AS 'TR_RESPUESTA',\n" +
+//     "        	Usuarios.Descripcion AS 'TR_TECNICO',\n" +
+//     "        	UPPER( TE.Descripcion ) AS 'TR_TIPO_EQUIPO',\n" +
+//     "        IF\n" +
+//     "        	( TipoContingente.Id > 0, 'SI', 'NO' ) AS 'TR_CONTINGENTE_YN',\n" +
+//     "        	TipoContingente.Id AS 'TR_CONTINGENTE_ID',\n" +
+//     "        	TipoContingente.Descripcion AS 'TR_CONTINGENTE_DESC',\n" +
+//     "       IF\n" +
+//     "        	( Tareas_Motivos.Motivo IS NULL, 'NO', 'SI' ) AS 'TR_INCIDENCIA_YN',\n" +
+//     "        	Tareas_Motivos.Motivo AS 'TR_INCIDENCIA',\n" +
+//     "        	EQ.SecDESC AS 'TR_SECTOR',\n" +
+//     "        	EQ.AreaDESC AS 'TR_AREA',\n" +
+//     "        	EQ.GerDESC AS 'TR_GERENCIA' \n" +
+//     "        FROM\n" +
+//     "        	Protocolos\n" +
+//     "        	INNER JOIN Clientes ON Protocolos.Id_Cliente = Clientes.Id\n" +
+//     "        	INNER JOIN Protocolo_Capitulo ON Protocolos.Id = Protocolo_Capitulo.Id_Protocolo\n" +
+//     "        INNER JOIN TipoProtocolo ON Protocolos.Id_TipoProtocolo = TipoProtocolo.Id\n" +
+//     "        	INNER JOIN Protocolo_Capturas ON Protocolos.Id = Protocolo_Capturas.Id_Protocolo \n" +
+//     "        	AND Protocolo_Capitulo.Capitulo = Protocolo_Capturas.Capitulo\n" +
+//     "        	INNER JOIN TipoRespuesta ON Protocolo_Capturas.Id_TipoRespuesta = TipoRespuesta.Id\n" +
+//     "        	INNER JOIN Tareas ON Protocolos.Id = Tareas.Id_Protocolo\n" +
+//     "        	INNER JOIN Tarea_Respuesta ON Tareas.Id = Tarea_Respuesta.Id_Tarea \n" +
+//     "        	AND Protocolo_Capitulo.Capitulo = Tarea_Respuesta.Capitulo \n" +
+//     "        	AND Protocolo_Capturas.Correlativo = Tarea_Respuesta.Correlativo\n" +
+//     "        	INNER JOIN Estados ON Tareas.Id_Estado = Estados.Id\n" +
+//     "        	INNER JOIN Equipos ON Tareas.Id_Equipo = Equipos.Id\n" +
+//     "        	INNER JOIN Usuarios ON Tareas.Id_Tecnico = Usuarios.Id\n" +
+//     "        	LEFT JOIN TipoContingente ON Tareas.Contingente = TipoContingente.Id\n" +
+//     "       	LEFT JOIN Tareas_Motivos ON Tareas.Id = Tareas_Motivos.Id_Tarea\n" +
+//     "      	INNER JOIN TipoEquipo TE ON TE.Id = Equipos.Id_Tipo\n" +
+//     "        	INNER JOIN Usuarios U ON U.Id = Tareas.Id_Tecnico\n" +
+//     "        	INNER JOIN (\n" +
+//     "        	SELECT\n" +
+//     "        		E.Id 'EqID',\n" +
+//     "        		S.Descripcion 'SecDESC',\n" +
+//     "        	A.Descripcion 'AreaDESC',\n" +
+//     "       		G.Descripcion 'GerDESC',\n" +
+//     "        		C.Descripcion 'CteDESC' \n" +
+//     "       	FROM\n" +
+//     "        		Equipos E\n" +
+//     "        		INNER JOIN Sectores S ON E.Id_Sector = S.Id\n" +
+//     "        		INNER JOIN Areas A ON S.Id_Area = A.Id\n" +
+//     "        		INNER JOIN Gerencias G ON A.Id_Gerencia = G.Id\n" +
+//     "        		INNER JOIN Clientes C ON G.Id_Cliente = C.Id \n" +
+//     "        	) AS EQ ON Tareas.Id_Equipo = EQ.EqID \n" +
+//     "        WHERE \n" +
+//     "   Tareas.Id =" +IDT +" ORDER BY TR_PROT_DESC_CAPI  ASC, FIELD(TR_PROT_CAPTURA,'Observaciones PV', 'Observación PV', 'Observaciones PV SA', 'Observaciones PV SSA', 'Observaciones PV EP'),	TR_PROT_CAPTURA ASC",
+//     (err, result) => {
+//       if (err) {
+//         console.log(err);
+//       } else {
+//         function onlyUnique(value, index, self) {
+//           return self.indexOf(value) === index;
+//         }
+//         const cap = result.map((a) => a.TR_PROT_DESC_CAPI);
+//         const cap1 = cap.filter(onlyUnique);
+
+//         res.render("protocolos/protocolo", {
+//           IDT: result[0].TR_TAREA_ID,
+//           TR_GERENCIA: result[0].TR_GERENCIA,
+//           TR_AREA: result[0].TR_AREA,
+//           TR_SECTOR: result[0].TR_SECTOR,
+//           FECHA: result[0].FECHA,
+//           TAREATIPO: result[0].TR_PROT_TAREATIPO,
+//           TR_PROT_DESC_TAREATIPO: result[0].TR_PROT_DESC_TAREATIPO,
+//           TR_EQUIPO_COD: result[0].TR_EQUIPO_COD,
+//           TR_PROT_ID: result[0].TR_PROT_ID,
+//           TR_PROT_DESC_PROT: result[0].TR_PROT_DESC_PROT,
+//           TR_ESTADO: result[0].TR_ESTADO,
+//           cap1: cap1,
+//           prot: result,
+//           imagenes: imagenes,
+//         });
+        
+
+//       }
+//     }
+//   );
+//   }
+// );
+
+// router.get("/protocolod/:IDT", isLoggedIn, authRole(['Cli_D']), async (req, res) => {
+//   const { IDT } = req.params;
+//   const { Id_Cliente } = req.user;
+//   const { Login } = req.user;
+
+//   const headers = { "User-Agent": "node-fetch" };
+
+//   const response = await fetch(
+//     "https://sapma.sercoing.cl/svc/ver_tarea.py?login=" +
+//       Login +
+//       "&idCliente=" +
+//       Id_Cliente +
+//       "&tarea=" +
+//       IDT,
+//     { headers }
+//   )
+//     .then((res) => res.json())
+//     .then((data) => {
+//       return data;
+//     });
+//   const imagen = Object.values(response);
+//   const imagenes = imagen[2];
+
+//   const dir = "src/images/";
+
+//   imagenes.forEach(function(url) {
+//     var filename = dir + url.split("/").pop();
+//     request.head(url, function(err, res, body){
+//       request(url).pipe(fs.createWriteStream(filename));
+//     });
+//   });
+
+
+//   await pool.query(
+//     "SELECT\n" +
+//     "        Tareas.Id AS TR_TAREA_ID,\n" +
+//     "        date_format(Tareas.Fecha, '%d-%m-%Y') AS FECHA,\n" +
+//     "        Protocolos.Id AS 'TR_PROT_ID',\n" +
+//     "        	TipoProtocolo.Abreviacion AS 'TR_PROT_TAREATIPO',\n" +
+//     "        	UPPER ( TipoProtocolo.Descripcion ) AS 'TR_PROT_DESC_TAREATIPO',\n" +
+//     "        	Equipos.Codigo AS 'TR_EQUIPO_COD',\n" +
+//     "        	Protocolos.Descripcion AS 'TR_PROT_DESC_PROT',\n" +
+//     "        	Protocolo_Capitulo.Capitulo AS 'TR_PROT_CAPIT_ID',\n" +
+//     "        	UPPER( Protocolo_Capitulo.Descripcion ) AS 'TR_PROT_DESC_CAPI',\n" +
+//     "        	Protocolo_Capitulo.Es_Varios AS 'TR_PROT_ESVARIOS',\n" +
+//     "        	Protocolo_Capturas.Correlativo AS 'TR_PROT_CAPTURA_ID',\n" +
+//     "        	Protocolo_Capturas.Descripcion AS 'TR_PROT_CAPTURA',\n" +
+//     "        	TipoRespuesta.Id AS 'TR_PROT_TRESP_ID',\n" +
+//     "        	TipoRespuesta.Descripcion AS 'TR_PROT_TRESP_TIPO',\n" +
+//     "        	Estados.Descripcion AS 'TR_ESTADO',\n" +
+//     "    CONVERT (\n" +
+//     "        CAST(\n" +
+//     "            CONVERT (\n" +
+//     "            IF\n" +
+//     "                (\n" +
+//     "                    Tarea_Respuesta.Respuesta = 'SC',\n" +
+//     "                    'No aplica',\n" +
+//     "                IF\n" +
+//     "                    (\n" +
+//     "                        Tarea_Respuesta.Respuesta = 'SSR',\n" +
+//     "                        'Sistema sin revisar.',\n" +
+//     "                    IF\n" +
+//     "                        (\n" +
+//     "                            Tarea_Respuesta.Respuesta = 'SOP',\n" +
+//     "                            'Sistema operativo',\n" +
+//     "                        IF\n" +
+//     "                            (\n" +
+//     "                                Tarea_Respuesta.Respuesta = 'SOCO',\n" +
+//     "                                'Sist. operativo con obs.',\n" +
+//     "                            IF\n" +
+//     "                                (\n" +
+//     "                                    Tarea_Respuesta.Respuesta = 'SFS',\n" +
+//     "                                    'Sist. fuera de serv.',\n" +
+//     "                                IF\n" +
+//     "                                ( Tarea_Respuesta.Respuesta = 'SNO', 'Sist. no operativo', Tarea_Respuesta.Respuesta )))))) USING UTF8 \n" +
+//     "            ) AS BINARY \n" +
+//     "        ) USING UTF8 \n" +
+//     "    ) AS 'TR_RESPUESTA',\n" +
+//     "        	Usuarios.Descripcion AS 'TR_TECNICO',\n" +
+//     "        	UPPER( TE.Descripcion ) AS 'TR_TIPO_EQUIPO',\n" +
+//     "        IF\n" +
+//     "        	( TipoContingente.Id > 0, 'SI', 'NO' ) AS 'TR_CONTINGENTE_YN',\n" +
+//     "        	TipoContingente.Id AS 'TR_CONTINGENTE_ID',\n" +
+//     "        	TipoContingente.Descripcion AS 'TR_CONTINGENTE_DESC',\n" +
+//     "       IF\n" +
+//     "        	( Tareas_Motivos.Motivo IS NULL, 'NO', 'SI' ) AS 'TR_INCIDENCIA_YN',\n" +
+//     "        	Tareas_Motivos.Motivo AS 'TR_INCIDENCIA',\n" +
+//     "        	EQ.SecDESC AS 'TR_SECTOR',\n" +
+//     "        	EQ.AreaDESC AS 'TR_AREA',\n" +
+//     "        	EQ.GerDESC AS 'TR_GERENCIA' \n" +
+//     "        FROM\n" +
+//     "        	Protocolos\n" +
+//     "        	INNER JOIN Clientes ON Protocolos.Id_Cliente = Clientes.Id\n" +
+//     "        	INNER JOIN Protocolo_Capitulo ON Protocolos.Id = Protocolo_Capitulo.Id_Protocolo\n" +
+//     "        INNER JOIN TipoProtocolo ON Protocolos.Id_TipoProtocolo = TipoProtocolo.Id\n" +
+//     "        	INNER JOIN Protocolo_Capturas ON Protocolos.Id = Protocolo_Capturas.Id_Protocolo \n" +
+//     "        	AND Protocolo_Capitulo.Capitulo = Protocolo_Capturas.Capitulo\n" +
+//     "        	INNER JOIN TipoRespuesta ON Protocolo_Capturas.Id_TipoRespuesta = TipoRespuesta.Id\n" +
+//     "        	INNER JOIN Tareas ON Protocolos.Id = Tareas.Id_Protocolo\n" +
+//     "        	INNER JOIN Tarea_Respuesta ON Tareas.Id = Tarea_Respuesta.Id_Tarea \n" +
+//     "        	AND Protocolo_Capitulo.Capitulo = Tarea_Respuesta.Capitulo \n" +
+//     "        	AND Protocolo_Capturas.Correlativo = Tarea_Respuesta.Correlativo\n" +
+//     "        	INNER JOIN Estados ON Tareas.Id_Estado = Estados.Id\n" +
+//     "        	INNER JOIN Equipos ON Tareas.Id_Equipo = Equipos.Id\n" +
+//     "        	INNER JOIN Usuarios ON Tareas.Id_Tecnico = Usuarios.Id\n" +
+//     "        	LEFT JOIN TipoContingente ON Tareas.Contingente = TipoContingente.Id\n" +
+//     "       	LEFT JOIN Tareas_Motivos ON Tareas.Id = Tareas_Motivos.Id_Tarea\n" +
+//     "      	INNER JOIN TipoEquipo TE ON TE.Id = Equipos.Id_Tipo\n" +
+//     "        	INNER JOIN Usuarios U ON U.Id = Tareas.Id_Tecnico\n" +
+//     "        	INNER JOIN (\n" +
+//     "        	SELECT\n" +
+//     "        		E.Id 'EqID',\n" +
+//     "        		S.Descripcion 'SecDESC',\n" +
+//     "        	A.Descripcion 'AreaDESC',\n" +
+//     "       		G.Descripcion 'GerDESC',\n" +
+//     "        		C.Descripcion 'CteDESC' \n" +
+//     "       	FROM\n" +
+//     "        		Equipos E\n" +
+//     "        		INNER JOIN Sectores S ON E.Id_Sector = S.Id\n" +
+//     "        		INNER JOIN Areas A ON S.Id_Area = A.Id\n" +
+//     "        		INNER JOIN Gerencias G ON A.Id_Gerencia = G.Id\n" +
+//     "        		INNER JOIN Clientes C ON G.Id_Cliente = C.Id \n" +
+//     "        	) AS EQ ON Tareas.Id_Equipo = EQ.EqID \n" +
+//     "        WHERE \n" +
+//     "   Tareas.Id =" +IDT +" ORDER BY TR_PROT_DESC_CAPI  ASC, FIELD(TR_PROT_CAPTURA,'Observaciones PV', 'Observación PV', 'Observaciones PV SA', 'Observaciones PV SSA', 'Observaciones PV EP'),	TR_PROT_CAPTURA ASC",
+//     (err, result) => {
+//       if (err) {
+//         console.log(err);
+//       } else {
+//         function onlyUnique(value, index, self) {
+//           return self.indexOf(value) === index;
+//         }
+//         const cap = result.map((a) => a.TR_PROT_DESC_CAPI);
+//         const cap1 = cap.filter(onlyUnique);
+
+//         res.render("protocolos/protocolo", {
+//           IDT: result[0].TR_TAREA_ID,
+//           TR_GERENCIA: result[0].TR_GERENCIA,
+//           TR_AREA: result[0].TR_AREA,
+//           TR_SECTOR: result[0].TR_SECTOR,
+//           FECHA: result[0].FECHA,
+//           TAREATIPO: result[0].TR_PROT_TAREATIPO,
+//           TR_PROT_DESC_TAREATIPO: result[0].TR_PROT_DESC_TAREATIPO,
+//           TR_EQUIPO_COD: result[0].TR_EQUIPO_COD,
+//           TR_PROT_ID: result[0].TR_PROT_ID,
+//           TR_PROT_DESC_PROT: result[0].TR_PROT_DESC_PROT,
+//           TR_ESTADO: result[0].TR_ESTADO,
+//           cap1: cap1,
+//           prot: result,
+//           imagenes: imagenes,
+//         });
+        
+
+//       }
+//     }
+//   );
+// }
+// );
+
+// router.get("/protocoloe/:IDT", isLoggedIn, authRole(['Cli_E']), async (req, res) => {
+//   const { IDT } = req.params;
+//   const { Id_Cliente } = req.user;
+//   const { Login } = req.user;
+
+//   const headers = { "User-Agent": "node-fetch" };
+
+//   const response = await fetch(
+//     "https://sapma.sercoing.cl/svc/ver_tarea.py?login=" +
+//       Login +
+//       "&idCliente=" +
+//       Id_Cliente +
+//       "&tarea=" +
+//       IDT,
+//     { headers }
+//   )
+//     .then((res) => res.json())
+//     .then((data) => {
+//       return data;
+//     });
+//   const imagen = Object.values(response);
+//   const imagenes = imagen[2];
+
+//   const dir = "src/images/";
+
+//   imagenes.forEach(function(url) {
+//     var filename = dir + url.split("/").pop();
+//     request.head(url, function(err, res, body){
+//       request(url).pipe(fs.createWriteStream(filename));
+//     });
+//   });
+
+
+//   await pool.query(
+//     "SELECT\n" +
+//     "        Tareas.Id AS TR_TAREA_ID,\n" +
+//     "        date_format(Tareas.Fecha, '%d-%m-%Y') AS FECHA,\n" +
+//     "        Protocolos.Id AS 'TR_PROT_ID',\n" +
+//     "        	TipoProtocolo.Abreviacion AS 'TR_PROT_TAREATIPO',\n" +
+//     "        	UPPER ( TipoProtocolo.Descripcion ) AS 'TR_PROT_DESC_TAREATIPO',\n" +
+//     "        	Equipos.Codigo AS 'TR_EQUIPO_COD',\n" +
+//     "        	Protocolos.Descripcion AS 'TR_PROT_DESC_PROT',\n" +
+//     "        	Protocolo_Capitulo.Capitulo AS 'TR_PROT_CAPIT_ID',\n" +
+//     "        	UPPER( Protocolo_Capitulo.Descripcion ) AS 'TR_PROT_DESC_CAPI',\n" +
+//     "        	Protocolo_Capitulo.Es_Varios AS 'TR_PROT_ESVARIOS',\n" +
+//     "        	Protocolo_Capturas.Correlativo AS 'TR_PROT_CAPTURA_ID',\n" +
+//     "        	Protocolo_Capturas.Descripcion AS 'TR_PROT_CAPTURA',\n" +
+//     "        	TipoRespuesta.Id AS 'TR_PROT_TRESP_ID',\n" +
+//     "        	TipoRespuesta.Descripcion AS 'TR_PROT_TRESP_TIPO',\n" +
+//     "        	Estados.Descripcion AS 'TR_ESTADO',\n" +
+//     "    CONVERT (\n" +
+//     "        CAST(\n" +
+//     "            CONVERT (\n" +
+//     "            IF\n" +
+//     "                (\n" +
+//     "                    Tarea_Respuesta.Respuesta = 'SC',\n" +
+//     "                    'No aplica',\n" +
+//     "                IF\n" +
+//     "                    (\n" +
+//     "                        Tarea_Respuesta.Respuesta = 'SSR',\n" +
+//     "                        'Sistema sin revisar.',\n" +
+//     "                    IF\n" +
+//     "                        (\n" +
+//     "                            Tarea_Respuesta.Respuesta = 'SOP',\n" +
+//     "                            'Sistema operativo',\n" +
+//     "                        IF\n" +
+//     "                            (\n" +
+//     "                                Tarea_Respuesta.Respuesta = 'SOCO',\n" +
+//     "                                'Sist. operativo con obs.',\n" +
+//     "                            IF\n" +
+//     "                                (\n" +
+//     "                                    Tarea_Respuesta.Respuesta = 'SFS',\n" +
+//     "                                    'Sist. fuera de serv.',\n" +
+//     "                                IF\n" +
+//     "                                ( Tarea_Respuesta.Respuesta = 'SNO', 'Sist. no operativo', Tarea_Respuesta.Respuesta )))))) USING UTF8 \n" +
+//     "            ) AS BINARY \n" +
+//     "        ) USING UTF8 \n" +
+//     "    ) AS 'TR_RESPUESTA',\n" +
+//     "        	Usuarios.Descripcion AS 'TR_TECNICO',\n" +
+//     "        	UPPER( TE.Descripcion ) AS 'TR_TIPO_EQUIPO',\n" +
+//     "        IF\n" +
+//     "        	( TipoContingente.Id > 0, 'SI', 'NO' ) AS 'TR_CONTINGENTE_YN',\n" +
+//     "        	TipoContingente.Id AS 'TR_CONTINGENTE_ID',\n" +
+//     "        	TipoContingente.Descripcion AS 'TR_CONTINGENTE_DESC',\n" +
+//     "       IF\n" +
+//     "        	( Tareas_Motivos.Motivo IS NULL, 'NO', 'SI' ) AS 'TR_INCIDENCIA_YN',\n" +
+//     "        	Tareas_Motivos.Motivo AS 'TR_INCIDENCIA',\n" +
+//     "        	EQ.SecDESC AS 'TR_SECTOR',\n" +
+//     "        	EQ.AreaDESC AS 'TR_AREA',\n" +
+//     "        	EQ.GerDESC AS 'TR_GERENCIA' \n" +
+//     "        FROM\n" +
+//     "        	Protocolos\n" +
+//     "        	INNER JOIN Clientes ON Protocolos.Id_Cliente = Clientes.Id\n" +
+//     "        	INNER JOIN Protocolo_Capitulo ON Protocolos.Id = Protocolo_Capitulo.Id_Protocolo\n" +
+//     "        INNER JOIN TipoProtocolo ON Protocolos.Id_TipoProtocolo = TipoProtocolo.Id\n" +
+//     "        	INNER JOIN Protocolo_Capturas ON Protocolos.Id = Protocolo_Capturas.Id_Protocolo \n" +
+//     "        	AND Protocolo_Capitulo.Capitulo = Protocolo_Capturas.Capitulo\n" +
+//     "        	INNER JOIN TipoRespuesta ON Protocolo_Capturas.Id_TipoRespuesta = TipoRespuesta.Id\n" +
+//     "        	INNER JOIN Tareas ON Protocolos.Id = Tareas.Id_Protocolo\n" +
+//     "        	INNER JOIN Tarea_Respuesta ON Tareas.Id = Tarea_Respuesta.Id_Tarea \n" +
+//     "        	AND Protocolo_Capitulo.Capitulo = Tarea_Respuesta.Capitulo \n" +
+//     "        	AND Protocolo_Capturas.Correlativo = Tarea_Respuesta.Correlativo\n" +
+//     "        	INNER JOIN Estados ON Tareas.Id_Estado = Estados.Id\n" +
+//     "        	INNER JOIN Equipos ON Tareas.Id_Equipo = Equipos.Id\n" +
+//     "        	INNER JOIN Usuarios ON Tareas.Id_Tecnico = Usuarios.Id\n" +
+//     "        	LEFT JOIN TipoContingente ON Tareas.Contingente = TipoContingente.Id\n" +
+//     "       	LEFT JOIN Tareas_Motivos ON Tareas.Id = Tareas_Motivos.Id_Tarea\n" +
+//     "      	INNER JOIN TipoEquipo TE ON TE.Id = Equipos.Id_Tipo\n" +
+//     "        	INNER JOIN Usuarios U ON U.Id = Tareas.Id_Tecnico\n" +
+//     "        	INNER JOIN (\n" +
+//     "        	SELECT\n" +
+//     "        		E.Id 'EqID',\n" +
+//     "        		S.Descripcion 'SecDESC',\n" +
+//     "        	A.Descripcion 'AreaDESC',\n" +
+//     "       		G.Descripcion 'GerDESC',\n" +
+//     "        		C.Descripcion 'CteDESC' \n" +
+//     "       	FROM\n" +
+//     "        		Equipos E\n" +
+//     "        		INNER JOIN Sectores S ON E.Id_Sector = S.Id\n" +
+//     "        		INNER JOIN Areas A ON S.Id_Area = A.Id\n" +
+//     "        		INNER JOIN Gerencias G ON A.Id_Gerencia = G.Id\n" +
+//     "        		INNER JOIN Clientes C ON G.Id_Cliente = C.Id \n" +
+//     "        	) AS EQ ON Tareas.Id_Equipo = EQ.EqID \n" +
+//     "        WHERE \n" +
+//     "   Tareas.Id =" +IDT +" ORDER BY TR_PROT_DESC_CAPI  ASC, FIELD(TR_PROT_CAPTURA,'Observaciones PV', 'Observación PV', 'Observaciones PV SA', 'Observaciones PV SSA', 'Observaciones PV EP'),	TR_PROT_CAPTURA ASC",
+//     (err, result) => {
+//       if (err) {
+//         console.log(err);
+//       } else {
+//         function onlyUnique(value, index, self) {
+//           return self.indexOf(value) === index;
+//         }
+//         const cap = result.map((a) => a.TR_PROT_DESC_CAPI);
+//         const cap1 = cap.filter(onlyUnique);
+
+//         res.render("protocolos/protocolo", {
+//           IDT: result[0].TR_TAREA_ID,
+//           TR_GERENCIA: result[0].TR_GERENCIA,
+//           TR_AREA: result[0].TR_AREA,
+//           TR_SECTOR: result[0].TR_SECTOR,
+//           FECHA: result[0].FECHA,
+//           TAREATIPO: result[0].TR_PROT_TAREATIPO,
+//           TR_PROT_DESC_TAREATIPO: result[0].TR_PROT_DESC_TAREATIPO,
+//           TR_EQUIPO_COD: result[0].TR_EQUIPO_COD,
+//           TR_PROT_ID: result[0].TR_PROT_ID,
+//           TR_PROT_DESC_PROT: result[0].TR_PROT_DESC_PROT,
+//           TR_ESTADO: result[0].TR_ESTADO,
+//           cap1: cap1,
+//           prot: result,
+//           imagenes: imagenes,
+//         });
+        
+
+//       }
+//     }
+//   );
+// }
+// );

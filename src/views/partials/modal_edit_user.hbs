@@ -1,0 +1,157 @@
+<style>
+    .modal-dialog {
+    max-height: 100vh;
+}
+</style>
+<div class="modal fade bd-example-modal-lg" id="modalcli"  role="dialog" aria-labelledby="myLargeModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="modal-close" data-dismiss="modal" aria-label="Close">
+                    <i class="font-icon-close-2"></i>
+                </button>
+                <h4 class="modal-title" id="mdltitulo"></h4>
+            </div>
+            <form action="" id="usuario_cli">
+                <div class="modal-body">
+                    <cdiv class="form-group">
+                        <div class="card-block">
+                            <div class="row">
+                                <div class="container-fluid">  
+                                    <div id="items-container" style="overflow-y: scroll; height: 400px; padding-right: 15px;">
+                                        {{#ifAny perfil.Id_Perfiles "5" "10"}}
+                                                <div class="col-md-12">
+                                                    <input type="text" class="form-control" id="search-items" placeholder="Buscar">
+                                                    <h5 class="m-t-lg with-border ">Gerencias</h5>
+                                                </div>
+                                            {{#each gerencias }}
+                                                <div class="col-md-4 checkbox-bird green m-t-2" style="margin-bottom: 10px;">
+                                                    <input class="form-check-input" type="checkbox" name="checkger" id="checkger{{vcgas_idGerencia}}" value="{{vcgas_idGerencia}}">
+                                                    <label class="form-check-label" for="checkger{{vcgas_idGerencia}}">{{vcgas_gerenciaN}}</label>
+                                                </div>
+                                            {{/each}}
+                                        {{/ifAny}}
+                                        {{#ifEquals perfil.Id_Perfiles "4"}}
+                                            <div class="">
+                                                <label for="gerencias" class="form-label m-t-2">Gerencias</label>
+                                                <select name="gerenciass" id="gerenciass" class="select2">
+                                                    <option value="">Seleccione una Gerencia</option>
+                                                    {{#each gerencias }}
+                                                    <option value= "{{vcgas_idGerencia}}">{{vcgas_gerenciaN}}</option>
+                                                    {{/each}}
+                                                </select> 
+                                                 <input type="text" class="form-control m-t-2" id="search-items-areas" placeholder="Buscar">                                                                       
+                                            </div>
+                                            <div class="">
+                                                <h5 class="m-t-lg with-border ">Areas</h5>
+                                                <div class="checkbox-bird green" id="container_checkbox">                                                                  
+                                                </div>
+                                            </div>
+                                        {{/ifEquals}}
+                                        {{#ifEquals perfil.Id_Perfiles "7"}}
+                                            <div class="">
+                                                <label for="gerenciass" class="form-label">Gerencias</label>
+                                                <select name="gerenciass" id="gerenciass" class="select2">
+                                                    <option value="">Seleccione una Gerencia</option>
+                                                    {{#each gerencias }}
+                                                    <option value= "{{vcgas_idGerencia}}">{{vcgas_gerenciaN}}</option>
+                                                    {{/each}}
+                                                </select>                                                                        
+                                                <label for="exampleSelect" class="form-label m-t-1">Areas</label>                                                                 
+                                                <select name="areass" id="areass" class="select2">
+                                                    <option value="">Seleccione un Area</option>                                                                             
+                                                </select> 
+                                                <input type="text" class="form-control m-t-2" id="search-items-areas" placeholder="Buscar">                                                                        
+                                            </div>
+                                            <div class="">
+                                                <h5 class="m-t-lg with-border ">Sectores</h5>
+                                                <div class="checkbox-bird green" id="container_checkbox">                                                                  
+                                                </div>
+                                            </div>
+                                        {{/ifEquals}}
+                                        {{#ifEquals perfil.Id_Perfiles "8"}}
+                                            <div class="">
+                                                <label for="gerenciass" class="form-label">Gerencias</label>
+                                                <select name="gerenciass" id="gerenciass" class="select2">
+                                                    <option value="">Seleccione una Gerencia</option>
+                                                    {{#each gerencias }}
+                                                    <option value= "{{vcgas_idGerencia}}">{{vcgas_gerenciaN}}</option>
+                                                    {{/each}}
+                                                </select>                                                                        
+                                                <label for="areass" class="form-label m-t-1">Areas</label>                                                                
+                                                <select name="areass" id="areass" class="select2">
+                                                    <option value="">Seleccione un Area</option>                                                                             
+                                                </select>                                                                        
+                                                <label for="sectoress" class="form-label m-t-1">Sectores</label>                                                                
+                                                <select name="sectoress" id="sectoress" class="select2">
+                                                    <option value="">Seleccione un Sector</option>                                                                             
+                                                </select> 
+                                                <input type="text" class="form-control m-t-2" id="search-items-areas" placeholder="Buscar">                                                                        
+                                            </div>
+                                            <div class="">
+                                                <h5 class="m-t-lg with-border ">Equipos</h5>
+                                                <div class="checkbox-bird green" id="container_checkbox">                                                                  
+                                                </div>
+                                            </div>
+                                        {{/ifEquals}}
+                                    </div>    
+                                </div>
+                            </div>
+                        </div>
+                    </cdiv>
+                </div>
+                <br>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-rounded btn-default" data-dismiss="modal">Cerrar</button>
+                    {{#ifAny perfil.Id_Perfiles "5" "10"}}
+                    <button type="button" id="guardar_ger" name="guardar_ger" class="btn btn-rounded btn-primary">Guardar</button>
+                    {{/ifAny}}
+                    {{#ifEquals perfil.Id_Perfiles "4"}}
+                    <button type="button" id="guardar_area" name="guardar_area" class="btn btn-rounded btn-primary">Guardar</button>
+                    {{/ifEquals}}
+                    {{#ifEquals perfil.Id_Perfiles "7"}}
+                    <button type="button" id="guardar_sec" name="guardar_sec" class="btn btn-rounded btn-primary">Guardar</button>
+                    {{/ifEquals}}
+                    {{#ifEquals perfil.Id_Perfiles "8"}}
+                    <button type="button" id="guardar_equipo" name="guardar_equipo" class="btn btn-rounded btn-primary">Guardar</button>
+                    {{/ifEquals}}
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+<div class="modal fade bd-example-modal-lg" id="modalpass" tabindex="-1" role="dialog" aria-labelledby="myLargeModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="modal-close" data-dismiss="modal" aria-label="Close">
+                    <i class="font-icon-close-2"></i>
+                </button>
+                <h4 class="modal-title" id="titulopass"></h4>
+            </div>
+            <form action="" id="cambiarpass">
+                <div class="modal-body">
+                    <cdiv class="form-group">
+                        <div class="card-block">
+                            <div class="row">
+                                <cdiv class="form-group">
+                                    <label class="form-label" for="Clave">Nueva Contraseña</label>
+                                    <input type="password"  class="form-control" id="pass1" name="pass1" placeholder="Ingrese contraseña" required>
+                                </cdiv>
+                                <br>
+                                <cdiv class="form-group">
+                                    <label class="form-label" for="Clave">Confirmar Contraseña</label>
+                                    <input type="password"  class="form-control" id="pass2" name="pass2" placeholder="Confirme contraseña" required>
+                                </cdiv>
+                                <div class="modal-footer">
+                                    <button type="button" class="btn btn-rounded btn-default" data-dismiss="modal">Cerrar</button>
+                                    <button type="submit"  name="action" id="guardar_pass" class="btn btn-rounded btn-primary">Guardar</button>
+                                </div>
+                            </div>
+                        </div>
+                    </cdiv>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>

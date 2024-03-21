@@ -1,6 +1,5 @@
 <body class="with-side-menu">
 	{{> navbar }}
-
 	<div class="mobile-menu-left-overlay-"></div>
 	{{> nav }}
 	<div class="page-content">
@@ -21,82 +20,161 @@
 					</div>
 				</div>
 			</header>
-			<form action="#">
-					<div class="box-typical box-typical-padding">
-						<div class="form-group">
-							<div class="container-fluid">
-							
-							{{!-- {{#each imagenes }}
-							</script>
-							<a href="{{this}}" class="ml-auto" target="_blank" id="imagen" name="imagen">Imagen {{incitement @index}} &nbsp</a>
-							{{/each}} --}}
-							 
-							{{!-- <button type="button"class="btn btn-success float-right" onclick="javascript:imprim1(imp);">Imprimir</button> --}}
-							{{#ifEquals user.Id_Perfil "2"  }}
-							<a href="/pdf/{{IDT}}/{{TR_EQUIPO_COD}}"><button type="button" class="btn btn-warning float-right" id="pdf" name="pdf"><i class="fa fa-file-pdf-o"></i></button></a>
-							{{/ifEquals}}
-							{{#ifEquals user.Id_Perfil "9"  }}
-							<a href="/pdf/{{IDT}}/{{TR_EQUIPO_COD}}"><button type="button" class="btn btn-warning float-right" id="pdf" name="pdf"><i class="fa fa-file-pdf-o"></i></button></a>
-							{{/ifEquals}}
-							{{#ifEquals user.Id_Perfil "6"  }}
-							<a href="/pdfc/{{IDT}}/{{TR_EQUIPO_COD}}"><button type="button" class="btn btn-warning float-right" id="pdf" name="pdf"><i class="fa fa-file-pdf-o"></i></button></a>
-							{{/ifEquals}}
-							{{#ifEquals user.Id_Perfil "5"  }}
-							<a href="/pdfb/{{IDT}}/{{TR_EQUIPO_COD}}"><button type="button" class="btn btn-warning float-right" id="pdf" name="pdf"><i class="fa fa-file-pdf-o"></i></button></a>
-							{{/ifEquals}}
-							{{#ifEquals user.Id_Perfil "4"  }}
-							<a href="/pdfa/{{IDT}}/{{TR_EQUIPO_COD}}"><button type="button" class="btn btn-warning float-right" id="pdf" name="pdf"><i class="fa fa-file-pdf-o"></i></button></a>
-							{{/ifEquals}}
-							{{#ifEquals user.Id_Perfil "7"  }}
-							<a href="/pdfd/{{IDT}}/{{TR_EQUIPO_COD}}"><button type="button" class="btn btn-warning float-right" id="pdf" name="pdf"><i class="fa fa-file-pdf-o"></i></button></a>
-							{{/ifEquals}}
-							<br>	
-								<div class="row" id="imp">
-									<div class="card-header">
-										<div class="col-md-4 col-xs-4">
-											<img src="/img/imagen1.png" class="img-fluid" >
+			<style>
+				table {
+					width: 100%;
+					border-collapse: collapse;
+				}
+
+				th, td {
+					border: 1px solid black;
+					padding: 10px;
+				}
+
+				th {
+					background-color: #f2f2f2;
+				}
+				.logo{
+					width: 200px;
+					height: 100px;
+				}
+			</style>
+			<div class="box-typical box-typical-padding">
+				<div class="form-group">
+					<a href="/pdf/{{IDT}}/{{TR_EQUIPO_COD}}"><button type="button" class="btn btn-warning float-right" id="pdf" name="pdf"><i class="fa fa-file-pdf-o"></i></button></a>
+				</div>
+				<br><br>	
+				<section class="card box-typical" id="tabla_prot11">
+					<div class="card-block">
+						<div class="card-header">
+							<div class="col-md-4">
+								<img src="/img/imagen1.png" class="img-fluid" >
+							</div>
+							<div class="col-md-8 b-l">
+								<label><h5><strong>PROTOCOLO Nº: {{IDT}} / {{TR_PROT_DESC_TAREATIPO}}</strong></h5></label>
+								<label><h6><strong>TAG: </strong>{{TR_EQUIPO_COD}}</h6></label>
+								<label><h6><strong>ESPECIALIDAD: </strong>{{TR_GERENCIA}}</h6></label>
+								<label><h6><strong>SALA: </strong>{{TR_SECTOR}}</h6></label>
+								<label><h6><strong>ESTADO: </strong>{{TR_ESTADO}}</h6></label>
+							</div>
+						</div>
+						<div class="card-body">
+							{{#group prot by="TR_PROT_DESC_CAPI"}}
+								{{#ifEquals (trimString value) "01. ENCABEZADO"}}
+									<div class="col-md-12 m-t-3 b-b" >
+										<h5 class="card-title"><strong>{{value}}</h5>
+									</div>
+									{{#each items as |item|}}
+										<div class="col-md-4 m-t-2">
+											<label><strong>{{ TR_PROT_CAPTURA}}</strong> : {{TR_RESPUESTA}}</label>
+											<br>
 										</div>
-										<div class="col-md-8 col-xs-8 b-l">
-											<label><h4><strong>Tarea Nº: {{IDT}} / {{TR_PROT_DESC_TAREATIPO}}</strong></h4></label>
-											<label><h5><strong>Tag: </strong>{{TR_EQUIPO_COD}}</h5></label>
-											<label><h5><strong>Gerencia: </strong>{{TR_GERENCIA}}</h5></label>
-											<label><h5><strong>Area: </strong>{{TR_AREA}}</h5></label>
-											<label><h5><strong>Sector: </strong>{{TR_SECTOR}}</h5></label>
+									{{/each}}
+								{{/ifEquals}}
+								{{#ifEquals (trimString value) "02. PAUTA VERIFICACIÓN"}}
+									<div class="col-md-12 m-t-3 b-b">
+										<h5 class="card-title"><strong>{{value}}</strong></h5>
+									</div>
+									<div class="col-md-12">
+										<div class="table-responsive">
+											<table class="table table-striped table-bordered table-hover text-center m-t-2">
+												<thead>
+													<tr>
+														<td colspan="7"><center>INFORMACIÓN DE BATERÍAS</center></td>
+													</tr>
+													<tr>
+														<th><center>MARCA</center></th>
+														<th><center>MODELO</center></th>
+														<th><center>CAPACIDAD V</center></th>
+														<th><center>CAPACIDAD Ah</center></th>
+														<th><center>IMPEDANCIA Dsh</center></th>
+													</tr>
+												</thead>
+												<tbody>
+													<tr>
+													{{#each items as |item|}}
+														{{#if @first}}
+															<td>{{item.bat_marca}}</td>
+															<td>{{item.bat_modelo}}</td>
+															<td>{{item.bat_capacidad_V}} V</td>
+															<td>{{item.bat_capacidad_Ah}} Ah</td>
+															<td>{{item.bat_impedancia_Dsh}} &Omega;</td>
+														{{/if}}
+													{{/each}}		
+													</tr>
+												</tbody>
+											</table>
+
+											<table class="table table-striped table-bordered table-hover m-t-2 text-center">
+												<thead>
+													<tr>
+														<td colspan="4"><center>DETALLE DE BATERÍAS</center></td>
+													</tr>
+													<tr>
+														<th><center>BATERIA</center></th>
+														<th><center>MEDICIÓN</center></th>
+														<th hidden="true"><center>NOMINAL</center></th>
+														<th><center>DESVIACIÓN</center></th>
+														<th><center>ESTADO</center></th>
+													</tr>
+												</thead>
+												{{#each items as |item|}}
+												<tbody>
+													<tr>
+														<td>{{TR_PROT_CAPTURA}}</td>
+														<td class="respuesta">{{TR_RESPUESTA}} &Omega;</td>
+														<td class="nominal" data-medicion="{{TR_RESPUESTA}}" data-good="{{bat_toleranciaG}}" data-fail="{{bat_toleranciaF}}" hidden="true">{{bat_impedancia_Dsh}} &Omega;</td>
+														<td>%</td>
+														<td></td>
+													</tr>
+												</tbody>
+												{{/each}}
+											</table>
 										</div>
 									</div>
-									{{#group prot by="TR_PROT_DESC_CAPI"}}
-										<div class="col-md-12 col-xs-12" >
-											<br>
-												<label ><h5 class="m-t-lg with-border"><strong>{{value}}<br></strong></h5></label>
+								{{/ifEquals}}
+								{{#ifEquals (trimString value) "03. REQUERIMIENTO DE COMPRA O RESERVA"}}
+									<div class="col-md-12 m-t-3 b-b" >
+										<h5 class="card-title"><strong>{{value}}</h5>
+									</div>
+									{{#each items as |item|}}
+										<div class="col-md-4 m-t-2">
+											<label><strong>{{ TR_PROT_CAPTURA}}</strong> : {{TR_RESPUESTA}}</label>
 											<br>
 										</div>
-									{{#each items}}
-									<div class="col-md-4 col-xs-4">
-										<label><strong>{{ TR_PROT_CAPTURA}}</strong> : {{TR_RESPUESTA}}</label>
-										<br>
-									</div>	
 									{{/each}}
-									{{/group}}	
-									<br><br>	
-									<div id="pima" style="display: block">
-										{{#each imagenes }}
-										<div class="col-md-12 col-xs-12">
-											<br>
-											<label><h5><strong>Adjunto {{incitement @index}}<br></strong></h4></label>
+								{{/ifEquals}}
+								{{#ifEquals (trimString value) "04. ESTADO"}}
+									<div class="col-md-12 m-t-3 b-b" >
+										<h5 class="card-title"><strong>{{value}}</h5>
+									</div>
+									{{#each items as |item|}}
+										<div class="col-md-4 m-t-2">
+											<label><strong>{{ TR_PROT_CAPTURA}}</strong> : {{TR_RESPUESTA}}</label>
 											<br>
 										</div>
-										<div class="col-md-3 col-xs-3">
-											<img src="{{this}}" class="img-fluid" alt="Responsive image" width="300" height="300">
-											<a href="{{this}}" target="blank">Ver Imagen {{incitement @index}}</a>
-										</div><br>
-										{{/each }}
-									</div>							
+									{{/each}}
+								{{/ifEquals}}
+							{{/group}}
+							<br><br>	
+							<div id="pima" style="display: block">
+								{{#each imagenes }}
+								<div class="col-md-12 col-xs-12">
+									<br>
+									<label><h5><strong>Adjunto {{incitement @index}}<br></strong></h4></label>
+									<br>
 								</div>
-							</div>
-						</div>	
+								<div class="col-md-3 col-xs-3">
+									<img src="{{this}}" class="img-fluid" alt="Responsive image" width="300" height="300">
+									<a href="{{this}}" target="blank">Ver Imagen {{incitement @index}}</a>
+								</div><br>
+								{{/each }}
+							</div>	
+						</div>
 					</div>
-			</form>
-		</div>	
+				</section>
+			</div>
+	    </div>
 	</div>
 	<script src="/js/lib/jquery/jquery.min.js"></script>
 	<script src="/js/lib/tether/tether.min.js"></script>
@@ -109,17 +187,30 @@
 	<script src="/js/lib/fancybox/jquery.fancybox.pack.js"></script> 
 	<script src="/js/summernote-ES.js"></script>
 	<script src="/js/lib/select2/select2.full.min.js"></script>
+	<script>
+		document.querySelectorAll('.nominal').forEach(function(element) {
+			var nominal = parseFloat(element.textContent);
+			var respuesta = parseFloat(element.getAttribute('data-medicion'));
+			var good = parseFloat(element.getAttribute('data-good'));
+			var fail = parseFloat(element.getAttribute('data-fail'));
+			var valor = ((nominal - respuesta) / nominal) * 100;
+			var valorAbsoluto = Math.round(Math.abs(valor));
+			var estadoElement = element.nextElementSibling;
+			var segundoSiguienteElemento = estadoElement.nextElementSibling;
+			estadoElement.textContent = valorAbsoluto+" %";
 
+			if (valorAbsoluto < good) {
+				segundoSiguienteElemento.textContent = 'GOOD';
+				segundoSiguienteElemento.style.color = '#23ec23';
+			} else if (valorAbsoluto >= good && valorAbsoluto < fail) {
+				segundoSiguienteElemento.textContent = 'WARNING';
+				segundoSiguienteElemento.style.color = '#ffb005';
+			} else {
+				segundoSiguienteElemento.textContent = 'FAIL';
+				segundoSiguienteElemento.style.color = 'red';
+			}
+		});
+
+	</script>
 </body>
-<script>
-function imprim1(imp){
-var printContents = document.getElementById('imp').innerHTML;
 
-        w = window.open();
-        w.document.write(printContents);
-        w.document.close(); // necessary for IE >= 10
-        w.focus(); // necessary for IE >= 10
-		w.print();
-		w.close();
-        return true;}
-</script>

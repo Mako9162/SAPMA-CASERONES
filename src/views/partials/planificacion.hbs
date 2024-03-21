@@ -96,3 +96,87 @@
         </div>
     </div>
 </div>  
+<div class="modal fade bd-example-modal-lg" id="verificar_tareas" tabindex="-1" role="dialog" aria-labelledby="myLargeModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="modal-close" data-dismiss="modal" aria-label="Close">
+                    <i class="font-icon-close-2"></i>
+                </button>
+                <h4 class="modal-title" id="titulo_verificar">Detalle de tareas</h4>
+            </div>
+            <form action="" id="form_ciclo">
+                <div class="modal-body">
+                    <div class="form-group">
+                        <div class="card-block">
+                            <div class="row">
+                                <div class="col-md-12">
+                                    <div class="box-typical box-typical-padding">
+                                        <table id="tabla_verificar" class="table table-bordered table-striped table-vcenter js-dataTable-full">
+                                            <thead>
+                                                <tr>
+                                                    <th>Id Tarea</th>
+                                                    <th>Equipo</th>
+                                                    <th>fecha</th>
+                                                    <th>Estado</th>
+                                                    <th>Técnico</th>                                                
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                <div class="col-md-12 col-sm-6">
+                                    <button type="button"  name="cancelar_ver" id="cancelar_ver" class="btn btn-danger btn-sm float-left">cancelar</button>
+                                    <button type="button"  name="ir" id="ir" class="btn btn-primary btn-sm float-right">Ir a planificar</button>
+                                </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>  
+<div class="modal fade bd-example-modal-lg" id="detalle_tareas" tabindex="-1" role="dialog" aria-labelledby="myLargeModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="modal-close" data-dismiss="modal" aria-label="Close">
+                    <i class="font-icon-close-2"></i>
+                </button>
+                <h4 class="modal-title" id="titulo_detalle_tareas"></h4>
+            </div>
+            <form action="" id="form_tareas">
+                <div class="modal-body">
+                    <div class="form-group">
+                        <div class="card-block">
+                            <div class="row">
+                                <div class="col-md-12">
+                                    <div class="box-typical box-typical-padding">
+                                        <table id="tabla_detalle_tareas" class="table table-bordered table-striped table-vcenter js-dataTable-full">
+                                            <thead>
+                                                <tr>
+                                                    <th>TAREA</th>
+                                                    <th>FECHA</th>
+                                                    <th>TECNICO</th>
+                                                    <th>ESTADO</th>
+                                                    <th>EQUIPO</th>
+                                                    <th>TIPO</th>
+                                                    <th>PROTOCOLO</th>    
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>  

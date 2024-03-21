@@ -1,39 +1,39 @@
  <style>
-					.side-menu{
-						position: fixed;
-					}
+.side-menu{
+	position: fixed;
+}
 
-					.side-menu .side-menu-list {
-						position: absolute;
-						width: 100%;
-						padding: 0;
-						margin: 0;
-						list-style: none;
-					}
-					.side-menu div {
-					color:#ffffff; 
-					position: absolute;
-					bottom: 0px; 
+.side-menu .side-menu-list {
+	position: absolute;
+	width: 100%;
+	padding: 0;
+	margin: 0;
+	list-style: none;
+}
+.side-menu div {
+color:#ffffff; 
+position: absolute;
+bottom: 0px; 
 
 
-					}
+}
 
-					.side-menu div img{
-						width: 60%;
-						margin-left: auto;
-						margin-right: auto;
-						display: block;
-					}
+.side-menu div img{
+	width: 60%;
+	margin-left: auto;
+	margin-right: auto;
+	display: block;
+}
 
-					.side-menu div p{
-						text-align: center;
-						margin-top: 5px;
-						margin-bottom: 5px;
-						margin-left: 5px;
-						margin-right: auto;
-						font-size: small;
-					}
-					</style>
+.side-menu div p{
+	text-align: center;
+	margin-top: 5px;
+	margin-bottom: 5px;
+	margin-left: 5px;
+	margin-right: auto;
+	font-size: small;
+}
+</style>
 <nav class="side-menu">
 	<ul class="side-menu-list">
 		<li class="grey">
@@ -197,8 +197,7 @@
 			<ul style>
 				<li><a href="/tgenerales"><span class="lbl">Tareas generales</span></a></li>
 				<li><a href="/protocolos"><span class="lbl">Para validar</span></a></li>
-				<li><a href="/aprobacionesplan"><span class="lbl">Para
-							aprobar</span></a></li>
+				<li><a href="/aprobacionesplan"><span class="lbl">Para aprobar</span></a></li>
 				<li><a href="/aprobadasp"><span class="lbl">Aprobadas</span></a></li>
 				<li><a href="/rechazadasp"><span class="lbl">Rechazadas</span></a></li>
 			</ul>
@@ -229,7 +228,8 @@
 			</span>
 			<ul style>
 				<li><a href="/equipos"><span class="lbl">Ver</span></a></li>
-				<li><a href="/equiposnew"><span class="lbl">Nuevo</span></a></li>
+				{{!-- <li><a href="/equiposnew"><span class="lbl">Nuevo HVAC / SPCI</span></a></li> --}}
+				<li><a href="/equiposnewups"><span class="lbl">Nuevo UPS</span></a></li>
 				<li><a href="/dinamicos"><span class="lbl">Dinámicos</span></a></li>
 			</ul>
 		</li>
@@ -301,6 +301,7 @@
 			<ul style>
 				<li><a href="/reportes"><span class="lbl">Agregar</span></a></li>
 				<li><a href="/listarep"><span class="lbl">Ver</span></a></li>
+				<li><a href="/fuente"><span class="lbl">Fuente</span></a></li>
 			</ul>
 		</li>
 		<li class="grey with-sub">
@@ -309,8 +310,7 @@
 				<span class="lbl">Usuarios</span>
 			</span>
 			<ul style>
-				<li><a href="/usert"><span class="lbl">Ver</span></a></li>
-				{{!-- <li><a href="#"><span class="lbl">Administrar</span></a></li> --}}
+				<li><a href="/users"><span class="lbl">Ver</span></a></li>
 			</ul>
 		</li>
 		<li class="grey with-sub">

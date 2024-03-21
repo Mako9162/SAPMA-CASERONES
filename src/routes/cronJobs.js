@@ -21,7 +21,7 @@ const transporter = nodemailer.createTransport({
   },
 });
 
-const job = new cron.CronJob("0 0 0 * * *", function(req, res) {
+const job = new cron.CronJob("0 0 20 * * *", function(req, res) {
     pool.query(
         "SELECT\n" +
         "	VT.Val_tarea_id AS Tarea,\n" +

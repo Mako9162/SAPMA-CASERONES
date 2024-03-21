@@ -45,12 +45,14 @@
     "npm": "^9.8.1",
     "passport": "^0.6.0",
     "passport-local": "^1.0.0",
+    "puppeteer": "^22.6.0",
     "python-shell": "^3.0.1",
     "request-promise": "^0.0.1",
     "request-promise-native": "^0.0.0",
     "ssh2": "^1.11.0",
     "timeago.js": "^4.0.2",
     "tunnel-ssh": "^4.1.6",
+    "web-streams-polyfill": "^4.0.0",
     "xlsx": "^0.18.5"
   }
 }

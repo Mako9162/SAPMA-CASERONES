@@ -2,7 +2,29 @@ const express = require('express');
 const router = express.Router();
 const pool = require('../database');
 const { isLoggedIn } = require('../lib/auth');
-const { authRole, roles } = require('../lib/rol');
+const { authRole } = require('../lib/rol');
+const moment = require('moment');
+const XLSX = require('xlsx');
+const path = require('path');
+const fs = require('fs');
+const nodemailer = require('nodemailer');
+const hbs = require("handlebars");
+
+const correo = "sapmamlcc@sercoing.cl";
+const pass = "y_ret@9'23tJ$.`N";
+
+const transporter = nodemailer.createTransport({
+    host: "mail.sercoing.cl",
+    port: 587,
+    secure: false,
+    auth: {
+        user: correo,
+        pass: pass,
+    },
+    tls: {
+        rejectUnauthorized: false,
+    },
+});
 
 router.get('/reportes', isLoggedIn, async (req, res) => {
     const {Id_Cliente} = req.user;
@@ -169,8 +191,6 @@ router.get('/listarep', isLoggedIn, async (req, res) => {
     });
 });
 
-
-
 router.get('/listarepc', isLoggedIn, authRole(['Cli_C']), async (req, res) => {
     const {Id_Cliente} = req.user;
     await pool.query(
@@ -279,50 +299,50 @@ router.get('/listarepa', isLoggedIn, authRole(['Cli_A']), async (req, res) => {
     const {Id_Cliente} = req.user;
     await pool.query(   
         "SELECT\n" +
-"	R.rep_id AS REPORTE,\n" +
-"	DATE_FORMAT( R.rep_fecha_ini, '%d-%m-%Y' ) AS FECHA_INI,\n" +
-"	DATE_FORMAT( R.rep_fecha_fin, '%d-%m-%Y' ) AS FECHA_FIN,\n" +
-"	DATE_FORMAT( R.rep_fecha_carga, '%d-%m-%Y' ) AS FECHA_CARGA,\n" +
-"	R.rep_nombre,\n" +
-"	R.rep_enlace,\n" +
-"IF\n" +
-"	(\n" +
-"		R.rep_id_perfil = 5,\n" +
-"		'GERENCIA',\n" +
-"	IF\n" +
-"		(\n" +
-"			R.rep_id_perfil = 4,\n" +
-"			'AREA',\n" +
-"		IF\n" +
-"			(\n" +
-"				R.rep_id_perfil = 8,\n" +
-"				'EQUIPO',\n" +
-"			IF\n" +
-"			( R.rep_id_perfil = 7, 'SECTOR', 'CLIENTE' )))) AS PERFIL,\n" +
-"	CONCAT_WS( '\\\\\\\\', G.Descripcion, A.Descripcion, E.Descripcion, S.Descripcion, C.Descripcion ) AS DETALLE \n" +
-"FROM\n" +
-"	reporte_bi R\n" +
-"	LEFT JOIN Gerencias G ON R.rep_perfil = G.Id \n" +
-"	AND R.rep_id_perfil = 5\n" +
-"	LEFT JOIN Equipos E ON R.rep_perfil = E.Id \n" +
-"	AND R.rep_id_perfil = 8\n" +
-"	LEFT JOIN Areas A ON R.rep_perfil = A.Id \n" +
-"	AND R.rep_id_perfil = 4\n" +
-"	LEFT JOIN Sectores S ON R.rep_perfil = S.Id \n" +
-"	AND R.rep_id_perfil = 7\n" +
-"	LEFT JOIN Clientes C ON R.rep_Id_cli = C.Id \n" +
-"	AND R.rep_id_perfil = 6\n" +
-"	LEFT JOIN userarea UG ON R.rep_perfil = UG.id_area \n" +
-"WHERE\n" +
-"	( R.rep_Id_cli = "+Id_Cliente+" AND R.rep_estado = 1 AND UG.id_user = "+Id+" ) \n" +
-"	OR R.rep_id IN ( SELECT rep_id FROM userarea UA INNER JOIN reporte_bi RE ON RE.rep_perfil = UA.id_ger WHERE UA.id_user = "+Id+" AND RE.rep_todos = 1 GROUP BY rep_id ) GROUP BY R.rep_id;"
-, (err, result) => {
-        if(!result.length){
-            res.render('reportes/listarep', {message: 'No hay reportes en el sistema'});       
-        }else{
-            res.render('reportes/listarep', {reportes: result});
-           
-        }
+        "	R.rep_id AS REPORTE,\n" +
+        "	DATE_FORMAT( R.rep_fecha_ini, '%d-%m-%Y' ) AS FECHA_INI,\n" +
+        "	DATE_FORMAT( R.rep_fecha_fin, '%d-%m-%Y' ) AS FECHA_FIN,\n" +
+        "	DATE_FORMAT( R.rep_fecha_carga, '%d-%m-%Y' ) AS FECHA_CARGA,\n" +
+        "	R.rep_nombre,\n" +
+        "	R.rep_enlace,\n" +
+        "IF\n" +
+        "	(\n" +
+        "		R.rep_id_perfil = 5,\n" +
+        "		'GERENCIA',\n" +
+        "	IF\n" +
+        "		(\n" +
+        "			R.rep_id_perfil = 4,\n" +
+        "			'AREA',\n" +
+        "		IF\n" +
+        "			(\n" +
+        "				R.rep_id_perfil = 8,\n" +
+        "				'EQUIPO',\n" +
+        "			IF\n" +
+        "			( R.rep_id_perfil = 7, 'SECTOR', 'CLIENTE' )))) AS PERFIL,\n" +
+        "	CONCAT_WS( '\\\\\\\\', G.Descripcion, A.Descripcion, E.Descripcion, S.Descripcion, C.Descripcion ) AS DETALLE \n" +
+        "FROM\n" +
+        "	reporte_bi R\n" +
+        "	LEFT JOIN Gerencias G ON R.rep_perfil = G.Id \n" +
+        "	AND R.rep_id_perfil = 5\n" +
+        "	LEFT JOIN Equipos E ON R.rep_perfil = E.Id \n" +
+        "	AND R.rep_id_perfil = 8\n" +
+        "	LEFT JOIN Areas A ON R.rep_perfil = A.Id \n" +
+        "	AND R.rep_id_perfil = 4\n" +
+        "	LEFT JOIN Sectores S ON R.rep_perfil = S.Id \n" +
+        "	AND R.rep_id_perfil = 7\n" +
+        "	LEFT JOIN Clientes C ON R.rep_Id_cli = C.Id \n" +
+        "	AND R.rep_id_perfil = 6\n" +
+        "	LEFT JOIN userarea UG ON R.rep_perfil = UG.id_area \n" +
+        "WHERE\n" +
+        "	( R.rep_Id_cli = "+Id_Cliente+" AND R.rep_estado = 1 AND UG.id_user = "+Id+" ) \n" +
+        "	OR R.rep_id IN ( SELECT rep_id FROM userarea UA INNER JOIN reporte_bi RE ON RE.rep_perfil = UA.id_ger WHERE UA.id_user = "+Id+" AND RE.rep_todos = 1 GROUP BY rep_id ) GROUP BY R.rep_id;"
+        , (err, result) => {
+            if(!result.length){
+                res.render('reportes/listarep', {message: 'No hay reportes en el sistema'});       
+            }else{
+                res.render('reportes/listarep', {reportes: result});
+            
+            }
     });
 });
 
@@ -451,8 +471,6 @@ router.get('/listarepe', isLoggedIn, authRole(['Cli_E']), async (req, res) => {
     });
 });
 
-
-
 router.get('/vistarepo/:Id', isLoggedIn, async (req, res) => {
     const {Id} = req.params;
 
@@ -558,6 +576,306 @@ router.get('/reporte/delete/:Id', isLoggedIn, async (req, res) => {
         }
 
     });
+});
+
+router.get('/fuente', isLoggedIn,  authRole(['Plan', 'Admincli']), async (req, res) => {
+
+    const fecha_anio = await pool.query("SELECT\n" +
+    "    YEAR(Fecha) AS Anio,\n" +
+    "    COUNT(*) AS Cantidad\n" +
+    "FROM\n" +
+    "    Tareas\n" +
+    "GROUP BY\n" +
+    "    YEAR(Fecha)\n" +
+    "ORDER BY\n" +
+    "    Anio");
+
+    res.render('reportes/fuente', {
+        fecha_anio: fecha_anio
+    });
+
+});
+
+router.get('/fuente_mes/:year', isLoggedIn, authRole(['Plan', 'Admincli']), async (req, res) => {
+    const year = req.params.year;
+
+    const meses = await pool.query("SELECT\n" +
+    "    MONTH(Fecha) AS Mes,\n" +
+    "    COUNT(*) AS Cantidad\n" +
+    "FROM\n" +
+    "    Tareas\n" +
+    "WHERE YEAR(Fecha) = ?\n" +
+    "GROUP BY\n" +
+    "    MONTH(Fecha)\n" +
+    "ORDER BY\n" +
+    "    Mes;", [year]);
+
+    const mesesArray = meses.map(mes => mes.Mes);
+
+    res.json(mesesArray);
+});
+
+router.post('/generar', isLoggedIn,  authRole(['Plan', 'Admincli']), async (req, res) => {
+    
+    try {
+        const { ano, mes } = req.body;
+        const { Email } = req.user;
+        const mesFormateado = mes.toString().padStart(2, '0');
+
+        const fecha_inicio = moment(`${ano}-${mesFormateado}-01`, 'YYYY-MM-DD').startOf('month').format('YYYY-MM-DD');
+        
+        const equipos = await pool.query("CALL sp_repoEquipos();");
+        const rows_equipos = equipos[0].map(row => {
+            return [
+                row.EquipoID,
+                row.EquipoCodigo,
+                row.EquipoDescripcion,
+                row.EquipoIdTipo,
+                row.EquipoTipoDesc,
+                row.EquipoDetalle,
+                row.EquipoActivo,
+                row.EquipoDinamico,
+                row.Aux_Marca,
+                row.Aux_Modelo,
+                row.Aux_Serie,
+                row.Aux_Certificacion,
+                row.Aux_Peso,
+                row.Aux_Agente,
+                row.Aux_Ph,
+                row.Aux_Critico,
+                row.EAUX_Superintendencia,
+                row.EAUX_UbicacionTecnica,
+                row.EAUX_Unidad,
+                row.GAS_SectorID,
+                row.GAS_SectorDesc,
+                row.GAS_AreaID,
+                row.GAS_AreaDesc,
+                row.GAS_GerenciaID,
+                row.GAS_GerenciaDesc,
+                row.spciCant
+            ];
+        });
+
+        const tareas = await pool.query("CALL sp_repoListadoTareas (?);", [fecha_inicio])
+        const rows_tareas = tareas[0].map(row => {
+
+            return [
+
+                row.Tarea_ID,
+                row.Tarea_Fecha,
+                row.Tarea_Equipo,
+                row.Estado_ID,
+                row.Estado_Desc,
+                row.Usuario_ID,
+                row.Usuario_Desc,
+                row.TipoTarea_ID,
+                row.TipoTarea_Desc,
+                row.TipoTarea_Abr,
+                row.Adjuntos,
+                row.ProtNombre,
+                row.spciCant  
+
+            ];
+        });
+
+        const estado_op = await pool.query("Call sp_repoEO (?);", [fecha_inicio]);
+        const rows_estado_op = estado_op[0].map(row => {
+
+            return [
+
+                row.TareaID,
+                row.TareaEstadoID,
+                row.TareaEstadoOp
+
+            ];
+        });
+
+        const ejecucion = await pool.query("CALL sp_repoFechaEjecucion (?);", [fecha_inicio]);
+        const rows_ejecucion = ejecucion[0].map(row => {
+
+            return [
+
+                row.TareaID,
+                row.TareaEstadoID,
+                row.TareaFechaEejec 
+
+            ];
+        });
+        
+        const incidencias = await pool.query("CALL sp_repoIncidencias (?);", [fecha_inicio]);
+        const rows_incidencias = incidencias[0].map(row => {
+
+            return [
+
+                row.TareaID,
+                row.EstadoID,
+                row.IncidenciaMotivo,
+                row.Incidencia 
+            ];
+        });
+
+        let wb = XLSX.utils.book_new();
+
+        let ws_data = [
+            [
+                'EquipoID',
+                'EquipoCodigo',
+                'EquipoDescripcion',
+                'EquipoIdTipo',
+                'EquipoTipoDesc',
+                'EquipoDetalle',
+                'EquipoActivo',
+                'EquipoDinamico',
+                'Aux_Marca',
+                'Aux_Modelo',
+                'Aux_Serie',
+                'Aux_Certificacion',
+                'Aux_Peso',
+                'Aux_Agente',
+                'Aux_Ph',
+                'Aux_Critico',
+                'EAUX_Superintendencia',
+                'EAUX_UbicacionTecnica',
+                'EAUX_Unidad',
+                'GAS_SectorID',
+                'GAS_SectorDesc',
+                'GAS_AreaID',
+                'GAS_AreaDesc',
+                'GAS_GerenciaID',
+                'GAS_GerenciaDesc',
+                'spciCant'
+            ],
+            ...rows_equipos
+        ];
+        let ws1 = XLSX.utils.aoa_to_sheet(ws_data);
+        XLSX.utils.book_append_sheet(wb, ws1, 'equipos');
+
+        let ws_data_tareas = [
+            [
+                'Tarea_ID',
+                'Tarea_Fecha',
+                'Tarea_Equipo',
+                'Estado_ID',
+                'Estado_Desc',
+                'Usuario_ID',
+                'Usuario_Desc',
+                'TipoTarea_ID',
+                'TipoTarea_Desc',
+                'TipoTarea_Abr',
+                'Adjuntos',
+                'ProtNombre',
+                'spciCant' 
+            ],
+            ...rows_tareas
+        ];
+        let ws2 = XLSX.utils.aoa_to_sheet(ws_data_tareas);
+        XLSX.utils.book_append_sheet(wb, ws2, 'tareas');
+
+        let ws_data_eo = [
+            [
+                'TareaID',
+                'TareaEstadoID',
+                'TareaEstadoOp'
+
+            ],
+            ...rows_estado_op
+        ];
+        let ws3 = XLSX.utils.aoa_to_sheet(ws_data_eo);
+        XLSX.utils.book_append_sheet(wb, ws3, 'eo');
+
+        let ws_data_ejecucion = [
+            [
+                'TareaID',
+                'TareaEstadoID',
+                'TareaFechaEejec '
+
+            ],
+            ...rows_ejecucion
+        ];
+        let ws4 = XLSX.utils.aoa_to_sheet(ws_data_ejecucion);
+        XLSX.utils.book_append_sheet(wb, ws4, 'ejecucion');
+
+        let ws_data_incidencias = [
+            [
+                'TareaID',
+                'EstadoID',
+                'IncidenciaMotivo',
+                'Incidencia'
+
+            ],
+            ...rows_incidencias
+        ];
+        let ws5 = XLSX.utils.aoa_to_sheet(ws_data_incidencias);
+        XLSX.utils.book_append_sheet(wb, ws5, 'incidencias')
+
+        const datemail = moment().format('YYYY-MM-DD');
+
+        const filePath = path.resolve(__dirname,`../plantillas/${ano}-${mesFormateado}.xlsx`);
+        XLSX.writeFile(wb, filePath);
+
+        const filePathName1 = path.resolve(__dirname, "../views/email/emailbi.hbs");
+        const mensaje = fs.readFileSync(filePathName1, "utf8");
+        const template = hbs.compile(mensaje);
+        const context = {
+            datemail,
+        };
+        const html = template(context);
+
+        await transporter.sendMail({
+            from: "SAPMA <sapmamlcc@sercoing.cl>",
+            to:  Email,
+            bcc: "sapmamlcc@sercoing.cl",
+            subject: "SAPMA - Data Power BI",
+            html,
+            attachments: [
+                {
+                    filename: "imagen1.png",
+                    path: "./src/public/img/imagen1.png",
+                    cid: "imagen1",
+
+                },
+                {
+                    filename: `${ano}-${mesFormateado}.xlsx`,
+                    path: filePath,
+                }
+            ],
+        });
+
+        res.send('ok');
+
+    } catch (error) {
+        console.log('Error:', error);
+    }
+
+});
+
+router.get('/descarga_fuente/:fecha', isLoggedIn, async (req, res) => {
+    const datemail = req.params.fecha;
+    const [ano, mes] = datemail.split('-');
+
+    const mesFormateado = mes.toString().padStart(2, '0');
+
+    const fechaFormateada = `${ano}-${mesFormateado}`;
+
+    const filePath = path.resolve(__dirname,`../plantillas/${fechaFormateada}.xlsx`);
+    
+    res.download(filePath, (err) => {
+        
+        if (err) {
+            console.error("Error al descargar el archivo:", err);
+            res.status(500).json({ error: "Error al descargar el archivo." });
+        } else {
+            console.log("Archivo descargado con éxito.");
+            fs.unlink(filePath, (err) => {
+                if (err) {
+                    console.error("Error al eliminar el archivo:", err);
+                } else {
+                    console.log("Archivo eliminado con éxito.");
+                }
+            });
+        }
+    });
+
 });
 
 module.exports = router;

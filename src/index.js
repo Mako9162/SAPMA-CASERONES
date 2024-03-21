@@ -15,6 +15,7 @@ const max = path.resolve(__dirname, "./maximo.txt")
 
 require('./routes/cronJobs');
 require('./routes/cronJobs1');
+require('./routes/cronJobs2');
 
 //Inicializar app
 const app = express();

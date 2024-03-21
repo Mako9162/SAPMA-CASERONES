@@ -1,10 +1,7 @@
 <body class="with-side-menu">
 	{{> navbar }}
-
 	<div class="mobile-menu-left-overlay-"></div>
-
 	{{> nav }}
-
 	<div class="page-content">
 		<div class="container-fluid">
 			<header class="section-header">
@@ -24,42 +21,37 @@
 				<table id="tabla_users" class="table table-bordered table-striped table-vcenter js-dataTable-full">
 					<thead>
 						<tr>
-					
 							<th>Nombre de usuario</th>
 							<th>Email</th>  
 							<th>Teléfono</th>
 							<th>Perfil</th>
 							<th>Estado</th>
- 
-							{{!-- <th class="text-center" style="width: 10%;">Perfil</th>  --}}
 						</tr>
 					</thead>
 					<tbody>
 						{{#each usersc}}
 						<tr>
-						
 							<td>{{Descripcion}}</td>
 							<td>{{Email}}</td>
 							<td>{{Telefono}}</td>
 							<td>{{Perfiles}}</td>
 							{{#if Estado}}
-							<td>Activo</td>
+								<td>Activo</td>
 							{{else}}
-							<td>Inactivo</td>
+								<td>Inactivo</td>
 							{{/if}}
-							{{!-- <td class="text-center"><a href="/users/edit/{{Id}}" type="button" id="btneditar" class="btn btn-inline btn-warning btn-sm ladda-button"><i class="fa fa-edit"></i></a></td> --}}
-						</tr>
+							</tr>
 						{{/each}}
 					</tbody>
 				</table>
-					<style>
-						.dataTables_filter {
-							float: left;
-						}
-						.dt-buttons {
-							float: right;
-						}
-					</style>
+				<style>
+					.dataTables_filter {
+						float: left;
+					}
+					.dt-buttons {
+						float: right;
+					}
+				</style>
 			</div>
 		</div>
 	</div>
@@ -75,7 +67,6 @@
 	<script src="/js/summernote-ES.js"></script>
 	<script src="/js/lib/select2/select2.full.min.js"></script>
 	<script>
-		//Datatable
 		$(document).ready(function () {
 			$('#tabla_users').DataTable({
 				'columnDefs': [
@@ -128,6 +119,5 @@
 				},
 			}).DataTable();
 		});
-
 	</script>
 </body>

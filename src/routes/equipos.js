@@ -13,17 +13,17 @@ const correo = "sapmamlcc@sercoing.cl";
 const pass = "y_ret@9'23tJ$.`N";
 
 const transporter = nodemailer.createTransport({
-                        host: "mail.sercoing.cl",
-                        port: 587,
-                        secure: false,
-                        auth: {
-                            user: correo,
-                            pass: pass,
-                        },
-                        tls: {
-                            rejectUnauthorized: false,
-                        },
-                    });
+    host: "mail.sercoing.cl",
+    port: 587,
+    secure: false,
+    auth: {
+        user: correo,
+        pass: pass,
+    },
+    tls: {
+        rejectUnauthorized: false,
+    },
+});
 
 const data = new Array();
 
@@ -77,7 +77,7 @@ router.post('/equipos', isLoggedIn, authRole(['Plan', 'Admincli']), async (req, 
                 "ORDER BY\n" +
                 "	EF.eg_id_equipo DESC", async (err, result) => {
                     if (!result.length) {
-                        res.render("equipos/equi", { title: "Sin Resultados!!!" });
+                        res.render("equipos/equi", { title: "Error en la busqueda!!!" });
                       } else {
                         data.push(result);
                         enviar(req, res, result);
@@ -997,8 +997,8 @@ router.post('/guardar_equipo', isLoggedIn, authRole(['Plan', 'Admincli']), async
                 
                 const obs_final = date1+" | "+Login+" | OBS: "+obs_dand;
 
-                const cuarta = await pool.query("INSERT INTO Equipos_Dinamicos (ed_serie, ed_certificacion, ed_marca, ed_modelo, ed_peso, ed_agente, ed_equipo_critico, ed_tipo_equipo, ed_activo, ed_observacion) Values\n" +
-                "(?,?,?,?,?,?,?,?,?,?);", [serie, cer, marca, modelo, pesoConMedida, agente, critico, tipoe, 1 , obs_final]);
+                const cuarta = await pool.query("INSERT INTO Equipos_Dinamicos (ed_serie, ed_certificacion, ed_marca, ed_modelo, ed_peso, ed_agente, ed_equipo_critico, ed_tipo_equipo, ed_activo, ed_observacion, ed_ph) Values\n" +
+                "(?,?,?,?,?,?,?,?,?,?,?);", [serie, cer, marca, modelo, pesoConMedida, agente, critico, tipoe, 1 , obs_final, ph]);
     
                 const obs = "REGISTRADO POR: "+Login;
     

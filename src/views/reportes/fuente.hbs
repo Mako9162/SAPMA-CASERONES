@@ -1,0 +1,76 @@
+<body class="with-side-menu">
+	{{> navbar }}
+	<div class="mobile-menu-left-overlay-"></div>
+	{{> nav }}
+	<div class="page-content">
+		<div class="container-fluid">
+			<header class="section-header">
+				<div class="tbl">
+					<div class="tbl-row">
+						<div class="tbl-cell">
+							<h3>Fuente</h3>
+							<ol class="breadcrumb breadcrumb-simple">
+								<li><a href="/home">Inicio</a></li>
+								<li class="active">Reportes</li>
+								<li class="active">Fuente</li>
+							</ol>
+						</div>
+					</div>
+				</div>
+			</header>
+			<div class="box-typical box-typical-padding">
+                <section class="card box-typical" style="min-height: 600px;">
+                    <div class="card-block">
+                    <div class="row"> 
+                        <div class="col-lg-6">
+                            <h5 class="m-t-lg with-border">Seleccione el rango de fechas</h5>
+                            <div class="row">
+                                <div class="col-lg-12">
+                                    <div class="form-group">
+                                        <div class="row">
+                                            <div class="col-lg-6">
+                                                <label class="form-label" >Año</label>
+							                    <Select class="form-control" id="ano">
+													<option value="" disabled selected>Seleccione un año</option>
+													{{#each fecha_anio}}
+														<option value="{{Anio}}">{{Anio}}</option>
+													{{/each}}
+												</Select>
+                                            </div>
+                                            <div class="col-lg-6">
+                                                <label class="form-label" >Mes</label>
+							                    <Select class="form-control" id="mes">
+													<option value="" disabled selected>Seleccione un mes</option>
+												</Select>
+                                            </div>
+                                            <div class="col-lg-12">
+                                                <label class="form-label" id="" style="color: aliceblue;">.</label>
+                                            </div>
+                                            <div class="col-lg-12">
+                                                <button type="button" class="btn btn-success float-right" id="generar" name="generar">Generar</button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                </section>
+            </div>
+		</div>	
+	</div>
+	<script src="/js/lib/jquery/jquery.min.js"></script>
+	<script src="/js/lib/tether/tether.min.js"></script>
+	<script src="/js/lib/bootstrap/bootstrap.min.js"></script>
+	<script src="/js/plugins.js"></script>
+	<script src="/js/app.js"></script>
+	<script src="/js/lib/datatables-net/datatables.min.js"></script>
+	<script src="/js/lib/bootstrap-sweetalert/sweetalert.min.js"></script>
+	<script src="/js/lib/summernote/summernote.min.js"></script>
+	<script src="/js/lib/fancybox/jquery.fancybox.pack.js"></script>
+	<script src="/js/summernote-ES.js"></script>
+	<script src="/js/lib/select2/select2.full.min.js"></script>
+	<script type="text/javascript" src="https://gyrocode.github.io/jquery-datatables-checkboxes/1.2.12/js/dataTables.checkboxes.min.js"></script>
+    <script src="/fuente.js"></script>
+</body>

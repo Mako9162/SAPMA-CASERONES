@@ -11,40 +11,17 @@ const fetch = require("node-fetch");
 const AdmZip = require('adm-zip');
 const hbs = require("handlebars");
 
-router.post('/pdfs', isLoggedIn, async (req, res)=> {
-
+router.post('/pdfs', isLoggedIn, async (req, res) => {
   try {
-    const ID1 = Object.values(req.body);  
+    const ID1 = Object.values(req.body);
     const ID = [ID1[0]];
-    const {usuario} = req.user;
-    const ruta =  path.resolve(__dirname ,"../pdf/" + ID + ".pdf");   
-    const { Id_Cliente } = req.user;
-    const { Login } = req.user;
-    const headers = { "User-Agent": "node-fetch" };
+    const { usuario } = req.user;
+    const ruta = path.resolve(__dirname, "../pdf/" + ID + ".pdf");
     const IDSS = ID.reduce((a, b) => a.concat(b));
     const ID2 = ID1[1];
     const equipores = IDSS.map((x, i) => `${x}_${ID2[i]}`);
-    for (let i = 0; i < IDSS.length; i++) {
-        const urlimagen = "https://sapma.sercoing.cl/svc/ver_tarea.py?login=" +Login +"&idCliente=" +Id_Cliente +"&tarea=" +IDSS[i]
-        const response = await fetch(urlimagen, { headers }
-        ).then((res) => res.json())
-        .then((data) => {
-                return data;
-        });
-        const imagen = Object.values(response);
-        const imagenes = imagen[2];
-    
-        const dir = "src/images/";
-    
-        imagenes.forEach(function (url) {
-            var filename = dir + url.split("/").pop();
-            request.head(url, function (err, res, body) {
-                request(url).pipe(fs.createWriteStream(filename));
-            });
-        });
-    };
 
-    const data =   await pool.query("SELECT\n" +
+    const data = await pool.query("SELECT\n" +
       " Tareas.Id AS TR_TAREA_ID,\n" +
       " date_format(Tareas.Fecha, '%d-%m-%Y') AS FECHA,\n" +
       " Protocolos.Id AS 'TR_PROT_ID',\n" +
@@ -108,13 +85,13 @@ router.post('/pdfs', isLoggedIn, async (req, res)=> {
       " INNER JOIN Clientes C ON G.Id_Cliente = C.Id \n" +
       " ) AS EQ ON Tareas.Id_Equipo = EQ.EqID \n" +
       " WHERE \n" +
-      " Tareas.Id  IN (" +ID +") \n" +
+      " Tareas.Id  IN (" + ID + ") \n" +
       " ORDER BY TR_PROT_DESC_CAPI  ASC, \n" +
-      " FIELD(TR_PROT_CAPTURA,'Observaciones PV', 'Observación PV', 'Observaciones PV SA', 'Observaciones PV SSA', 'Observaciones PV EP'),	TR_PROT_CAPTURA ASC;"
+      " FIELD(TR_PROT_CAPTURA,'Observaciones PV', 'Observación PV', 'Observaciones PV SA', 'Observaciones PV SSA', 'Observaciones PV EP'),	TR_PROT_CAPTURA ASC;"
     );
 
-    const codigo = data[0].TR_EQUIPO_COD;
-    const id_bat = await pool.query("SELECT eq_bat_id FROM Equipos WHERE Codigo =?", [codigo]);
+    const codigo_bat = data[0].TR_EQUIPO_COD;
+    const id_bat = await pool.query("SELECT eq_bat_id FROM Equipos WHERE Codigo IN (?)", [codigo_bat]);
     const bat_id = id_bat[0].eq_bat_id;
     const bat = await pool.query("SELECT * FROM Baterias_UPS WHERE bat_id =?", [bat_id]);
     const agregarDatosBateria = (data, bat) => {
@@ -125,34 +102,33 @@ router.post('/pdfs', isLoggedIn, async (req, res)=> {
       }
     };
     
-    await agregarDatosBateria(data, bat);
+    await agregarDatosBateria(info_prot, bat);
 
     const result = Object.values(JSON.parse(JSON.stringify(data)));
-
     let grouped = [];
 
     for (let i = 0; i < result.length; i++) {
-        let obj = result[i];
-        if (!grouped[obj.TR_TAREA_ID]) {
-            grouped[obj.TR_TAREA_ID] = [];
-        }
-        grouped[obj.TR_TAREA_ID].push(obj);
+      let obj = result[i];
+      if (!grouped[obj.TR_TAREA_ID]) {
+        grouped[obj.TR_TAREA_ID] = [];
+      }
+      grouped[obj.TR_TAREA_ID].push(obj);
     }
 
     const resultado = Object.values(grouped);
 
     for (const TR_TAREA_ID in resultado) {
-      
+
       const objects = resultado[TR_TAREA_ID];
       const codigo = objects[0].TR_EQUIPO_COD;
       const TAREA = objects[0].TR_TAREA_ID;
       const estado = objects[0].TR_ESTADO;
-      const filePathName = path.resolve(__dirname, "../views/protocolos/pdf.hbs"); 
+      const filePathName = path.resolve(__dirname, "../views/protocolos/pdf.hbs");
       const html1 = fs.readFileSync(filePathName, "utf8");
-      const ruta_imagen = path.resolve(__dirname, "../public/img/imagen1.png");                   
+      const ruta_imagen = path.resolve(__dirname, "../public/img/imagen1.png");
       const imageBuffer = fs.readFileSync(ruta_imagen);
       const base64Image = Buffer.from(imageBuffer).toString('base64');
-      const img = 'data:image/png;base64,'+base64Image;
+      const img = 'data:image/png;base64,' + base64Image;
 
       const options = {
         format: 'letter',
@@ -165,142 +141,103 @@ router.post('/pdfs', isLoggedIn, async (req, res)=> {
         },
         displayHeaderFooter: true,
         footerTemplate: '<div style="font-family: Verdana, Geneva, Tahoma, sans-serif; font-size: 8px; margin: 0 auto;">' + // Centered text, smaller font
-        '<center>SAPMA-Sercoing | Tarea Nº: ' + IDT + ' | Estado: ' + estado + ' | Página <span class="pageNumber"></span> de <span class="totalPages"></span>' +
-        '</center></div>',
+          '<center>SAPMA-Sercoing | Tarea Nº: ' + ID + ' | Estado: ' + estado + ' | Página <span class="pageNumber"></span> de <span class="totalPages"></span>' +
+          '</center></div>',
       };
+      const consultaImagenes = await pool.query("SELECT * FROM Adjuntos WHERE Id_Tarea IN (?)", [TAREA]);
+      const imagenes = [];
 
-      const imagendebd =  await pool.query("SELECT * FROM Adjuntos WHERE Id_Tarea = ?", [TAREA]);
-      const imagendebd1 = Object.values(imagendebd);
+      if (consultaImagenes.length > 0) {
+        const img = consultaImagenes[0].Archivos.split('|');
+        const rutaImagenes = path.resolve(__dirname, "../images/");
 
-      if (imagendebd1.length > 0) {
-        const imagendebd2 = imagendebd1[0].Archivos.split('|');
-        const ruta15 = path.join(__dirname, "../images/");
-  
-        const imagenes = await Promise.all(imagendebd2.map(async (ruta) => {
-          const rutaCompleta = ruta15 + IDT + "_" + ruta;
-          const imagenBase64 = await leerImagenBase64(rutaCompleta);
-          return imagenBase64;
-        }));
+        const images = img.map((img) => {
+          const imagePath = path.join(rutaImagenes, TAREA + "_" + img);
+          const imageData = fs.readFileSync(imagePath);
+          const base64Image = Buffer.from(imageData).toString('base64');
+          return 'data:image/png;base64,' + base64Image;
+        });
 
-        let context = {
-          IDT: info_prot[0].TR_TAREA_ID,
-          TR_GERENCIA: info_prot[0].TR_GERENCIA,
-          TR_AREA: info_prot[0].TR_AREA,
-          TR_SECTOR: info_prot[0].TR_SECTOR,
-          FECHA: info_prot[0].FECHA,
-          TAREATIPO: info_prot[0].TR_PROT_TAREATIPO,
-          TR_PROT_DESC_TAREATIPO: info_prot[0].TR_PROT_DESC_TAREATIPO,
-          TR_EQUIPO_COD: info_prot[0].TR_EQUIPO_COD,
-          TR_PROT_ID: info_prot[0].TR_PROT_ID,
-          TR_PROT_DESC_PROT: info_prot[0].TR_PROT_DESC_PROT,
-          TR_ESTADO: info_prot[0].TR_ESTADO,
-          prot: info_prot,
-          img: img
-        }
-  
-        let template = hbs.compile(html1);
-        let html2 = template(context);
-        
-        const browser = await puppeteer.launch({
-            headless: true,
-            ignoreHTTPSErrors: true,
-            args: ['--disable-image-cache']
-        });
-        const page = await browser.newPage();
-        
-        await page.setContent(html2, {
-            waitUntil: 'networkidle0'
-        });
-        
-        await page.waitForSelector('img');
-        
-        const buffer = await page.pdf(options);
-        
-        fs.writeFile("src/pdf/" + IDT + "_" + CODIGO + ".pdf", buffer, () => console.log('PDF guardado'));
-                
-      }else{
-
-        let context = {
-          IDT: info_prot[0].TR_TAREA_ID,
-          TR_GERENCIA: info_prot[0].TR_GERENCIA,
-          TR_AREA: info_prot[0].TR_AREA,
-          TR_SECTOR: info_prot[0].TR_SECTOR,
-          FECHA: info_prot[0].FECHA,
-          TAREATIPO: info_prot[0].TR_PROT_TAREATIPO,
-          TR_PROT_DESC_TAREATIPO: info_prot[0].TR_PROT_DESC_TAREATIPO,
-          TR_EQUIPO_COD: info_prot[0].TR_EQUIPO_COD,
-          TR_PROT_ID: info_prot[0].TR_PROT_ID,
-          TR_PROT_DESC_PROT: info_prot[0].TR_PROT_DESC_PROT,
-          TR_ESTADO: info_prot[0].TR_ESTADO,
-          prot: info_prot,
-          img: img
-        }
-  
-        let template = hbs.compile(html1);
-        let html2 = template(context);
-        
-        const browser = await puppeteer.launch({
-            headless: true,
-            ignoreHTTPSErrors: true,
-            args: ['--disable-image-cache']
-        });
-        const page = await browser.newPage();
-        
-        await page.setContent(html2, {
-            waitUntil: 'networkidle0'
-        });
-        
-        await page.waitForSelector('img');
-        
-        const buffer = await page.pdf(options);
-        
-        fs.writeFile("src/pdf/" + IDT + "_" + CODIGO + ".pdf", buffer, () => console.log('PDF guardado'));
-      
+        imagenes.push(...images);
       }
+
+      let context = {
+        IDT: objects[0].TR_TAREA_ID,
+        TR_GERENCIA: objects[0].TR_GERENCIA,
+        TR_AREA: objects[0].TR_AREA,
+        TR_SECTOR: objects[0].TR_SECTOR,
+        FECHA: objects[0].FECHA,
+        TAREATIPO: objects[0].TR_PROT_TAREATIPO,
+        TR_PROT_DESC_TAREATIPO: objects[0].TR_PROT_DESC_TAREATIPO,
+        TR_EQUIPO_COD: objects[0].TR_EQUIPO_COD,
+        TR_PROT_ID: objects[0].TR_PROT_ID,
+        TR_PROT_DESC_PROT: objects[0].TR_PROT_DESC_PROT,
+        TR_ESTADO: objects[0].TR_ESTADO,
+        prot: objects,
+        img: img,
+        imagenes: imagenes
+      }
+
+      let template = hbs.compile(html1);
+      let html2 = template(context);
+
+      const browser = await puppeteer.launch({
+        headless: true,
+        ignoreHTTPSErrors: true,
+        args: ['--disable-image-cache']
+      });
+      const page = await browser.newPage();
+
+      await page.setContent(html2, {
+        waitUntil: 'networkidle0'
+      });
+
+      await page.waitForSelector('img');
+
+      const buffer = await page.pdf(options);
+
+      fs.writeFileSync("src/pdf/" + TAREA + "_" + codigo + ".pdf", buffer); // WriteFileSync
+
+      console.log('PDF guardado');
     }
 
-    if(typeof IDSS === 'string'){
+    if (typeof IDSS === 'string') {
 
       res.send("archivo creado 1");
 
-    }else{
+    } else {
 
       const ruta1 = path.resolve(__dirname, "../pdf");
       const ruta2 = path.resolve(__dirname, "../zip");
       const fileZip = `${ruta2}/archivo_${usuario}.zip`;
-      
+
       const zip = new AdmZip();
-      
-      await equipores.forEach(id => {
+
+      await Promise.all(equipores.map(async (id) => {
         const filePath = `${ruta1}/${id}.pdf`;
         try {
-          zip.addLocalFile(filePath);
+          const data = fs.readFileSync(filePath);
+          zip.addFile(`${id}.pdf`, data);
+          console.log(`Archivo agregado: ${id}.pdf`);
         } catch (error) {
           console.error(`Error al agregar el archivo ${id}.pdf:`, error);
         }
-      });
-      
+      }));
+
       try {
-        zip.writeZip(fileZip, (err) => {
-          if (err) {
-            console.log(err);
-          } else {
-            console.log("Archivo creado");
-          }
-        });
+        zip.writeZip(fileZip);
+        console.log("Archivo creado");
       } catch (error) {
         console.error(`Error al escribir el archivo zip:`, error);
       }
-      
-      res.json({message: "archivo creado"});
-    }
 
+      res.json({ message: "archivo creado" });
+    }
     
   } catch (error) {
     console.log(error);
   }
-
-});
+});  
 
 router.get('/archivo', isLoggedIn, async (req, res) => {
     const { usuario } = req.user;
@@ -318,6 +255,22 @@ router.get('/archivo/:IDT/:CODIGO', isLoggedIn, async (req, res) => {
   try {
 
     const { IDT, CODIGO } = req.params;
+    const consultaImagenes =  await pool.query("SELECT * FROM Adjuntos WHERE Id_Tarea IN (?)", [IDT]);
+    const imagenes = [];
+
+    if (consultaImagenes.length > 0) {
+      const img = consultaImagenes[0].Archivos.split('|');
+      const rutaImagenes = path.resolve(__dirname, "../images/");
+    
+      const images = img.map((img) => {
+        const imagePath = path.join(rutaImagenes, IDT + "_" + img);
+        const imageData = fs.readFileSync(imagePath);
+        const base64Image = Buffer.from(imageData).toString('base64');
+        return 'data:image/png;base64,'+ base64Image;
+      });
+    
+      imagenes.push(...images);
+    }
 
     const info_prot = await pool.query("SELECT\n" +
       " Tareas.Id AS TR_TAREA_ID,\n" +
@@ -426,120 +379,56 @@ router.get('/archivo/:IDT/:CODIGO', isLoggedIn, async (req, res) => {
       '</center></div>',
     };
 
-    const imagendebd = await pool.query("SELECT * FROM Adjuntos WHERE Id_Tarea = ?", [IDT]);
-    const imagendebd1 = Object.values(imagendebd);
-
-    if (imagendebd1.length > 0) {
-      const imagendebd2 = imagendebd1[0].Archivos.split('|');
-      const ruta15 = path.join(__dirname, "../images/");
-
-      const imagenes = await Promise.all(imagendebd2.map(async (ruta) => {
-        const rutaCompleta = ruta15 + IDT + "_" + ruta;
-        const imagenBase64 = await leerImagenBase64(rutaCompleta);
-        return imagenBase64;
-      }));
-
-      let context = {
-        IDT: info_prot[0].TR_TAREA_ID,
-        TR_GERENCIA: info_prot[0].TR_GERENCIA,
-        TR_AREA: info_prot[0].TR_AREA,
-        TR_SECTOR: info_prot[0].TR_SECTOR,
-        FECHA: info_prot[0].FECHA,
-        TAREATIPO: info_prot[0].TR_PROT_TAREATIPO,
-        TR_PROT_DESC_TAREATIPO: info_prot[0].TR_PROT_DESC_TAREATIPO,
-        TR_EQUIPO_COD: info_prot[0].TR_EQUIPO_COD,
-        TR_PROT_ID: info_prot[0].TR_PROT_ID,
-        TR_PROT_DESC_PROT: info_prot[0].TR_PROT_DESC_PROT,
-        TR_ESTADO: info_prot[0].TR_ESTADO,
-        prot: info_prot,
-        img: img
-      }
-
-      let template = hbs.compile(html1);
-      let html2 = template(context);
-      
-      const browser = await puppeteer.launch({
-          headless: true,
-          ignoreHTTPSErrors: true,
-          args: ['--disable-image-cache']
-      });
-      const page = await browser.newPage();
-      
-      await page.setContent(html2, {
-          waitUntil: 'networkidle0'
-      });
-      
-      await page.waitForSelector('img');
-      
-      const buffer = await page.pdf(options);
-      
-      fs.writeFile("src/pdf/" + IDT + "_" + CODIGO + ".pdf", buffer, () => console.log('PDF guardado'));
-      
-      res.setHeader('Content-Disposition', `inline; filename="${fileName}"`);
-      res.setHeader('Content-Type', 'application/pdf');
-      res.send(buffer);
-
-      // const fileName = IDT + "_" + CODIGO + ".pdf";
-
-      // res.setHeader('Content-Disposition', `attachment; filename="${fileName}"`);
-      // res.setHeader('Content-Type', 'application/pdf');
-      // res.send(buffer);
-
-      await browser.close();
-
-    }else{
-
-      let context = {
-        IDT: info_prot[0].TR_TAREA_ID,
-        TR_GERENCIA: info_prot[0].TR_GERENCIA,
-        TR_AREA: info_prot[0].TR_AREA,
-        TR_SECTOR: info_prot[0].TR_SECTOR,
-        FECHA: info_prot[0].FECHA,
-        TAREATIPO: info_prot[0].TR_PROT_TAREATIPO,
-        TR_PROT_DESC_TAREATIPO: info_prot[0].TR_PROT_DESC_TAREATIPO,
-        TR_EQUIPO_COD: info_prot[0].TR_EQUIPO_COD,
-        TR_PROT_ID: info_prot[0].TR_PROT_ID,
-        TR_PROT_DESC_PROT: info_prot[0].TR_PROT_DESC_PROT,
-        TR_ESTADO: info_prot[0].TR_ESTADO,
-        prot: info_prot,
-        img: img
-      }
-
-      let template = hbs.compile(html1);
-      let html2 = template(context);
-      
-      const browser = await puppeteer.launch({
-          headless: true,
-          ignoreHTTPSErrors: true,
-          args: ['--disable-image-cache']
-      });
-      const page = await browser.newPage();
-      
-      await page.setContent(html2, {
-          waitUntil: 'networkidle0'
-      });
-      
-      await page.waitForSelector('img');
-      
-      const buffer = await page.pdf(options);
-      
-      fs.writeFile("src/pdf/" + IDT + "_" + CODIGO + ".pdf", buffer, () => console.log('PDF guardado'));
-      
-      const fileName = IDT + "_" + CODIGO + ".pdf";
-
-      res.setHeader('Content-Disposition', `inline; filename="${fileName}"`);
-      res.setHeader('Content-Type', 'application/pdf');
-      res.send(buffer);
-
-      // const fileName = IDT + "_" + CODIGO + ".pdf";
-
-      // res.setHeader('Content-Disposition', `attachment; filename="${fileName}"`);
-      // res.setHeader('Content-Type', 'application/pdf');
-      // res.send(buffer);
-      
-      await browser.close();
-      
+    let context = {
+      IDT: info_prot[0].TR_TAREA_ID,
+      TR_GERENCIA: info_prot[0].TR_GERENCIA,
+      TR_AREA: info_prot[0].TR_AREA,
+      TR_SECTOR: info_prot[0].TR_SECTOR,
+      FECHA: info_prot[0].FECHA,
+      TAREATIPO: info_prot[0].TR_PROT_TAREATIPO,
+      TR_PROT_DESC_TAREATIPO: info_prot[0].TR_PROT_DESC_TAREATIPO,
+      TR_EQUIPO_COD: info_prot[0].TR_EQUIPO_COD,
+      TR_PROT_ID: info_prot[0].TR_PROT_ID,
+      TR_PROT_DESC_PROT: info_prot[0].TR_PROT_DESC_PROT,
+      TR_ESTADO: info_prot[0].TR_ESTADO,
+      prot: info_prot,
+      img: img, 
+      imagenes: imagenes
     }
+
+    let template = hbs.compile(html1);
+    let html2 = template(context);
+    
+    const browser = await puppeteer.launch({
+        headless: true,
+        ignoreHTTPSErrors: true,
+        args: ['--disable-image-cache']
+    });
+    const page = await browser.newPage();
+    
+    await page.setContent(html2, {
+        waitUntil: 'networkidle0'
+    });
+    
+    await page.waitForSelector('img');
+    
+    const buffer = await page.pdf(options);
+    
+    fs.writeFile("src/pdf/" + IDT + "_" + CODIGO + ".pdf", buffer, () => console.log('PDF guardado'));
+    
+    // const fileName = IDT + "_" + CODIGO + ".pdf";
+
+    // res.setHeader('Content-Disposition', `inline; filename="${fileName}"`);
+    // res.setHeader('Content-Type', 'application/pdf');
+    // res.send(buffer);
+
+    const fileName = IDT + "_" + CODIGO + ".pdf";
+
+    res.setHeader('Content-Disposition', `attachment; filename="${fileName}"`);
+    res.setHeader('Content-Type', 'application/pdf');
+    res.send(buffer);
+    
+    await browser.close();
 
   } catch (error) {
     console.log(error);

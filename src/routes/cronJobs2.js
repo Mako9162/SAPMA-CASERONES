@@ -6,7 +6,7 @@ const tareaCron = new cron.CronJob('0 21 * * *', () => {
 
     const carpeta1 = path.resolve(__dirname, "../pdf");
     const carpeta2 = path.resolve(__dirname, "../zip");
-    const carpeta3 = path.resolve(__dirname, "../images");
+    // const carpeta3 = path.resolve(__dirname, "../images");
 
     function borrarArchivosCarpeta(carpeta) {
         fs.readdir(carpeta, (err, archivos) => {
@@ -29,7 +29,7 @@ const tareaCron = new cron.CronJob('0 21 * * *', () => {
 
     borrarArchivosCarpeta(carpeta1);
     borrarArchivosCarpeta(carpeta2);
-    borrarArchivosCarpeta(carpeta3);
+    // borrarArchivosCarpeta(carpeta3);
     
 }, null, true, 'UTC');
 

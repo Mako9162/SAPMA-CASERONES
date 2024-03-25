@@ -156,18 +156,17 @@
 									{{/each}}
 								{{/ifEquals}}
 							{{/group}}
-							<br><br>	
-							<div id="pima" style="display: block">
+							<div class="container m-t-2">
 								{{#each imagenes }}
-								<div class="col-md-12 col-xs-12">
-									<br>
-									<label><h5><strong>Adjunto {{incitement @index}}<br></strong></h4></label>
-									<br>
-								</div>
-								<div class="col-md-3 col-xs-3">
-									<img src="{{this}}" class="img-fluid" alt="Responsive image" width="300" height="300">
-									<a href="{{this}}" target="blank">Ver Imagen {{incitement @index}}</a>
-								</div><br>
+									<div class="col-md-4 m-t-2">
+										<div class="imgti">
+											<h6>Adjunto {{incitement @index}}</h6>
+										</div>
+										<div class="image-wrapper">
+											<img src="{{this}}" class="img-fluid" alt="Responsive image" width="300" height="300">
+											<a href="{{this}}" target="blank">Ver Imagen {{incitement @index}}</a>
+										</div>
+									</div>
 								{{/each }}
 							</div>	
 						</div>

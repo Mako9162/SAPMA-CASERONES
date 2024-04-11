@@ -141,7 +141,7 @@ router.get("/protocolo/:IDT", isLoggedIn, authRole(['Cli_C', 'Cli_B', 'Cli_A', '
       imagenes.push(...images);
     }
 
-    // const info_prot = await pool.query("call sp_VerProtocoloTarea (?)", [IDT]);
+    console.log(imagenes);
 
     const info_prot = await pool.query(
       " SELECT\n" +
@@ -234,7 +234,7 @@ router.get("/protocolo/:IDT", isLoggedIn, authRole(['Cli_C', 'Cli_B', 'Cli_A', '
       "		INNER JOIN Clientes C ON G.Id_Cliente = C.Id \n" +
       "	) AS EQ ON Tareas.Id_Equipo = EQ.EqID \n" +
       "WHERE\n" +
-      "	Tareas.Id = 122\n" +
+      "	Tareas.Id = ?\n" +
       "ORDER BY\n" +
       "	TR_PROT_DESC_CAPI ASC,\n" +
       "	FIELD( TR_PROT_CAPTURA, 'Observaciones PV', 'Observación PV', 'Observaciones PV SA', 'Observaciones PV SSA', 'Observaciones PV EP' ),\n" +
@@ -275,7 +275,9 @@ router.get("/protocolo/:IDT", isLoggedIn, authRole(['Cli_C', 'Cli_B', 'Cli_A', '
       imagenes: imagenes
 
     });
+
   } catch (error) {
+    
     console.log(error);
   }
 
@@ -741,19 +743,77 @@ router.get("/pdf/:IDT/:CODIGO", isLoggedIn, authRole(['Cli_C', 'Cli_B', 'Cli_A',
     const base64Image = Buffer.from(imageBuffer).toString('base64');
     const img = 'data:image/png;base64,'+base64Image;
 
+    const TR_PROT_DESC_TAREATIPO = info_prot[0].TR_PROT_DESC_TAREATIPO;
+    const TR_EQUIPO_COD= info_prot[0].TR_EQUIPO_COD;
+    const TR_GERENCIA = info_prot[0].TR_GERENCIA;
+    const TR_SECTOR = info_prot[0].TR_SECTOR;
+    const TR_ESTADO = info_prot[0].TR_ESTADO;
+ 
     const options = {
       format: 'letter',
       printBackground: true,
       margin: {
-        top: '30px', // Adjust margins for better visibility
+        top: '160px', 
         right: '20px',
-        bottom: '30px',
+        bottom: '70px',
         left: '20px',
       },
       displayHeaderFooter: true,
-      footerTemplate: '<div style="font-family: Verdana, Geneva, Tahoma, sans-serif; font-size: 8px; margin: 0 auto;">' + // Centered text, smaller font
-      '<center>SAPMA-Sercoing | Tarea Nº: ' + IDT + ' | Estado: ' + estado + ' | Página <span class="pageNumber"></span> de <span class="totalPages"></span>' +
-      '</center></div>',
+      headerTemplate: `
+      <style>
+        .site-header { 
+          border-bottom: 1px solid rgb(227, 227, 227); 
+          margin-top: 20px;
+          margin-left: 25px;
+          padding-bottom: 10px;
+          font-family: Verdana, Geneva, Tahoma, sans-serif;
+          color: #2b2d42;
+          display: flex; 
+          justify-content: space-between; 
+          width: 93%;
+        } 
+
+        .site-identity img { 
+          max-width: 200px; 
+          margin-top: -15px;
+        }
+
+        .text_header { 
+          word-wrap: break-word; 
+          max-width: calc(100% - 180px); 
+        }
+
+        .text_header h6 { 
+          font-size: 10px; 
+          margin: 0 0 0 5px; 
+          display: inline-block; 
+        }
+
+        .text_header label { 
+          font-size: 10px; 
+          margin: 5px 0 0 5px; 
+          display: inline-block; 
+        }
+        
+      </style>
+      <div class="site-header">
+        <div class="text_header">
+          <h6>PROTOCOLO Nº: ${IDT} / ${TR_PROT_DESC_TAREATIPO}</h6><br>
+          <h6>TAG SALA:</h6><label>${TR_EQUIPO_COD}</label><br>
+          <h6>ESPECIALIDAD:</h6><label>${TR_GERENCIA}</label><br>
+          <h6>SALA:</h6><label>${TR_SECTOR}</label><br>
+          <h6>ESTADO:</h6><label>${TR_ESTADO}</label>
+        </div>
+        <div class="site-identity">
+          <img src="${img}" alt="Imagen">
+        </div>
+      </div>    
+        `,
+      footerTemplate: `
+        <div style="font-family: Verdana, Geneva, Tahoma, sans-serif; font-size: 8px; margin: 0 auto;">
+          <center>SAPMA-Sercoing | Tarea Nº: ${IDT} | Estado: ${estado} | Página <span class="pageNumber"></span> de <span class="totalPages"></span></center>
+        </div>
+      `,
     };
 
     let context = {
@@ -786,8 +846,7 @@ router.get("/pdf/:IDT/:CODIGO", isLoggedIn, authRole(['Cli_C', 'Cli_B', 'Cli_A',
     await page.setContent(html2, {
         waitUntil: 'networkidle0'
     });
-    
-    await page.waitForSelector('img');
+  
     
     const buffer = await page.pdf(options);
     

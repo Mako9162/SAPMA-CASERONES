@@ -36,7 +36,6 @@ app.set('view engine', '.hbs');
 
 app.use(express.static(path.join(__dirname, 'views', 'js')));
 
-
 //Middelwares
 app.use(cors());
 app.use(session({
@@ -47,17 +46,12 @@ app.use(session({
 }));
 
 app.use((req, res, next) => {
-  const now = Date.now();
-  const maxIdleTime = 20 * 60 * 1000; // 20 minutos en milisegundos
-  if (req.session.lastActive && now - req.session.lastActive > maxIdleTime) {
-    req.session.destroy(() => {
-      res.redirect('/');
-    });
-  } else {
-    req.session.lastActive = now;
-    next();
+  if (req.path !== '/verificar_sesion') {
+    req.session.lastActive = Date.now();
   }
- });
+  next();
+});
+
 
 app.use(flash());
 app.use(morgan('dev'));
@@ -92,8 +86,8 @@ app.use(require('./routes/planificacion'));
 
 //Archivos publicos
 app.use(express.static(path.join(__dirname, 'public')));
+app.use('/images', express.static(path.join(__dirname, 'images')));
 
-//Inicio de servidor
 // Inicio de servidor
 var server = app.listen(app.get('port'), () => {
   console.log('Servidor en línea. Puerto:', app.get('port'));

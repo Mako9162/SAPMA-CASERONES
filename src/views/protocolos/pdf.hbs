@@ -17,47 +17,6 @@ h5 {
 label {
 	font-size: 12px;
 }
-
-.site-header { 
-	border-bottom: 1px solid rgb(227, 227, 227);
-	padding: .4em 6em;
-}
-
-.site-header::after {
-	content: "";
-	display: table;
-	clear: both;
-}
-
-.site-identity h6 {			
-	font-size: 14px;
-}
-
-.site-identity img {
-	max-width: 180px;
-	float: left;
-	padding-right: 5px;
-	margin-left: auto;
-}
-
-.text_header{
-	line-height: 10px;
-	float:right; 
-	border-left: 1px solid rgb(227, 227, 227);
-}
-
-.text_header h6{
-	font-size: 10px;
-	margin: 0 0 0 5px;
-	display: inline-block;
-}
-
-.text_header label{
-	font-size: 10px;
-	margin: 5px 0 0 5px;
-	display: inline-block;
-}
-
 .doc-titulo {
 	margin-bottom: 15px;
 }
@@ -144,19 +103,7 @@ table td {
 
 </style>
 <section>
-	<div class="card-block">
-		<div class="site-header">
-			<div class="site-identity">
-				<img src="{{img}}" alt="Imagen" >
-			</div>
-			<div class="text_header">
-				<h6>PROTOCOLO Nº:{{IDT}} / {{TR_PROT_DESC_TAREATIPO}}</h6><br>
-				<h6>TAG:</h6><label>{{TR_EQUIPO_COD}}</label><br>
-				<h6>ESPECIALIDAD:</h6><label>{{TR_GERENCIA}}</label><br>
-				<h6>SALA:</h6><label>{{TR_SECTOR}}</label><br>
-				<h6>ESTADO:</h6><label>{{TR_ESTADO}}</label>
-			</div>
-		</div>
+	<div class="card-block">	
 		<div class="card-body">
 			{{#group prot by="TR_PROT_DESC_CAPI"}}
 				{{#ifEquals (trimString value) "01. ENCABEZADO"}}

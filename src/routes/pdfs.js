@@ -102,7 +102,7 @@ router.post('/pdfs', isLoggedIn, async (req, res) => {
       }
     };
     
-    await agregarDatosBateria(info_prot, bat);
+    await agregarDatosBateria(data, bat);
 
     const result = Object.values(JSON.parse(JSON.stringify(data)));
     let grouped = [];
@@ -130,19 +130,78 @@ router.post('/pdfs', isLoggedIn, async (req, res) => {
       const base64Image = Buffer.from(imageBuffer).toString('base64');
       const img = 'data:image/png;base64,' + base64Image;
 
+      const IDT =  objects[0].TR_TAREA_ID;
+      const TR_PROT_DESC_TAREATIPO = objects[0].TR_PROT_DESC_TAREATIPO;
+      const TR_EQUIPO_COD= objects[0].TR_EQUIPO_COD;
+      const TR_GERENCIA = objects[0].TR_GERENCIA;
+      const TR_SECTOR = objects[0].TR_SECTOR;
+      const TR_ESTADO = objects[0].TR_ESTADO;
+   
       const options = {
         format: 'letter',
         printBackground: true,
         margin: {
-          top: '30px', // Adjust margins for better visibility
+          top: '160px', 
           right: '20px',
-          bottom: '30px',
+          bottom: '70px',
           left: '20px',
         },
         displayHeaderFooter: true,
-        footerTemplate: '<div style="font-family: Verdana, Geneva, Tahoma, sans-serif; font-size: 8px; margin: 0 auto;">' + // Centered text, smaller font
-          '<center>SAPMA-Sercoing | Tarea Nº: ' + ID + ' | Estado: ' + estado + ' | Página <span class="pageNumber"></span> de <span class="totalPages"></span>' +
-          '</center></div>',
+        headerTemplate: `
+        <style>
+          .site-header { 
+            border-bottom: 1px solid rgb(227, 227, 227); 
+            margin-top: 20px;
+            margin-left: 25px;
+            padding-bottom: 10px;
+            font-family: Verdana, Geneva, Tahoma, sans-serif;
+            color: #2b2d42;
+            display: flex; 
+            justify-content: space-between; 
+            width: 93%;
+          } 
+  
+          .site-identity img { 
+            max-width: 200px; 
+            margin-top: -15px;
+          }
+  
+          .text_header { 
+            word-wrap: break-word; 
+            max-width: calc(100% - 180px); 
+          }
+  
+          .text_header h6 { 
+            font-size: 10px; 
+            margin: 0 0 0 5px; 
+            display: inline-block; 
+          }
+  
+          .text_header label { 
+            font-size: 10px; 
+            margin: 5px 0 0 5px; 
+            display: inline-block; 
+          }
+          
+        </style>
+        <div class="site-header">
+          <div class="text_header">
+            <h6>PROTOCOLO Nº: ${IDT} / ${TR_PROT_DESC_TAREATIPO}</h6><br>
+            <h6>TAG SALA:</h6><label>${TR_EQUIPO_COD}</label><br>
+            <h6>ESPECIALIDAD:</h6><label>${TR_GERENCIA}</label><br>
+            <h6>SALA:</h6><label>${TR_SECTOR}</label><br>
+            <h6>ESTADO:</h6><label>${TR_ESTADO}</label>
+          </div>
+          <div class="site-identity">
+            <img src="${img}" alt="Imagen">
+          </div>
+        </div>    
+          `,
+        footerTemplate: `
+          <div style="font-family: Verdana, Geneva, Tahoma, sans-serif; font-size: 8px; margin: 0 auto;">
+            <center>SAPMA-Sercoing | Tarea Nº: ${IDT} | Estado: ${estado} | Página <span class="pageNumber"></span> de <span class="totalPages"></span></center>
+          </div>
+        `,
       };
       const consultaImagenes = await pool.query("SELECT * FROM Adjuntos WHERE Id_Tarea IN (?)", [TAREA]);
       const imagenes = [];
@@ -191,8 +250,6 @@ router.post('/pdfs', isLoggedIn, async (req, res) => {
       await page.setContent(html2, {
         waitUntil: 'networkidle0'
       });
-
-      await page.waitForSelector('img');
 
       const buffer = await page.pdf(options);
 
@@ -364,33 +421,83 @@ router.get('/archivo/:IDT/:CODIGO', isLoggedIn, async (req, res) => {
     const base64Image = Buffer.from(imageBuffer).toString('base64');
     const img = 'data:image/png;base64,'+base64Image;
 
+    const TR_PROT_DESC_TAREATIPO = info_prot[0].TR_PROT_DESC_TAREATIPO;
+    const TR_EQUIPO_COD= info_prot[0].TR_EQUIPO_COD;
+    const TR_GERENCIA = info_prot[0].TR_GERENCIA;
+    const TR_SECTOR = info_prot[0].TR_SECTOR;
+    const TR_ESTADO = info_prot[0].TR_ESTADO;
+ 
     const options = {
       format: 'letter',
       printBackground: true,
       margin: {
-        top: '30px', // Adjust margins for better visibility
+        top: '160px', 
         right: '20px',
-        bottom: '30px',
+        bottom: '70px',
         left: '20px',
       },
       displayHeaderFooter: true,
-      footerTemplate: '<div style="font-family: Verdana, Geneva, Tahoma, sans-serif; font-size: 8px; margin: 0 auto;">' + // Centered text, smaller font
-      '<center>SAPMA-Sercoing | Tarea Nº: ' + IDT + ' | Estado: ' + estado + ' | Página <span class="pageNumber"></span> de <span class="totalPages"></span>' +
-      '</center></div>',
+      headerTemplate: `
+      <style>
+        .site-header { 
+          border-bottom: 1px solid rgb(227, 227, 227); 
+          margin-top: 20px;
+          margin-left: 25px;
+          padding-bottom: 10px;
+          font-family: Verdana, Geneva, Tahoma, sans-serif;
+          color: #2b2d42;
+          display: flex; 
+          justify-content: space-between; 
+          width: 93%;
+        } 
+
+        .site-identity img { 
+          max-width: 200px; 
+          margin-top: -15px;
+        }
+
+        .text_header { 
+          word-wrap: break-word; 
+          max-width: calc(100% - 180px); 
+        }
+
+        .text_header h6 { 
+          font-size: 10px; 
+          margin: 0 0 0 5px; 
+          display: inline-block; 
+        }
+
+        .text_header label { 
+          font-size: 10px; 
+          margin: 5px 0 0 5px; 
+          display: inline-block; 
+        }
+        
+      </style>
+      <div class="site-header">
+        <div class="text_header">
+          <h6>PROTOCOLO Nº: ${IDT} / ${TR_PROT_DESC_TAREATIPO}</h6><br>
+          <h6>TAG SALA:</h6><label>${TR_EQUIPO_COD}</label><br>
+          <h6>ESPECIALIDAD:</h6><label>${TR_GERENCIA}</label><br>
+          <h6>SALA:</h6><label>${TR_SECTOR}</label><br>
+          <h6>ESTADO:</h6><label>${TR_ESTADO}</label>
+        </div>
+        <div class="site-identity">
+          <img src="${img}" alt="Imagen">
+        </div>
+      </div>    
+        `,
+      footerTemplate: `
+        <div style="font-family: Verdana, Geneva, Tahoma, sans-serif; font-size: 8px; margin: 0 auto;">
+          <center>SAPMA-Sercoing | Tarea Nº: ${IDT} | Estado: ${estado} | Página <span class="pageNumber"></span> de <span class="totalPages"></span></center>
+        </div>
+      `,
     };
 
     let context = {
       IDT: info_prot[0].TR_TAREA_ID,
-      TR_GERENCIA: info_prot[0].TR_GERENCIA,
-      TR_AREA: info_prot[0].TR_AREA,
-      TR_SECTOR: info_prot[0].TR_SECTOR,
       FECHA: info_prot[0].FECHA,
       TAREATIPO: info_prot[0].TR_PROT_TAREATIPO,
-      TR_PROT_DESC_TAREATIPO: info_prot[0].TR_PROT_DESC_TAREATIPO,
-      TR_EQUIPO_COD: info_prot[0].TR_EQUIPO_COD,
-      TR_PROT_ID: info_prot[0].TR_PROT_ID,
-      TR_PROT_DESC_PROT: info_prot[0].TR_PROT_DESC_PROT,
-      TR_ESTADO: info_prot[0].TR_ESTADO,
       prot: info_prot,
       img: img, 
       imagenes: imagenes
@@ -409,8 +516,6 @@ router.get('/archivo/:IDT/:CODIGO', isLoggedIn, async (req, res) => {
     await page.setContent(html2, {
         waitUntil: 'networkidle0'
     });
-    
-    await page.waitForSelector('img');
     
     const buffer = await page.pdf(options);
     

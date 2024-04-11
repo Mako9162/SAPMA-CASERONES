@@ -214,7 +214,7 @@ $(document).ready(function () {
       $('#clearFilters').on('click', function() {
         $('#parentSelect').empty();
         $('#parentSelect').append('<option value="" selected disabled>Seleccione una gerencia</option>');
-        table1.column(3).data().unique().sort().each(function(value, index) {
+        table1.column(4).data().unique().sort().each(function(value, index) {
           $('#parentSelect').append(
           '<option value="' + value + '">' + value + '</option>');
         });
@@ -268,6 +268,7 @@ $(document).ready(function () {
           $("#check-toggle-4").prop("disabled", false);
           $("#anular1").prop("hidden", true);
           $("#second-div").hide();
+          $("#encabezado").show();
           $("#anula_todo").show();
           $("#anula_ex").show();
         } else {
@@ -275,6 +276,7 @@ $(document).ready(function () {
           $("#check-toggle-4").prop("disabled", true);
           $("#anula_todo").hide();
           $("#anula_ex").hide();
+          $("#encabezado").hide();
           $("#anular1").prop("hidden", false);
           $("#pdfs1").prop("hidden", true);
           $("#pdfs").prop("hidden", true);
@@ -292,12 +294,14 @@ $(document).ready(function () {
           $("#form_todo").hide();
           $("#anula_lista").prop("hidden", true);
           $("#check-toggle-4").prop("disabled", false);
+          $("#encabezado").show();
         } else {
           $("#check-toggle-1").prop("disabled", true);
           $("#check-toggle-4").prop("disabled", true);
           $("#tabla_prot11").hide();
           $("#form_todo").show();
           $("#anula_lista").prop("hidden", false);
+          $("#encabezado").hide();
         }
   
         state1 = !state1;
@@ -314,6 +318,7 @@ $(document).ready(function () {
           $("#check-toggle-3").prop("disabled", false);
           $("#anular2").prop("hidden", true);
           $("#excel").prop("hidden", true);
+          $("#encabezado").show();
         } else {
           $("#check-toggle-1").prop("disabled", true);
           $("#check-toggle-3").prop("disabled", true);
@@ -321,6 +326,7 @@ $(document).ready(function () {
           $("#tabla_prot11").hide();
           $("#anular2").prop("hidden", false);
           $("#excel").prop("hidden", false);
+          $("#encabezado").hide();
         }
   
         state2 = !state2;
@@ -428,6 +434,10 @@ $(document).ready(function () {
       initDataTable();
 
     });
+
+    $('#date3').val('');
+    $('#date4').val('');
+    $('#tarea').val('');
 
   });
 

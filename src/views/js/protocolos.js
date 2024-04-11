@@ -301,6 +301,10 @@ $(document).ready(function () {
           initDataTable();
     
         });
+
+        $('#date1').val('');
+        $('#date2').val('');
+        $('#tarea').val('');
     
     });
 

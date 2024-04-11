@@ -9,17 +9,17 @@ passport.use('local.signin', new LocalStrategy({
     passwordField: 'Clave',
     passReqToCallback: true
 }, async (req, Login, Clave, done) => {    
-    const rows = await pool.query('SELECT * FROM Usuarios WHERE Login = ? AND Activo = 1', [Login]);
+    const rows = await pool.query('SELECT * FROM Usuarios WHERE Login = ? AND Activo = 1 AND Id_Perfil NOT LIKE "%3%"', [Login]);
     if (rows.length > 0) {
         const user = rows[0];
         const validPassword = await helpers.matchClave(Clave, user.Clave);
         if (validPassword) {
             done(null, user, req.flash('success', 'Bienvenido ' + user.Login));
         } else {
-            done(null, false, req.flash('message', 'Contraseña Incorrecta'));
+            done(null, false, req.flash('message', 'Usuario o contraseña Incorrecta'));
         }
     } else {
-        return done(null, false, req.flash('message', 'El Usuario No Existe'));
+        return done(null, false, req.flash('message', 'Usuario o contraseña Incorrecta'));
     }
 }));
 

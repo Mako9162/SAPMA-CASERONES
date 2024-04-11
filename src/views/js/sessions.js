@@ -33,7 +33,7 @@ $(document).ready(function(){
 				}
 			});
 		}
-	}, 30000);
+	}, 60000);
 	
 	$('#sessionModal').on('hidden.bs.modal', function () {
 		clearInterval(countdownInterval);

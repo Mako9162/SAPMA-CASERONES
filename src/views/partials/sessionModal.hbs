@@ -1,23 +1,4 @@
 <style>
-    .modal {
-      text-align: center;
-      padding: 0!important;
-    }
-
-    .modal:before {
-      content: '';
-      display: inline-block;
-      height: 100%;
-      vertical-align: middle;
-      margin-right: -4px;
-    }
-
-    .modal-dialog {
-      display: inline-block;
-      text-align: left;
-      vertical-align: middle;
-      width: 200px; 
-    }
     .timer {
       font-size: 50px;
       font-weight: bold;
@@ -34,7 +15,7 @@
     }
 </style>
 <div id="sessionModal" class="modal fade" tabindex="-1" role="dialog" aria-labelledby="exampleModalCenterTitle" data-backdrop="static" data-keyboard="false" aria-hidden="true">
-  <div class="modal-dialog modal-dialog-centered modal-md"> 
+  <div class="modal-dialog modal-md modal-dialog-centered"> 
     <div class="modal-content">
       <div class="modal-header" style="background-color: #d90d2b; color: #fff;"> 
         <h4 class="modal-title">¡Atención!</h4>
@@ -46,7 +27,7 @@
       </div>
       <div class="modal-footer">
         <button type="button" class="btn btn-success float-left" id="continueBtn">Continuar</button> 
-        <button type="button" class="btn btn-danger" id="closeBtn">Cerrar</button>
+        <button type="button" class="btn btn-danger" id="closeBtn">Cerrar sesión</button>
       </div>
     </div>
   </div>

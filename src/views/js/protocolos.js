@@ -7,7 +7,15 @@ $(document).ready(function () {
     date1.addEventListener('change', function() {
         date2.min = this.value;
     });	
-    
+
+    $('#test').change(function() {
+        if ($(this).prop('checked')) {
+            $(this).val('');
+        }else{
+            $(this).val('on');
+        }
+    });
+      
     function initDataTable() {
         var checkTogglePressed = false;
       
@@ -23,11 +31,11 @@ $(document).ready(function () {
             {
               "extend": "excelHtml5",
               "text": '<i class="fa fa-file-excel-o"></i>',
-              "title": "Tareas",
+              "title": "TareasParaValidar",
               "titleAttr": "Exportar a Excel",
               "className": "btn btn-rounded btn-success",
               "exportOptions": {
-                "columns": [0, 1, 2, 3, 4, 5, 6, 7, 8],
+                "columns": [0, 1, 2, 3, 4, 5, 6, 7, 8, 9 , 10, 11],
               },
               customize: function (xlsx) {
                 const sheet = xlsx.xl.worksheets["sheet1.xml"];
@@ -87,7 +95,8 @@ $(document).ready(function () {
                           <select id="subInfoSelect" width: 50%;">
                           </select>
                       </div>
-                      <button id="seleccionar" type="button" class="btn btn-inline btn-secondary ladda-button">Seleccionar todo</i></button>
+                      <button id="deseleccionar" type="button" class="btn btn-inline btn-warning ladda-button" hidden="true">Anular selección</i></button>
+                      <button id="seleccionar" type="button" class="btn btn-inline btn-warning ladda-button" disabled="true">Seleccionar</i></button>
                       <button id="clearFilters" type="button" class="btn btn-inline btn-danger btn-sm ladda-button"><i class="fa fa-filter"></i></button>
                   </div>
                 `);
@@ -96,12 +105,12 @@ $(document).ready(function () {
           "scrollX": true,
           "bInfo": true,
           "iDisplayLength": 15,
-          "autoWidth": true,
+          "autoWidth": false,
           "language": {
               "sProcessing": "Procesando...",
               "sLengthMenu": "Mostrar _MENU_ registros",
               "sZeroRecords": "No se encontraron resultados",
-              "sEmptyTable": "Sin información",
+              "sEmptyTable": "Sin infomación",
               "sInfo": "Mostrando un total de _TOTAL_ registros",
               "sInfoEmpty": "Mostrando un total de 0 registros",
               "sInfoFiltered": "(filtrado de un total de _MAX_ registros)",
@@ -151,22 +160,22 @@ $(document).ready(function () {
           }
         }).columns.adjust();
   
-        $('#parentSelect').append('<option value="" selected disabled>Seleccione una gerencia</option>');
+        $('#parentSelect').append('<option value="" selected disabled>Seleccione una especialidad</option>');
         $('#infoSelect').append('<option value="" selected disabled>Seleccione un área</option>');
         $('#subInfoSelect').append('<option value="" selected disabled>Seleccione un sector</option>');
         
-        table1.column(3).data().unique().sort().each(function(value, index) {
+        table1.column(5).data().unique().sort().each(function(value, index) {
           $('#parentSelect').append(
           '<option value="' + value + '">' + value + '</option>');
         });
   
         $('#parentSelect').on('change', function(e) {
           var selectedValue = $(this).val();
-          table1.column(3).search(selectedValue).draw();
+          table1.column(5).search(selectedValue).draw();
   
           $('#infoSelect').empty();
           $('#infoSelect').append('<option value="" selected disabled>Seleccione un área</option>');
-          table1.column(4, {search: 'applied'}).data().unique().sort().each(function(value, index) {
+          table1.column(6, {search: 'applied'}).data().unique().sort().each(function(value, index) {
               $('#infoSelect').append('<option value="' + value + '">' + value + '</option>');
           });
         });
@@ -175,11 +184,11 @@ $(document).ready(function () {
           var selectedParentValue = $('#parentSelect').val();
           var selectedInfoValue = $(this).val(); 
       
-          table1.column(3).search(selectedParentValue).column(4).search(selectedInfoValue).draw();
+          table1.column(5).search(selectedParentValue).column(6).search(selectedInfoValue).draw();
       
           $('#subInfoSelect').empty(); 
           $('#subInfoSelect').append('<option value="" selected disabled>Seleccione un sector</option>');
-          table1.column(5, {search: 'applied'}).data().unique().sort().each(function(value, index) {
+          table1.column(7, {search: 'applied'}).data().unique().sort().each(function(value, index) {
               $('#subInfoSelect').append('<option value="' + value + '">' + value + '</option>');
           });
         });
@@ -189,17 +198,17 @@ $(document).ready(function () {
           var selectedInfoValue = $('#infoSelect').val(); 
           var selectedSubInfoValue = $(this).val();
   
-          table1.column(3).search(selectedParentValue);
-          table1.column(4).search(selectedInfoValue);
-          table1.column(5).search("^" + selectedSubInfoValue + "$", true, false);
+          table1.column(5).search(selectedParentValue);
+          table1.column(6).search(selectedInfoValue);
+          table1.column(7).search("^" + selectedSubInfoValue + "$", true, false);
   
           table1.draw();
         });
   
         $('#clearFilters').on('click', function() {
           $('#parentSelect').empty();
-          $('#parentSelect').append('<option value="" selected disabled>Seleccione una gerencia</option>');
-          table1.column(3).data().unique().sort().each(function(value, index) {
+          $('#parentSelect').append('<option value="" selected disabled>Seleccione una especialidad</option>');
+          table1.column(5).data().unique().sort().each(function(value, index) {
             $('#parentSelect').append(
             '<option value="' + value + '">' + value + '</option>');
           });
@@ -211,19 +220,47 @@ $(document).ready(function () {
           return false;
         });
   
+        table1.on('user-select', function (e, dt, type, cell, originalEvent) {
+            var rowIndex = cell.index().row;
+            var rowData = table1.row(rowIndex).data();
+            
+            if (rowData[12] === "") {
+                e.preventDefault();
+            }
+        });
+
+        var filasSeleccionadasPorSeleccionar = []; 
+
         $('#seleccionar').on('click', function () {
-          var selectedRows = table1.rows({ selected: true }).count();
-          var totalRows = table1.rows({ search: 'applied' }).count();
-      
-          if (selectedRows === totalRows && selectedRows > 0) {
-              table1.rows({ search: 'applied' }).deselect();
-              $(this).text('Seleccionar todo');
-          } else {
-              table1.rows({ search: 'applied' }).select();
-              $(this).text('Borrar selección');
-          }
+            var filasSeleccionadasPorSeleccionar = table1.rows(function (idx, data, node) {
+                return data[12] !== "";
+            }).indexes(); 
+            
+            var filasFiltradasSeleccionadas = table1.rows({ search: 'applied' }).indexes().filter(function(index) {
+                return filasSeleccionadasPorSeleccionar.indexOf(index) !== -1;
+            });
+            
+            table1.rows(filasFiltradasSeleccionadas).select();
+        
+            $('#seleccionar').prop('hidden', true);
+            $('#deseleccionar').prop('hidden', false);
         });
       
+        
+        $('#deseleccionar').on('click', function () {
+          var filasSeleccionadasPorSeleccionar = table1.rows(function (idx, data, node) {
+              return data[12] !== "";
+          }).indexes(); 
+          
+          var filasFiltradasSeleccionadas = table1.rows({ search: 'applied' }).indexes().filter(function(index) {
+              return filasSeleccionadasPorSeleccionar.indexOf(index) !== -1;
+          });
+          
+          table1.rows(filasFiltradasSeleccionadas).deselect();
+
+          $('#seleccionar').prop('hidden', false);
+          $('#deseleccionar').prop('hidden', true);
+      }); 
   
     }
   
@@ -234,6 +271,7 @@ $(document).ready(function () {
         var date1 = $('#date1').val();
         var date2 = $('#date2').val();
         var tarea = $('#tarea').val();
+        var test = $('#test').val();
 
         if ((tarea && (date1 || date2)) || (date1 && date2 && tarea)) {
             swal("Error", "No puede enviar dates y tarea.", "error");
@@ -253,7 +291,8 @@ $(document).ready(function () {
         var data = {
           date1,
           date2,
-          tarea
+          tarea,
+          test
         }
     
         swal({
@@ -281,24 +320,37 @@ $(document).ready(function () {
           data.forEach(function (item) {
             $('#tabla_prot tbody').append(`
                 <tr>
-                    <td style="width: 8%">${item.IDT}</td>
-                    <td style="width: 8%">${item.FECHA}</td>
-                    <td style="width: 10%">${item.CODIGO}</td>
-                    <td style="width: 10%">${item.GERENCIA}</td>
-                    <td style="width: 15%">${item.AREA}</td>
-                    <td style="width: 20%">${item.SECTOR}</td>
-                    <td style="width: 15%">${item.SERVICIO}</td>
-                    <td style="width: 15%">${item.ESTADO}</td>
-                    <td>
-                        ${item.ESTADO === 'Terminada validada' || item.ESTADO === 'Terminada sin validar' ? 
-                        `<center><a href="/protocolo/${item.IDT}" class="btn btn-inline btn-primary btn-sm ladda-button" target="_blank"><i class="fa fa-file-archive-o"></i></a></center>` : ''}
-                    </td>
+                  <td>${item.IdTarea}</td>
+                  <td>${item.OT === null ? '' : item.OT}</td>
+                  <td>${item.FechaTarea}</td>
+                  <td>${item.EquipoCodigoTAG}</td>
+                  <td>${item.UsuarioDescripcion}</td>
+                  <td>${item.GerenciaDesc}</td>
+                  <td>${item.AreaDesc}</td>
+                  <td>${item.SectorDesc}</td>
+                  <td>${item.TipoServicio}</td>
+                  <td>${item.EstadoDesc}</td>
+                  <td>${item.EstadoOperEquipo === null && (item.EstadoDesc === 'Terminada validada' || item.EstadoDesc === 'Terminada sin validar' ) ?
+                  '***Error***' : item.EstadoOperEquipo === 'SOP' ? 'Sistema operativo' : 
+                  item.EstadoOperEquipo === 'SC' ? 'No aplica':
+                  item.EstadoOperEquipo === 'SSR' ? 'Sistema sin revisar':
+                  item.EstadoOperEquipo === 'SOCO' ? 'Sist. operativo con obs.':
+                  item.EstadoOperEquipo === 'SFS' ? 'Sist. fuera de serv.':
+                  item.EstadoOperEquipo === 'SNO' ? 'Sist. no operativo':
+                  item.EstadoOperEquipo === null ? '':
+                  item.EstadoOperEquipo}</td>
+                  <td>${item.EstadoOperEquipoObs === null ? '' : (item.EstadoOperEquipoObs === 'SC' ? '' : item.EstadoOperEquipoObs)}</td>
+                  <td>
+                      ${item.EstadoDesc === 'Terminada validada' || item.EstadoDesc === 'Terminada sin validar' ? 
+                      (item.EstadoOperEquipo === null ? '' : `<center><a href="/protocolo/${item.IdTarea}" class="btn btn-inline btn-primary btn-sm ladda-button" target="_blank"><i class="fa fa-file-archive-o"></i></a></center>`) : ''}
+                  </td>
                 </tr>
             `);
     
           });
         
           initDataTable();
+          $('#seleccionar').prop('disabled', false);
     
         });
 
@@ -309,19 +361,20 @@ $(document).ready(function () {
     });
 
     $("#env_val").on("click", function () {
-        var rows_selected = table1.rows({selected: true}).data();
-        var idt = [];
-
-        $.each(rows_selected, function (index, value) {
-            idt.push(value[0]);
-        });
-
-        if(rows_selected.length === 0){
-          swal("Error", "Debe seleccionar al menos una fila antes de enviar las tareas para aprobar.", "error");
-          return;
-        }
         
-        swal({
+      var rows_selected = table1.rows({selected: true}).data();
+      var idt = [];
+
+      $.each(rows_selected, function (index, value) {
+        idt.push(value[0]);
+      });
+
+      if(rows_selected.length === 0){
+        swal("Error", "Debe seleccionar al menos una fila antes de enviar las tareas para aprobar.", "error");
+        return;
+      }
+        
+      swal({
         title: "¡SAPMA!",
         text: "¿Desea validar estas tareas?",
         type: "warning",
@@ -330,36 +383,56 @@ $(document).ready(function () {
         confirmButtonText: "Si",
         cancelButtonText: "No",
         closeOnConfirm: false      
-            }, function(isConfirm) {
-                if (isConfirm) {
-                    $.ajax({
-                        url: "/protocolo/validar",
-                        type: "POST",
-                        data: {
-                            idt
-                        }
-                    });
-                    swal("¡SAPMA!", "Tareas validadas", "success");
-                    setTimeout(function () {
-                        location.reload();
-                    }, 1000);
-                } else {
-                    swal("¡SAPMA!", "Tareas no validadas", "error");
-                }
-            } 
-        );	
+        },function(isConfirm) {
+          if(isConfirm){
+            $.ajax({
+              url: "/protocolo/validar",
+              type: "POST",
+              data: {idt},
+              beforeSend: function(){
+                swal({
+                    title: "Validando",
+                    text: "Espere un momento por favor...",
+                    imageUrl:"/img/Spinner-1s-200px2.gif",
+                    showConfirmButton: false,
+                    allowOutsideClick: false
+                });
+              }
+            }).done(function(data) {
+              swal({
+                title: "¡SAPMA!",
+                text: "¡Tareas validadas!",
+                type: "success",
+                confirmButtonText: "Aceptar",
+                allowOutsideClick: false
+              });	
+              setTimeout(function () {
+                location.reload();
+              }, 1000);	
+            }).fail(function (jqXHR, textStatus, errorThrown){
+              swal("Error", "Hubo un problema al conectar con el servidor. Por favor, inténtelo de nuevo más tarde.", "error");
+            });
+
+          }
+        }  
+      );
     });
 
     $("#pdfs").on("click", function () {
         var rows_selected = table1.rows({selected: true}).data();
         var idpdf = [];
         var codigo = [];
+        var ot = [];
         $.each(rows_selected, function (index, value) {
             idpdf.push(value[0]);
         });
 
         $.each(rows_selected, function (index, value) {
-            codigo.push(value[2]);
+          ot.push(value[1]);
+        });
+
+        $.each(rows_selected, function (index, value) {
+            codigo.push(value[3]);
         });
 
         $.ajax({
@@ -367,7 +440,8 @@ $(document).ready(function () {
             type: "POST",
             data: {
                 idpdf,
-                codigo
+                codigo, 
+                ot
             },
             beforeSend: function() {
                 swal({
@@ -383,7 +457,7 @@ $(document).ready(function () {
                 title: "PDFs Generados",
                 text: "Se han agregado los PDFs a un archivo comprimido",
                 type: "success",
-                confirmButtonText: "Aceptar",
+                confirmButtonText: "Descargar",
                 allowOutsideClick: false
             }, function (isConfirm) {
                 if (isConfirm) {
@@ -393,19 +467,26 @@ $(document).ready(function () {
             });
 
     });
-    -
+    
     $("#pdfs1").on("click", function () {
         var rows_selected = table1.rows({selected: true}).data();
         var idpdf = [];
         var codigo= [];
-        $.each(rows_selected, function (index, value) {
-            idpdf.push(value[0]);
-        });
+        var ot= [];
 
         $.each(rows_selected, function (index, value) {
-            codigo.push(value[2]);
+          idpdf.push(value[0]);
         });
-            window.location.href = "/archivo/" + idpdf + "/" + codigo;		
+    
+        $.each(rows_selected, function (index, value) {
+          ot.push(value[1]);
+        });
+    
+        $.each(rows_selected, function (index, value) {
+          codigo.push(value[3]);
+        });  
+            
+        window.location.href = "/archivo/" + idpdf + "/" + codigo + "/" + ot;		
     });
 
 });

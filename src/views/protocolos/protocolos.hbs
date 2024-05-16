@@ -11,6 +11,7 @@
 							<h3>Protocolos para validar</h3>
 							<ol class="breadcrumb breadcrumb-simple">
 								<li><a href="/home">Inicio</a></li>
+								<li class="active">Tareas</li>
 								<li class="active">Protocolos para validar</li>
 							</ol>
 						</div>
@@ -20,14 +21,18 @@
 						</div>
 					</div>
 				</div>
-						<style>
-						.dataTables_filter {
-							float: left;
-						}
-						.dt-buttons {
-							float: right;
-						}
-					</style>
+				<style>
+					.dataTables_filter {
+						float: left;
+					}
+					.dt-buttons {
+						float: right;
+					}
+					#test:checked + label::before {
+						background-color: #f00;
+						border-color: #f00;
+					}
+				</style>
 			</header>
 			<div class="box-typical box-typical-padding">
 				<section class="card box-typical" style="min-height: 120px;">
@@ -45,6 +50,13 @@
 								<label class="form-label" id="buscar">Buscar una Tarea</label>
 								<input class="form-control" id="tarea" name="tarea" placeholder="Ingrese un ID de Tarea">
 							</div>
+							<div class="col-md-1">
+								<label class="m-b-1">Incluir TEST</label>
+								<div class="checkbox-toggle">
+									<input type="checkbox" id="test">
+									<label for="test"></label>
+								</div>
+							</div>
 							<div class="col-md-3">
 								<label class="form-label" for="filt" style="color: aliceblue;">.</label>
 								<button type="button" name="filt" id="filt" class="btn btn-primary">Filtrar</button>
@@ -58,15 +70,18 @@
 							<table id="tabla_prot" class="table table-bordered table-striped table-vcenter js-dataTable-full">
 								<thead>
 									<tr>
-										<th style="width: 8%">Tarea</th>
-										<th style="width: 8%">Fecha</th>
-										<th style="width: 10%">Tag</th>
-										<th style="width: 10%">Gerencia</th>
-										<th style="width: 15%">Area</th>
-										<th style="width: 20%">Sector</th>
-										<th style="width: 15%">Tipo de servicio</th>
-										<th style="width: 15%">Estado de tarea</th>
-										{{!-- <th>Repuestos</th> --}}
+										<th>Tarea</th>
+										<th>OT</th>
+										<th>Fecha</th>
+										<th>Tag</th>
+										<th>Técnico</th>
+										<th>Especialidad</th>
+										<th>Area</th>
+										<th>Sector</th>
+										<th>Tipo de servicio</th>
+										<th>Estado de tarea</th>
+										<th>Estado equipo</th>
+										<th>Observación estado</th>
 										<th>Ver</th>
 									</tr>
 								<tbody>			
@@ -75,7 +90,7 @@
 						</form>
 					</div>
 				</section>
-				<button type="button" class="btn btn-success" id="env_val">Enviar</button>
+				<button type="button" class="btn btn-success" id="env_val">Validar</button>
 			</div>
 		</div>	
 	</div>

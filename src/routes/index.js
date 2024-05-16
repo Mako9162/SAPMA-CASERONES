@@ -31,9 +31,9 @@ router.get('/verificar_sesion', (req, res, next) => {
     const maxIdleTime = 20 * 60 * 1000;
     const timeLeft = Math.floor((req.session.lastActive + maxIdleTime - now) / 1000);
     if(timeLeft <= 90 && timeLeft >= 0){
-        res.json({ sessionExpired: true });
+        res.json({ sessionExpired: true, timeLeft: timeLeft });
     }else{
-        res.json({ sessionExpired: false });
+        res.json({ sessionExpired: false, timeLeft: timeLeft });
     }
 });
 

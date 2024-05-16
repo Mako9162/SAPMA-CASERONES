@@ -25,7 +25,6 @@ $(document).ready(function(){
 			})
 			.then(response => response.json())
 			.then(data => {
-				// console.log(data);
 				if(data.sessionExpired){
 					startCountdown();
 					$('#sessionModal').modal('show');
@@ -39,4 +38,5 @@ $(document).ready(function(){
 		clearInterval(countdownInterval);
 		modalShown = false; 
 	});
+
 });

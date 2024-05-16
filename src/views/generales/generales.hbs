@@ -48,6 +48,10 @@
 						background-color: rgb(14, 228, 18);
 						border-color: rgb(14, 228, 18);
 					}
+					#test:checked + label::before {
+						background-color: #f00;
+						border-color: #f00;
+					}
 				</style>
 			</header>
 			<div class="box-typical box-typical-padding">
@@ -81,6 +85,13 @@
 								<label class="form-label" for="tarea">Buscar una Tarea</label>
 								<input class="form-control" id="tarea" name="tarea" placeholder="Ingrese un ID de Tarea">
 							</div>
+							<div class="col-md-1">
+								<label class="m-b-1">Incluir TEST</label>
+								<div class="checkbox-toggle">
+									<input type="checkbox" id="test">
+									<label for="test"></label>
+								</div>
+							</div>
 							<div class="col-md-3">
 								<label class="form-label" for="buscar" style="color: aliceblue;">.</label>
 								<button type="button" name="buscar" id="buscar" class="btn btn-primary">Filtrar</button>
@@ -94,18 +105,20 @@
 							<table id="tabla_prot1" class="table table-bordered table-striped table-vcenter js-dataTable-full">
 								<thead>
 									<tr>
-										<th style="width: 5%">Tarea</th>
-										<th style="width: 5%">Fecha</th>
-										<th style="width: 10%">Tag</th>
-										<th style="width: 5%">Técnico</th>
-										<th style="width: 10%">Gerencia</th>
-										<th style="width: 15%">Area</th>
-										<th style="width: 15%">Sector</th>
-										<th style="width: 10%">Tipo de servicio</th>
-										<th style="width: 10%">Estado de tarea</th>
-										<th style="width: 10%">Estado equipo</th>
-										<th style="width: 15%">Observación estado</th>
-										{{!-- <th>Repuestos</th> --}}
+										<th>Tarea</th>
+										<th>OT</th>
+										<th>Fecha</th>
+										<th>Tag</th>
+										<th>Técnico</th>
+										<th>Especialidad</th>
+										<th>Area</th>
+										<th>Sector</th>
+										<th>Tipo de servicio</th>
+										<th>Estado de tarea</th>
+										<th>Estado equipo</th>
+										<th>Observación estado</th>
+										<th>Validador</th>
+										<th>Observación validación</th>
 										<th>Ver</th>
 									</tr>
 								<tbody>			
@@ -137,10 +150,6 @@
 						</form>
 					</div>
 				</section>
-				{{!-- <div class="checkbox-toggle" id="second-div" style="display: none;">
-					<input type="checkbox" id="check-toggle-2" >
-					<label for="check-toggle-2">Seleccionar todo</label>
-				</div> --}}
 				<button class="btn btn-rounded btn-danger" id="anula_lista" name="anula_lista" hidden="true">Anular Tareas</button>
 				<button class="btn btn-rounded btn-danger" id="anular1" name="anular1" hidden="true">Anular Tareas</button>
 				<br>

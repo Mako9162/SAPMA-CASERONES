@@ -16,10 +16,11 @@ router.post('/pdfs', isLoggedIn, async (req, res) => {
     const ID1 = Object.values(req.body);
     const ID = [ID1[0]];
     const { usuario } = req.user;
-    const ruta = path.resolve(__dirname, "../pdf/" + ID + ".pdf");
     const IDSS = ID.reduce((a, b) => a.concat(b));
     const ID2 = ID1[1];
-    const equipores = IDSS.map((x, i) => `${x}_${ID2[i]}`);
+    const ID3 = ID1[2];
+    //const equipores = IDSS.map((x, i) => `${x}_${ID2[i]}`);
+    const equipores = ID3.map((x, i) => `${x}_${ID2[i]}`);
 
     const data = await pool.query("SELECT\n" +
       " Tareas.Id AS TR_TAREA_ID,\n" +
@@ -119,7 +120,9 @@ router.post('/pdfs', isLoggedIn, async (req, res) => {
 
     for (const TR_TAREA_ID in resultado) {
 
+
       const objects = resultado[TR_TAREA_ID];
+      const OTT = objects[2].TR_RESPUESTA;
       const codigo = objects[0].TR_EQUIPO_COD;
       const TAREA = objects[0].TR_TAREA_ID;
       const estado = objects[0].TR_ESTADO;
@@ -253,7 +256,7 @@ router.post('/pdfs', isLoggedIn, async (req, res) => {
 
       const buffer = await page.pdf(options);
 
-      fs.writeFileSync("src/pdf/" + TAREA + "_" + codigo + ".pdf", buffer); // WriteFileSync
+      fs.writeFileSync("src/pdf/" + OTT + "_" + codigo + ".pdf", buffer); // WriteFileSync
 
       console.log('PDF guardado');
     }
@@ -308,10 +311,10 @@ router.get('/archivo', isLoggedIn, async (req, res) => {
     });
 });
 
-router.get('/archivo/:IDT/:CODIGO', isLoggedIn, async (req, res) => {
+router.get('/archivo/:IDT/:CODIGO/:OT', isLoggedIn, async (req, res) => {
   try {
 
-    const { IDT, CODIGO } = req.params;
+    const { IDT, CODIGO, OT} = req.params;
     const consultaImagenes =  await pool.query("SELECT * FROM Adjuntos WHERE Id_Tarea IN (?)", [IDT]);
     const imagenes = [];
 
@@ -519,7 +522,7 @@ router.get('/archivo/:IDT/:CODIGO', isLoggedIn, async (req, res) => {
     
     const buffer = await page.pdf(options);
     
-    fs.writeFile("src/pdf/" + IDT + "_" + CODIGO + ".pdf", buffer, () => console.log('PDF guardado'));
+    fs.writeFile("src/pdf/" + OT + "_" + CODIGO + ".pdf", buffer, () => console.log('PDF guardado'));
     
     // const fileName = IDT + "_" + CODIGO + ".pdf";
 
@@ -527,7 +530,7 @@ router.get('/archivo/:IDT/:CODIGO', isLoggedIn, async (req, res) => {
     // res.setHeader('Content-Type', 'application/pdf');
     // res.send(buffer);
 
-    const fileName = IDT + "_" + CODIGO + ".pdf";
+    const fileName = OT + "_" + CODIGO + ".pdf";
 
     res.setHeader('Content-Disposition', `attachment; filename="${fileName}"`);
     res.setHeader('Content-Type', 'application/pdf');

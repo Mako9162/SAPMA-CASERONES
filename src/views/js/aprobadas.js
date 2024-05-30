@@ -14,9 +14,9 @@ $(document).ready(function () {
       var checkTogglePressed = false;
     
       table1 = $('#tabla_prot').DataTable({
-                "select": {
-                    "style": "multi"
-                },
+        "select": {
+            "style": "multi"
+        },
         "dom": 'Bf<"toolbar">rtip',
         "searching": true,
         "lengthChange": false,
@@ -263,26 +263,58 @@ $(document).ready(function () {
       var date1 = $('#date1').val();
       var date2 = $('#date2').val();
       var tarea = $('#tarea').val();
+      var ot = $('#ot').val();
 
       if ((tarea && (date1 || date2)) || (date1 && date2 && tarea)) {
-          swal("Error", "No puede enviar dates y tarea.", "error");
+          swal("Error", "No puede enviar fechas y tarea.", "error");
+          $('#date1').val('');
+          $('#date2').val('');
+          $('#tarea').val('');
+          $('#ot').val('');
           return;
       }
 
-      if (!date1 && !date2 && !tarea) {
-          swal("Error", "Seleccione un rango de fechas o ingrese una tarea.", "error");
+      if ((ot && (date1 || date2)) || (date1 && date2 && ot)) {
+          swal("Error", "No puede enviar fechas y OT.", "error");
+          $('#date1').val('');
+          $('#date2').val('');
+          $('#tarea').val('');
+          $('#ot').val('');
+          return;
+      }
+
+      if (tarea && ot) {
+          swal("Error", "No puede enviar tarea y OT.", "error");
+          $('#date1').val('');
+          $('#date2').val('');
+          $('#tarea').val('');
+          $('#ot').val('');
+          return;
+      }
+      
+      if (!date1 && !date2 && !tarea && !ot) {
+          swal("Error", "Seleccione un rango de fechas, ingrese una tarea o una ot.", "error");
+          $('#date1').val('');
+          $('#date2').val('');
+          $('#tarea').val('');
+          $('#ot').val('');
           return;
       }
 
       if ((!date1 && date2) || (date1 && !date2)) {
           swal("Error", "Seleccione ambas fechas.", "error");
+          $('#date1').val('');
+          $('#date2').val('');
+          $('#tarea').val('');
+          $('#ot').val('');
           return;
       }
 
       var data = {
         date1,
         date2,
-        tarea
+        tarea,
+        ot
       }
   
       swal({

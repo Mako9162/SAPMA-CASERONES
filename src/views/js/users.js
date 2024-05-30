@@ -2,8 +2,8 @@ function confirmar(Id){
     
     swal({
         title: "¿Esta Seguro?",
-        text: " A continuación eliminará un usuario",
-        type: "error",
+        text: " A continuación desactivara este usuario",
+        type: "warning",
         showCancelButton: true,
         confirmButtonClass: "btn-danger",
         confirmButtonText: "Si",
@@ -13,6 +13,25 @@ function confirmar(Id){
     function(isConfirm) {
         if (isConfirm) {
             window.location = "/users/delete/"+Id;
+        }
+    });
+}
+
+function activar(Id){
+    
+    swal({
+        title: "¿Esta Seguro?",
+        text: " A continuación activara este usuario",
+        type: "warning",
+        showCancelButton: true,
+        confirmButtonClass: "btn-success",
+        confirmButtonText: "Si",
+        cancelButtonText: "No",
+        closeOnConfirm: false      
+    },
+    function(isConfirm) {
+        if (isConfirm) {
+            window.location = "/users/activar/"+Id;
         }
     });
 }

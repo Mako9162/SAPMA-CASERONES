@@ -220,6 +220,10 @@ table td {
 					<br>  
 				{{/ifEquals}}
 			{{/group}}	
+			{{#if imagenes}}
+			<div class="doc-titulo" >
+				<h5>Adjuntos</h5>
+			</div>
 			<div class="image-container">
 				{{#each imagenes }}
 					<div class="image-item">
@@ -232,6 +236,7 @@ table td {
 					</div>
 				{{/each }}
 			</div>
+			{{/if}}
 		</div>
 	</div>
 </section>

@@ -38,6 +38,9 @@
 					width: 200px;
 					height: 100px;
 				}
+				.imgti {
+					
+				}
 			</style>
 			<div class="box-typical box-typical-padding">
 				<div class="form-group">
@@ -156,19 +159,22 @@
 									{{/each}}
 								{{/ifEquals}}
 							{{/group}}
-							<div class="container col-md-12 m-t-2">
+							{{#if imagenes}}
+									<div class="col-md-12 m-t-3 b-b" >
+										<h5 class="card-title"><strong>Adjuntos</h5>
+									</div>
 								{{#each imagenes }}
-									<div class="col-md-4 m-t-2">
-										<div class="imgti">
+									<div class="col-md-3 m-t-2">
+										<div>
 											<h6>Adjunto {{incitement @index}}</h6>
 										</div>
-										<div class="image-wrapper">
-											<img src="{{this}}" class="img-fluid" alt="Responsive image" width="300" height="300">
+										<div>
+											<img src="{{this}}" class="img-thumbnail" alt="Responsive image" style="height: 450px; width:350px"><br>
 											<a href="{{this}}" target="blank">Ver Imagen {{incitement @index}}</a>
 										</div>
 									</div>
 								{{/each }}
-							</div>	
+							{{/if}}
 						</div>
 					</div>
 				</section>
@@ -209,7 +215,6 @@
 				segundoSiguienteElemento.style.color = 'red';
 			}
 		});
-
 	</script>
 </body>
 

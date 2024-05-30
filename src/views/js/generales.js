@@ -377,7 +377,7 @@ $(document).ready(function () {
       });
     }
 
-    moveDuplicatesToTop(2);
+    moveDuplicatesToTop(3);
 
   }
 

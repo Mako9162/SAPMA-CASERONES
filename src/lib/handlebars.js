@@ -41,11 +41,3 @@ handlebars.registerHelper('trimString', function(str) {
     }
   });
 
-
-
-
-
-  
-
-
-  

@@ -44,6 +44,7 @@ router.get('/continuar', (req, res, next) => {
 
 router.get('/home', isLoggedIn, (req, res) => {
     res.render('home/home');  
+    console.log(req.user);
 });
 
 router.get('/users', isLoggedIn, authRole(['Plan', 'Admincli']), async (req, res) => {
@@ -91,8 +92,7 @@ router.get('/users', isLoggedIn, authRole(['Plan', 'Admincli']), async (req, res
         "	INNER JOIN Clientes C ON U.Id_Cliente = C.Id\n" +
         "	INNER JOIN Perfiles P ON U.Id_Perfil = P.Id \n" +
         "WHERE\n" +
-        "	Activo = 1 \n" +
-        "	AND U.Id_Cliente = "+Id_Cliente+"\n" +
+        "	 U.Id_Cliente = "+Id_Cliente+"\n" +
         "   AND P.Id IN (3, 4, 5, 6, 7, 8, 10)", (err, result) => {
             res.render('users/users', { users:result, clientes:clientes});
         });
@@ -133,15 +133,14 @@ router.get('/users', isLoggedIn, authRole(['Plan', 'Admincli']), async (req, res
         "	INNER JOIN Clientes C ON U.Id_Cliente = C.Id\n" +
         "	INNER JOIN Perfiles P ON U.Id_Perfil = P.Id \n" +
         "WHERE\n" +
-        "	Activo = 1 \n" +
-        "	AND U.Id_Cliente = "+Id_Cliente+"", (err, result) => {
+        "	U.Id_Cliente = "+Id_Cliente+"", (err, result) => {
             res.render('users/users', { users:result, clientes:clientes});
         });
     }
 
-    });
+});
 
-    router.get('/usersc', isLoggedIn, authRole(['Cli_C']), async (req, res) => {
+router.get('/usersc', isLoggedIn, authRole(['Cli_C']), async (req, res) => {
     const {Id_Cliente} = req.user;
     await pool.query("SELECT\n" +
     "	U.Login,\n" +
@@ -189,6 +188,19 @@ router.get('/users/delete/:Id', isLoggedIn, async (req, res) => {
             }
 
         });
+});
+
+router.get('/users/activar/:Id', isLoggedIn, async (req, res) => {
+
+    const { Id } = req.params;
+    await pool.query('UPDATE Usuarios SET Activo = 1 WHERE Id = ?', [Id], (err, result) => {
+        if (err){
+            throw err; 
+        }else{
+            res.redirect('/users');
+        }
+
+    });
 });
 
 router.get('/users/edit/:Id', isLoggedIn, authRole(['Plan', 'Admincli']), async (req, res) => {

@@ -20,19 +20,20 @@
 					</div>
 				</div>
 			</header>
-			<div class="box-typical box-typical-padding">	
+			<div class="box-typical box-typical-padding">
+				{{#ifAny user.Id_Perfil "2" "9"}}	
 				<table id="tabla_users" class="table table-bordered table-striped table-vcenter js-dataTable-full">
 					<thead>
 						<tr>
-							<th style="width: 5%;">Id</th>
-							<th style="width: 10%;">Usuario</th>
-							<th style="width: 15%;">Nombre</th>
-							<th style="width: 10%;">Perfil</th>
-							<th style="width: 10%;">Email</th>
-							<th style="width: 10%;">Telefono</th>
-							<th style="width: 10%;">Cliente</th>
-							<th class="text-center" style="width: 10%;">Editar</th>
-							<th class="text-center" style="width: 10%;">Eliminar</th>     
+							<th>Id</th>
+							<th>Usuario</th>
+							<th>Nombre</th>
+							<th>Perfil</th>
+							<th>Email</th>
+							<th>Telefono</th>
+							<th class="text-center">Estado</th>
+							<th class="text-center">Editar</th>
+							<th class="text-center">Acción</th>
 						</tr>
 					</thead>
 					<tbody>
@@ -44,13 +45,26 @@
 							<td>{{Perfiles}}</td>
 							<td>{{Email}}</td>
 							<td>{{Telefono}}</td>
-							<td>{{Cliente}}</td>
+							{{#ifEquals Estado "1"}}
+								<td class="text-center">
+									<span class="label label-success">Activo</span>
+								</td>
+							{{else}}
+								<td class="text-center">
+									<span class="label label-danger">Inactivo</span>
+								</td>	
+							{{/ifEquals}}
 							<td class="text-center"><a href="/users/edit/{{Id}}" type="button" id="btneditar" class="btn btn-inline btn-warning btn-sm ladda-button"><i class="fa fa-edit"></i></a></td>
-							<td class="text-center"><a onclick="confirmar({{Id}})" type="button" id="eliminar" class="btn btn-inline btn-danger btn-sm ladda-button"><i class="fa fa-trash"></i></a></td>
+							{{#ifEquals Estado "1"}}
+								<td class="text-center"><a onclick="confirmar({{Id}})" type="button" id="eliminar" class="btn btn-inline btn-danger btn-sm ladda-button">Desactivar</a></td>
+							{{else}}
+								<td class="text-center"><a onclick="activar({{Id}})" type="button" id="eliminar" class="btn btn-inline btn-success btn-sm ladda-button">Activar</a></td>	
+							{{/ifEquals}}
 						</tr>
 						{{/each}}
 					</tbody>
 				</table>
+				{{/ifAny}}
 			</div>
 			<style>
 				.dataTables_filter {
@@ -76,7 +90,4 @@
 	<script src="/js/lib/select2/select2.full.min.js"></script>
 	<script src="/users.js"></script>
 	<script src="/sessions.js"></script>
-	<script>
-
-	</script>
 </body>

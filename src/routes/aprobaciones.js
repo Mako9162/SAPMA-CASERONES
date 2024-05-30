@@ -38,11 +38,9 @@ router.get('/aprobadas', isLoggedIn, authRole(['Cli_C','Cli_B', 'GerVer', 'Cli_A
 router.post('/aprobadas', isLoggedIn, authRole(['Cli_C','Cli_B', 'GerVer', 'Cli_A', 'Cli_D', 'Cli_E', 'Admincli', 'Plan']), async (req, res)=>{
     
     try {
-        const {tarea, date1, date2} = req.body;
+        const {tarea, date1, date2, ot} = req.body;
         const {Id, Id_Perfil} = req.user;
         const test = '%test';
-
-        console.log(req.body);
 
         switch (Id_Perfil) {
             case 2:
@@ -61,12 +59,23 @@ router.post('/aprobadas', isLoggedIn, authRole(['Cli_C','Cli_B', 'GerVer', 'Cli_
                     res.json(aprob[0]);
                 }
 
+            }else if (ot > 0){
+
+                const aprob = await pool.query();
+
+                if(!aprob){
+                    res.json({ title: "No se encuentran tareas!!!" });
+                }else{
+                    res.json(aprob[0]);
+                }
+
+
             }else{
 
                 const aprob = await pool.query('CALL sp_TareasFull ( "CONSULTA_CLIENTE", NULL, NULL, ?, ?, ?, ?, NULL, NULL);',
                     [date1, date2, test, Id_Perfil]
                 );
-    
+
                 if(!aprob){
                     res.json({ title: "No se encuentran tareas en el rango seleccionado!!!" });
                 }else{
@@ -75,126 +84,7 @@ router.post('/aprobadas', isLoggedIn, authRole(['Cli_C','Cli_B', 'GerVer', 'Cli_
 
             }
 
-            // if (tarea > 0){
-
-            //     const aprob = await pool.query(
-            //         "SELECT\n" +
-            //         "        	VD.TAREA AS TAREA,\n" +
-            //         "        	date_format(VD.FECHA, '%d-%m-%Y') AS FECHA,\n" +
-            //         "        	VD.ESTADO_TAREA AS ESTADO_TAREA,\n" +
-            //         "        	VD.SERVICIO AS SERVICIO,\n" +
-            //         "        	VD.CODIGO AS CODIGO,\n" +
-            //         "        	VD.GERENCIA AS GERENCIA,\n" +
-            //         "        	VD.AREA AS AREA,\n" +
-            //         "        	VD.SECTOR AS SECTOR,\n" +
-            //         "        	VD.DETALLE_UBICACION AS DETALLE,\n" +
-            //         "        	VD.UBICACION_TECNICA AS TECNICA,\n" +
-            //         "        	VT.Val_obs AS OBS,\n" +
-            //         "        IF\n" +
-            //         "        	(\n" +
-            //         "        		VD.ESTADO_EQUIPO = 'SC',\n" +
-            //         "        		'No aplica',\n" +
-            //         "        	IF\n" +
-            //         "        		(\n" +
-            //         "        			VD.ESTADO_EQUIPO = 'SSR',\n" +
-            //         "        			'Sistema sin revisar.',\n" +
-            //         "        		IF\n" +
-            //         "        			(\n" +
-            //         "        				VD.ESTADO_EQUIPO = 'SOP',\n" +
-            //         "        				'Sistema operativo',\n" +
-            //         "        			IF\n" +
-            //         "        				(\n" +
-            //         "        					VD.ESTADO_EQUIPO = 'SOCO',\n" +
-            //         "        					'Sist. operativo con obs.',\n" +
-            //         "        				IF\n" +
-            //         "        					(\n" +
-            //         "        						VD.ESTADO_EQUIPO = 'SFS',\n" +
-            //         "        						'Sist. fuera de serv.',\n" +
-            //         "        					IF\n" +
-            //         "        					( VD.ESTADO_EQUIPO = 'SNO', 'Sist. no operativo', VD.ESTADO_EQUIPO )))))) AS ESTADO_EQUIPO,\n" +
-            //         "			IF (VD.OBS_ESTADO_EQUIPO = 'SC', '', CONVERT(CAST(CONVERT(CONCAT(UPPER(LEFT(VD.OBS_ESTADO_EQUIPO,1)), SUBSTRING(VD.OBS_ESTADO_EQUIPO FROM 2))USING latin1) AS BINARY) USING UTF8))	AS OBS_EQUIPO,\n" +
-            //         "        	VD.REPUESTOS AS REPUESTOS \n" +
-            //         "        FROM\n" +
-            //         "        	VIEW_DetalleEquiposDET VD\n" +
-            //         "        	INNER JOIN Tareas T ON T.Id = VD.TAREA\n" +
-            //         "        	INNER JOIN Tareas_Estado TV ON TV.te_Id_Tarea = VD.TAREA\n" +
-            //         "        	INNER JOIN Validacion_Tareas VT ON VT.Val_tarea_id = VD.TAREA \n" +
-            //         "           INNER JOIN Usuarios U ON T.Id_Tecnico = U.Id \n" +
-            //         "        WHERE\n" +
-            //         "        	T.Id_Estado = 4 \n" +
-            //         "           AND U.Descripcion  NOT LIKE '%test' \n" +
-            //         "           AND VD.TAREA = "+tarea+"\n" +
-            //         "        ORDER BY\n" +
-            //         "        	TAREA DESC;"
-            //     );
-    
-            //     if(!aprob){
-            //         res.json({ title: "No se encuentran tareas en el rango seleccionado!!!" });
-            //     }else{
-            //         res.json(aprob);
-            //     }
-
-            // }else{
-
-            //     const aprob = await pool.query(
-            //         "SELECT\n" +
-            //         "	VD.TAREA AS TAREA,\n" +
-            //         "	date_format(VD.FECHA, '%d-%m-%Y') AS FECHA,\n" +
-            //         "	VD.ESTADO_TAREA AS ESTADO_TAREA,\n" +
-            //         "	VD.SERVICIO AS SERVICIO,\n" +
-            //         "	VD.CODIGO AS CODIGO,\n" +
-            //         "	VD.GERENCIA AS GERENCIA,\n" +
-            //         "	VD.AREA AS AREA,\n" +
-            //         "	VD.SECTOR AS SECTOR,\n" +
-            //         "	VD.DETALLE_UBICACION AS DETALLE,\n" +
-            //         "	VD.UBICACION_TECNICA AS TECNICA,\n" +
-            //         "	VT.Val_obs AS OBS,\n" +
-            //         "IF\n" +
-            //         "	(\n" +
-            //         "		VD.ESTADO_EQUIPO = 'SC',\n" +
-            //         "		'No aplica',\n" +
-            //         "	IF\n" +
-            //         "		(\n" +
-            //         "			VD.ESTADO_EQUIPO = 'SSR',\n" +
-            //         "			'Sistema sin revisar.',\n" +
-            //         "		IF\n" +
-            //         "			(\n" +
-            //         "				VD.ESTADO_EQUIPO = 'SOP',\n" +
-            //         "				'Sistema operativo',\n" +
-            //         "			IF\n" +
-            //         "				(\n" +
-            //         "					VD.ESTADO_EQUIPO = 'SOCO',\n" +
-            //         "					'Sist. operativo con obs.',\n" +
-            //         "				IF\n" +
-            //         "					(\n" +
-            //         "						VD.ESTADO_EQUIPO = 'SFS',\n" +
-            //         "						'Sist. fuera de serv.',\n" +
-            //         "					IF\n" +
-            //         "					( VD.ESTADO_EQUIPO = 'SNO', 'Sist. no operativo', VD.ESTADO_EQUIPO )))))) AS ESTADO_EQUIPO,\n" +
-            //         "			IF (VD.OBS_ESTADO_EQUIPO = 'SC', '', CONVERT(CAST(CONVERT(CONCAT(UPPER(LEFT(VD.OBS_ESTADO_EQUIPO,1)), SUBSTRING(VD.OBS_ESTADO_EQUIPO FROM 2))USING latin1) AS BINARY) USING UTF8))	AS OBS_EQUIPO,\n" +
-            //         "	VD.REPUESTOS AS REPUESTOS \n" +
-            //         "FROM\n" +
-            //         "	VIEW_DetalleEquiposDET VD\n" +
-            //         "	INNER JOIN Tareas T ON T.Id = VD.TAREA\n" +
-            //         "	INNER JOIN Tareas_Estado TV ON TV.te_Id_Tarea = VD.TAREA\n" +
-            //         "	INNER JOIN Validacion_Tareas VT ON VT.Val_tarea_id = VD.TAREA \n" +
-            //         "   INNER JOIN Usuarios U ON T.Id_Tecnico = U.Id \n" +
-            //         "WHERE\n" +
-            //         "	T.Id_Estado = 4 \n" +
-            //         "   AND U.Descripcion  NOT LIKE '%test' \n" +
-            //         "	AND VD.FECHA BETWEEN \""+date1+"\" AND \""+date2+"\" \n" +
-            //         "ORDER BY\n" +
-            //         "	TAREA DESC;"
-            //     );
-    
-            //     if(!aprob){
-            //         res.json({ title: "No se encuentran tareas en el rango seleccionado!!!" });
-            //     }else{
-            //         res.json(aprob);
-            //     }
-
-            // }
-            
+         
             break;
 
             case 4:
@@ -214,6 +104,10 @@ router.post('/aprobadas', isLoggedIn, authRole(['Cli_C','Cli_B', 'GerVer', 'Cli_
                 }else{
                     res.json(aprob[0]);
                 }
+
+            }else if( ot > 0){
+            
+                console.log("ot: " + ot);
 
             }else{
 
